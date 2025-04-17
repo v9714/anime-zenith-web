@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,11 @@ import Episodes from "./pages/Episodes";
 import Search from "./pages/Search";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+
+// Import admin pages
+import AdminDashboard from "./pages/Admin";
+import AdminAnime from "./pages/AdminAnime";
+import AdminEpisodes from "./pages/AdminEpisodes";
 
 // Create Query Client for API requests
 const queryClient = new QueryClient({
@@ -38,6 +44,11 @@ const App = () => (
           <Route path="/episodes" element={<Episodes />} />
           <Route path="/search" element={<Search />} />
           <Route path="/contact" element={<Contact />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/anime" element={<AdminAnime />} />
+          <Route path="/admin/episodes" element={<AdminEpisodes />} />
           
           {/* Catch-all Route */}
           <Route path="*" element={<NotFound />} />
