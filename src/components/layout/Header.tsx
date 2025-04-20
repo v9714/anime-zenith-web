@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, Film, BookOpen, Home, Video, Mail } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { SITE_NAME, ROUTES } from "@/constants";
+import { SITE_NAME, ROUTES } from "@/utils/constants";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +32,25 @@ export function Header() {
     { name: "Contact", path: ROUTES.contact, icon: Mail },
   ];
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header 
+      className={cn(
+        "sticky top-0 z-40 w-full transition-colors duration-300",
+        {
+          "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60": !isDark,
+          "bg-[rgba(17,12,26,0.95)] backdrop-blur": isDark
+        }
+      )}
+    >
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6 md:gap-10">
           <Link to={ROUTES.home} className="flex items-center space-x-2">

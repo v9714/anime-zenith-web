@@ -1,12 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { AnimeBanner } from "@/components/anime/AnimeBanner";
+import { HeroSlider } from "@/components/anime/HeroSlider";
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Ad component placeholder (for Google AdSense)
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
   <div className={`bg-muted/30 border border-dashed border-muted-foreground/20 rounded-md p-2 text-center text-xs text-muted-foreground ${className}`}>
     <div className="h-full w-full flex items-center justify-center">
@@ -19,7 +17,7 @@ const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slo
 );
 
 export default function Home() {
-  const [featuredAnime, setFeaturedAnime] = useState<Anime | null>(null);
+  const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
   const [topAnime, setTopAnime] = useState<Anime[]>([]);
   const [trendingAnime, setTrendingAnime] = useState<Anime[]>([]);
   const [seasonalAnime, setSeasonalAnime] = useState<Anime[]>([]);
@@ -28,21 +26,16 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch top anime for the header banner
         const topResponse: AnimeResponse = await getTopAnime(1, 20);
         const topResults = topResponse.data;
         
-        // Use the first anime as featured
-        if (topResults.length > 0) {
-          setFeaturedAnime(topResults[0]);
-          setTopAnime(topResults.slice(1, 15));
-        }
+        // Use first 5 anime for hero slider
+        setFeaturedAnime(topResults.slice(0, 5));
+        setTopAnime(topResults.slice(5, 15));
         
-        // Fetch popular anime (different page for variety)
         const trendingResponse: AnimeResponse = await getTopAnime(2, 15);
         setTrendingAnime(trendingResponse.data);
         
-        // Fetch seasonal anime
         const seasonalResponse: AnimeResponse = await getSeasonalAnime();
         setSeasonalAnime(seasonalResponse.data.slice(0, 15));
         
@@ -55,6 +48,13 @@ export default function Home() {
 
     fetchData();
   }, []);
+
+  const handleSlideChange = (index: number) => {
+    const header = document.querySelector('header');
+    if (header) {
+      header.classList.toggle('dark-bg', index > 0);
+    }
+  };
 
   const renderSkeleton = () => (
     <>
@@ -89,13 +89,13 @@ export default function Home() {
             <meta itemProp="name" content="AnimeZenith - Your Ultimate Anime Streaming Platform" />
           </div>
           
-          {/* Featured Anime Banner */}
-          {featuredAnime && <AnimeBanner anime={featuredAnime} />}
-          
-          {/* Top Banner Ad */}
-          <div className="container py-6">
-            <AdBanner className="h-[90px]" slot="top-banner" />
-          </div>
+          {/* Hero Slider */}
+          {featuredAnime.length > 0 && (
+            <HeroSlider 
+              animes={featuredAnime} 
+              onSlideChange={handleSlideChange}
+            />
+          )}
           
           {/* Top Anime Section */}
           {topAnime.length > 0 && (
