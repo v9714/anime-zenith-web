@@ -77,8 +77,8 @@ export default function Search() {
     <Layout>
       {/* SEO Metadata */}
       <div style={{ display: 'none' }} itemScope itemType="https://schema.org/SearchResultsPage">
-        <meta itemProp="name" content={`Search Results for "${query}" - AnimeZenith`} />
-        <meta itemProp="description" content={`Browse search results for "${query}" on AnimeZenith. Find your favorite anime shows and movies.`} />
+        <meta itemProp="name" content={`Search Results for "${query}" - Otaku`} />
+        <meta itemProp="description" content={`Browse search results for "${query}" on Otaku. Find your favorite anime shows and movies.`} />
       </div>
       
       <div className="container py-8">

@@ -100,7 +100,7 @@ export default function Episodes() {
     <Layout>
       {/* SEO Metadata */}
       <div style={{ display: 'none' }} itemScope itemType="https://schema.org/CollectionPage">
-        <meta itemProp="name" content="Latest Anime Episodes - AnimeZenith" />
+        <meta itemProp="name" content="Latest Anime Episodes - Otaku" />
         <meta itemProp="description" content="Watch the latest episodes of your favorite anime shows. New episodes added daily." />
       </div>
       

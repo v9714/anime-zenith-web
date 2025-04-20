@@ -108,7 +108,7 @@ export default function AnimeList() {
     <Layout>
       {/* SEO Metadata */}
       <div style={{ display: 'none' }} itemScope itemType="https://schema.org/CollectionPage">
-        <meta itemProp="name" content="Anime List - AnimeZenith" />
+        <meta itemProp="name" content="Anime List - Otaku" />
         <meta itemProp="description" content="Browse through our extensive collection of anime shows and movies. Filter by genre, sort by popularity, and discover new content." />
       </div>
       

@@ -70,8 +70,8 @@ export default function Contact() {
     <Layout>
       {/* SEO Metadata */}
       <div style={{ display: 'none' }} itemScope itemType="https://schema.org/ContactPage">
-        <meta itemProp="name" content="Contact Us - AnimeZenith" />
-        <meta itemProp="description" content="Get in touch with the AnimeZenith team. We're here to help with any questions or feedback you might have." />
+        <meta itemProp="name" content="Contact Us - Otaku" />
+        <meta itemProp="description" content="Get in touch with the Otaku team. We're here to help with any questions or feedback you might have." />
       </div>
       
       <div className="container py-12">
@@ -95,8 +95,8 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium">Email</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      <a href="mailto:contact@animezenith.com" className="hover:text-primary">
-                        contact@animezenith.com
+                      <a href="mailto:contact@Otaku.com" className="hover:text-primary">
+                        contact@Otaku.com
                       </a>
                     </p>
                   </div>

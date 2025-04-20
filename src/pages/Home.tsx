@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { HeroSlider } from "@/components/anime/HeroSlider";
@@ -5,16 +6,56 @@ import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
-  <div className={`bg-muted/30 border border-dashed border-muted-foreground/20 rounded-md p-2 text-center text-xs text-muted-foreground ${className}`}>
-    <div className="h-full w-full flex items-center justify-center">
-      <div>
-        <p>Advertisement</p>
-        <p className="text-[10px]">Ad slot: {slot}</p>
-      </div>
+// const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
+//   <div className={`bg-muted/30 border border-dashed border-muted-foreground/20 rounded-md p-2 text-center text-xs text-muted-foreground ${className}`}>
+//     <div className="h-full w-full flex items-center justify-center">
+//       <div>
+//         <p>Advertisement</p>
+//         <p className="text-[10px]">Ad slot: {slot}</p>
+//       </div>
+//     </div>
+//   </div>
+// );
+
+const AdBanner = ({ className = "", label }: { className?: string; label?: string }) => {
+  useEffect(() => {
+    // Check if the AdSense script is already added
+    const existingScript = document.querySelector(
+      'script[src^="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+    );
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src =
+        "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9858886039044072";
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      document.head.appendChild(script);
+    }
+
+    // Try to push the ad
+    try {
+      // @ts-expect-error
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (err) {
+      console.error("Adsbygoogle push error:", err);
+    }
+  }, []);
+
+  return (
+    <div className={`relative ${className}`}>
+      {label && <div className="text-xs text-muted-foreground text-center mb-1">Ad: {label}</div>}
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-9858886039044072"
+        data-ad-slot="5125181623"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
     </div>
-  </div>
-);
+  );
+};
 
 export default function Home() {
   const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
@@ -85,8 +126,8 @@ export default function Home() {
         <>
           {/* SEO Metadata */}
           <div style={{ display: 'none' }} itemScope itemType="https://schema.org/WebSite">
-            <meta itemProp="url" content="https://animezenith.com/" />
-            <meta itemProp="name" content="AnimeZenith - Your Ultimate Anime Streaming Platform" />
+            <meta itemProp="url" content="https://Otaku.com/" />
+            <meta itemProp="name" content="Otaku - Your Ultimate Anime Streaming Platform" />
           </div>
           
           {/* Hero Slider */}
@@ -137,7 +178,7 @@ export default function Home() {
                 )}
                 
                 {/* In-content Ad */}
-                <AdBanner className="h-[250px] mb-8" slot="in-content" />
+                {/* <AdBanner className="h-[250px] mb-8" slot="in-content" /> */}
                 
                 {/* Seasonal Anime */}
                 {seasonalAnime.length > 0 && (
@@ -167,7 +208,7 @@ export default function Home() {
               
               {/* Sidebar */}
               <div className="md:w-1/4">
-                <AdBanner className="h-[600px]" slot="sidebar" />
+                {/* <AdBanner className="h-[600px]" slot="sidebar" /> */}
               </div>
             </div>
           </div>
@@ -183,7 +224,8 @@ export default function Home() {
           
           {/* Bottom Banner Ad */}
           <div className="container py-6">
-            <AdBanner className="h-[90px]" slot="bottom-banner" />
+            {/* <AdBanner className="h-[90px]" slot="bottom-banner" /> */}
+            <AdBanner className="h-[90px]" label="bottom-banner" />
           </div>
         </>
       )}
