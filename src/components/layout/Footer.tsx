@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Youtube, Mail } from "lucide-react";
-import { SITE_NAME, SOCIAL_LINKS, ROUTES } from "@/constants";
+import { SITE_NAME, SOCIAL_LINKS, ROUTES } from "@/utils/constants";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Anime } from "@/services/api";
-import useEmblaCarousel from 'embla-carousel-react';
 
 interface HeroSliderProps {
   animes: Anime[];
@@ -39,8 +38,8 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
         loop: true
       }}
       onSelect={(api) => {
-        if (api && api.scrollSnapList) {
-          const currentIndex = api.selectedScrollSnap();
+        if (api) {
+          const currentIndex = api.selectedScrollSnap ? api.selectedScrollSnap() : 0;
           handleSlideChange(currentIndex);
         }
       }}
