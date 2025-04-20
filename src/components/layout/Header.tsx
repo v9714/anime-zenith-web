@@ -1,11 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu } from "lucide-react";
+import { Search, Menu, Home, Film, Video, BookOpen, Mail } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SITE_NAME, ROUTES } from "@/utils/constants";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");

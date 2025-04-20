@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,12 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
         align: "start",
         loop: true
       }}
-      onSelect={(api) => handleSlideChange(api.selectedScrollSnap())}
+      onSelect={(api) => {
+        // Access selectedScrollSnap from the embla API object
+        if (api && typeof api.selectedScrollSnap === 'function') {
+          handleSlideChange(api.selectedScrollSnap());
+        }
+      }}
     >
       <CarouselContent>
         {animes.map((anime, index) => (
