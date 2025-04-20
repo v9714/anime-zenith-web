@@ -1,6 +1,6 @@
-
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Youtube, Mail } from "lucide-react";
+import { SITE_NAME, SOCIAL_LINKS, ROUTES } from "@/constants";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -10,8 +10,8 @@ export function Footer() {
       <div className="container flex flex-col items-center justify-center gap-4 md:gap-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 md:grid-cols-5">
           <div className="flex flex-col items-start gap-2 md:col-span-2">
-            <Link to="/" className="text-xl font-heading font-bold bg-gradient-to-r from-primary to-anime-secondary bg-clip-text text-transparent">
-              AnimeZenith
+            <Link to={ROUTES.home} className="text-xl font-heading font-bold bg-gradient-to-r from-primary to-anime-secondary bg-clip-text text-transparent">
+              {SITE_NAME}
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
               Your ultimate destination for anime streaming, news, and community. 
@@ -63,7 +63,7 @@ export function Footer() {
         
         <div className="w-full border-t border-border mt-4 pt-6 flex flex-col md:flex-row justify-between items-center text-center">
           <p className="text-xs text-muted-foreground">
-            © {currentYear} AnimeZenith. All rights reserved.
+            © {currentYear} {SITE_NAME}. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground mt-2 md:mt-0">
             This site is not affiliated with or endorsed by any anime studios or publishers.

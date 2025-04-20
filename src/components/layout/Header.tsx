@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, X, Film, BookOpen, Home, Video, Mail } from "lucide-react";
+import { Search, Menu, Film, BookOpen, Home, Video, Mail } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SITE_NAME, ROUTES } from "@/constants";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,24 +23,23 @@ export function Header() {
   };
 
   const menuItems = [
-    { name: "Home", path: "/", icon: Home },
-    { name: "Anime List", path: "/anime", icon: Film },
-    { name: "Latest Episodes", path: "/episodes", icon: Video },
+    { name: "Home", path: ROUTES.home, icon: Home },
+    { name: "Anime List", path: ROUTES.anime, icon: Film },
+    { name: "Latest Episodes", path: ROUTES.episodes, icon: Video },
     { name: "Manga", path: "/manga", icon: BookOpen },
-    { name: "Contact", path: "/contact", icon: Mail },
+    { name: "Contact", path: ROUTES.contact, icon: Mail },
   ];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6 md:gap-10">
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to={ROUTES.home} className="flex items-center space-x-2">
             <span className="inline-block font-heading font-bold text-xl md:text-2xl bg-gradient-to-r from-primary via-anime-secondary to-anime-accent bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
-              AnimeZenith
+              {SITE_NAME}
             </span>
           </Link>
           
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-6">
             {menuItems.map((item) => (
               <Link
@@ -52,10 +51,7 @@ export function Header() {
               </Link>
             ))}
           </nav>
-        </div>
 
-        {/* Desktop Search and Theme Toggle */}
-        <div className="flex items-center gap-4">
           <div className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-64' : 'w-10'} transition-all duration-300`}>
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="w-full">
@@ -80,7 +76,6 @@ export function Header() {
           
           <ThemeToggle />
 
-          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden rounded-full">
@@ -90,9 +85,9 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[270px] sm:w-[300px]">
               <div className="px-2">
-                <Link to="/" className="flex items-center pb-6 pt-4">
+                <Link to={ROUTES.home} className="flex items-center pb-6 pt-4">
                   <span className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-anime-secondary bg-clip-text text-transparent">
-                    AnimeZenith
+                    {SITE_NAME}
                   </span>
                 </Link>
               </div>

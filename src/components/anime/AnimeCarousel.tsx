@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from "react";
 import { Anime } from "@/services/api";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -75,7 +74,7 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
               <AnimeCard
                 key={anime.mal_id}
                 anime={anime}
-                className="min-w-[170px] sm:min-w-[180px] md:min-w-[200px] lg:min-w-[220px] flex-shrink-0"
+                className="w-[200px] flex-shrink-0"
               />
             ))}
           </div>

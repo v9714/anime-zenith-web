@@ -71,7 +71,13 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
     // Transform the form data into the Episode format
     const newEpisode: Episode = {
       id: episode?.id || Math.floor(Math.random() * 10000),
-      ...data
+      animeId: data.animeId,
+      animeTitle: data.animeTitle,
+      episodeNumber: data.episodeNumber,
+      title: data.title,
+      thumbnailUrl: data.thumbnailUrl,
+      duration: data.duration,
+      airedDate: data.airedDate,
     };
 
     onSubmit(newEpisode);
