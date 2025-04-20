@@ -36,7 +36,7 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -46,10 +46,10 @@ export function Header() {
   return (
     <header 
       className={cn(
-        "sticky top-0 z-40 w-full transition-colors duration-300",
+        "fixed top-0 z-40 w-full transition-all duration-300",
         {
-          "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60": !isDark,
-          "bg-[rgba(17,12,26,0.95)] backdrop-blur": isDark
+          "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60": isScrolled,
+          "bg-transparent": !isScrolled
         }
       )}
     >

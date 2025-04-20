@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
@@ -37,7 +36,6 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
     }
   };
 
-  // Auto-slide setup
   useEffect(() => {
     const timer = setInterval(() => {
       scrollNext();
@@ -60,18 +58,15 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           {animes.map((anime, index) => (
             <CarouselItem key={anime.mal_id} className="relative w-full">
               <div className="relative aspect-[21/9] overflow-hidden">
-                {/* Gradient overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent z-10" />
                 <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
                 
-                {/* Background image */}
                 <img
                   src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                   alt={anime.title}
                   className="w-full h-full object-cover"
                 />
 
-                {/* Content */}
                 <div className="absolute inset-0 flex items-center z-20">
                   <div className="container max-w-[1280px] mx-auto px-4">
                     <div className="max-w-[650px] space-y-6">
@@ -112,8 +107,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           ))}
         </CarouselContent>
 
-        {/* Navigation buttons */}
-        <div className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-30">
+        <div className="absolute right-4 md:right-8 bottom-8 flex gap-2 z-30">
           <Button
             variant="outline"
             size="icon"
