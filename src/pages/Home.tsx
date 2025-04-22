@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
@@ -147,15 +148,19 @@ export default function Home() {
                     <h2 className="text-xl font-heading font-bold mb-4">Trending Now</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {trendingAnime.slice(0, 8).map((anime) => (
-                        <div key={anime.mal_id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                        <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <img 
-                            src={anime.images.webp.small_image_url || anime.images.jpg.small_image_url} 
+                            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
+                            className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
                             loading="lazy"
+                            style={{
+                              background: "#1A1F2C",
+                              objectFit: "cover"
+                            }}
                           />
                           <div>
-                            <h3 className="text-sm font-medium line-clamp-2">{anime.title}</h3>
+                            <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
                             <p className="text-xs text-muted-foreground mt-1">
                               {anime.type} • {anime.score ? `${anime.score.toFixed(1)}★` : 'N/A'}
                             </p>
@@ -175,15 +180,19 @@ export default function Home() {
                     <h2 className="text-xl font-heading font-bold mb-4">This Season</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {seasonalAnime.slice(0, 8).map((anime) => (
-                        <div key={anime.mal_id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                        <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <img 
-                            src={anime.images.webp.small_image_url || anime.images.jpg.small_image_url} 
+                            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
+                            className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
                             loading="lazy"
+                            style={{
+                              background: "#1A1F2C",
+                              objectFit: "cover"
+                            }}
                           />
                           <div>
-                            <h3 className="text-sm font-medium line-clamp-2">{anime.title}</h3>
+                            <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
                             <p className="text-xs text-muted-foreground mt-1">
                               {anime.type} • {anime.score ? `${anime.score.toFixed(1)}★` : 'N/A'}
                             </p>
