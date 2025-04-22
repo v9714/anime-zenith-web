@@ -152,7 +152,8 @@ export default function Home() {
                           <img 
                             src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
+                            // className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
+                             className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             loading="lazy"
                             style={{
                               background: "#1A1F2C",
@@ -184,7 +185,8 @@ export default function Home() {
                           <img 
                             src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
+                            // className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
+                             className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             loading="lazy"
                             style={{
                               background: "#1A1F2C",
