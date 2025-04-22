@@ -6,17 +6,6 @@ import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
-//   <div className={`bg-muted/30 border border-dashed border-muted-foreground/20 rounded-md p-2 text-center text-xs text-muted-foreground ${className}`}>
-//     <div className="h-full w-full flex items-center justify-center">
-//       <div>
-//         <p>Advertisement</p>
-//         <p className="text-[10px]">Ad slot: {slot}</p>
-//       </div>
-//     </div>
-//   </div>
-// );
-
 const AdBanner = ({ className = "", label }: { className?: string; label?: string }) => {
   useEffect(() => {
     // Check if the AdSense script is already added
@@ -162,7 +151,7 @@ export default function Home() {
                           <img 
                             src={anime.images.webp.small_image_url || anime.images.jpg.small_image_url} 
                             alt={anime.title}
-                            className="w-12 h-16 object-cover rounded-sm"
+                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             loading="lazy"
                           />
                           <div>
@@ -190,7 +179,7 @@ export default function Home() {
                           <img 
                             src={anime.images.webp.small_image_url || anime.images.jpg.small_image_url} 
                             alt={anime.title}
-                            className="w-12 h-16 object-cover rounded-sm"
+                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             loading="lazy"
                           />
                           <div>

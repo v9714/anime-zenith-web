@@ -13,7 +13,6 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,22 +35,23 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 60);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Transparent/absolute on top, solid bg with blur on scroll
   return (
     <header 
       className={cn(
-        "fixed top-0 z-40 w-full transition-all duration-300",
-        {
-          "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60": isScrolled,
-          "bg-transparent": !isScrolled
-        }
+        "fixed top-0 left-0 z-40 w-full transition-all duration-500",
+        isScrolled
+          ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-md"
+          : "bg-transparent"
       )}
+      style={{ pointerEvents: "auto" }}
     >
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6 md:gap-10">
@@ -132,7 +132,7 @@ export function Header() {
                     <Link
                       key={item.name}
                       to={item.path}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground hover:bg-accent hover:bg-opacity-10"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent hover:bg-opacity-10"
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.name}</span>
