@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Play, Info, Star, Users, MessageSquare } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -23,18 +22,29 @@ const episodes = [
   "New total football",
   "Storm warning"
 ];
-const anime = {
+
+// Define the anime type correctly
+interface AnimeData {
+  title: string;
+  description: string;
+  rating: number;
+  votes: number;
+}
+
+const anime: AnimeData = {
   title: "The Knight in the Area",
   description:
     "Kakeru and Suguru are brothers who both follow a flaming star for football. But only one, Suguru, becomes a rising star. Kakeru tries to keep up and struggles, but success takes its toll on the relationships closest to him.",
   rating: 8.7,
   votes: 4167
 };
+
 const comments = [
   { user: "momie", ago: "25 days ago", content: "to fast re again reely" },
   { user: "Amazing", ago: "3 months ago", content: "BOI THAT shot" },
   { user: "Chopper", ago: "8 months ago", content: "i am stuck relooping scenes for him again" }
 ];
+
 // Dummy popular anime
 const popularAnime = [
   { title: "One Piece", episodes: 1122, img: "https://cdn.myanimelist.net/images/anime/6/73245.jpg", id: 1 },
@@ -86,7 +96,8 @@ function EpisodeList({ episodes, active = 0 }: { episodes: string[]; active?: nu
   );
 }
 
-function AnimeInfoCard({ anime }: { anime: typeof anime }) {
+// Fix the AnimeInfoCard component prop type
+function AnimeInfoCard({ anime }: { anime: AnimeData }) {
   return (
     <Card className="bg-card/90 w-full shadow-lg">
       <CardContent className="p-4">
