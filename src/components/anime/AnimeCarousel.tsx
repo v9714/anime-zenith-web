@@ -1,8 +1,10 @@
+
 import { useState, useRef, useCallback } from "react";
 import { Anime } from "@/services/api";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimeCard } from "./AnimeCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AnimeCarouselProps {
   title: string;
@@ -14,16 +16,17 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const isMobile = useIsMobile();
 
   const scroll = useCallback((direction: "left" | "right") => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const scrollAmount = container.clientWidth * 0.75;
-    const newScrollLeft = direction === "left" 
-      ? container.scrollLeft - scrollAmount 
+    const newScrollLeft = direction === "left"
+      ? container.scrollLeft - scrollAmount
       : container.scrollLeft + scrollAmount;
-    
+
     container.scrollTo({
       left: newScrollLeft,
       behavior: "smooth",
@@ -51,9 +54,9 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
             </a>
           )}
         </div>
-        
         <div className="relative">
-          {showLeftArrow && (
+          {/* Only show arrows on mobile for cleaner desktop look */}
+          {isMobile && showLeftArrow && (
             <Button
               variant="ghost"
               size="icon"
@@ -64,7 +67,7 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
               <span className="sr-only">Scroll left</span>
             </Button>
           )}
-          
+
           <div
             ref={scrollContainerRef}
             className="flex overflow-x-auto scrollbar-none gap-4 pb-4"
@@ -78,8 +81,8 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
               />
             ))}
           </div>
-          
-          {showRightArrow && (
+
+          {isMobile && showRightArrow && (
             <Button
               variant="ghost"
               size="icon"
@@ -95,3 +98,4 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
     </section>
   );
 }
+
