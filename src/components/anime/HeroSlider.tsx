@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,6 @@ import { Anime } from "@/services/api";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Animation helpers
 function MetaItem({ label, value }: { label: string, value?: string | number }) {
   if (!value) return null;
   return (
@@ -92,7 +90,6 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
   const toggleAutoplay = () => setAutoplay(prev => !prev);
   const currentAnime = animes[activeIndex];
 
-  // Get metadata for display
   const meta = [
     { label: "Type", value: currentAnime?.type },
     { label: "Episodes", value: currentAnime?.episodes },
@@ -108,11 +105,9 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
         "transition-all duration-500 ease-in-out"
       )}
     >
-      {/* Blurry anime image as RIGHT HALF background with gradients and blend */}
       <div className="absolute inset-0 w-full h-full">
         {currentAnime && (
           <div className="absolute right-0 top-0 w-[55vw] h-full hidden md:block z-0 pointer-events-none select-none">
-            {/* Main visual image */}
             <img
               src={currentAnime.images?.webp?.large_image_url || currentAnime.images?.jpg?.large_image_url}
               alt={currentAnime.title}
@@ -127,12 +122,10 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                 zIndex: 2
               }}
             />
-            {/* Gradient overlays for smoothness */}
             <div className="absolute inset-0 bg-gradient-to-l from-black via-black/60 to-transparent rounded-l-[3.5rem]" />
             <div className="absolute left-0 top-0 h-full w-44 bg-gradient-to-r from-black to-transparent" />
           </div>
         )}
-        {/* Mobile: background image fills full */}
         {currentAnime && (
           <div className="absolute inset-0 md:hidden">
             <img
@@ -147,10 +140,8 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
           </div>
         )}
-        {/* Global dark glass overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
       </div>
-      {/* Carousel */}
       <Carousel
         className="relative w-full h-full z-10"
         opts={{
@@ -163,36 +154,34 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
         <CarouselContent className="h-full">
           {animes.map((anime, index) => (
             <CarouselItem key={anime.mal_id} className="w-full h-full transition-all">
-              {/* Main Content of Slide */}
               <div className="relative w-full h-full flex flex-col md:flex-row items-center justify-between pt-28 md:pt-0 px-4 md:px-12 xl:px-24">
-                {/* LEFT: anime info panel */}
                 <div
                   className={cn(
                     "relative z-20 flex flex-col justify-center h-full",
-                    "w-full md:w-[46vw] max-w-[550px] rounded-2xl p-7 md:p-0 backdrop-blur-sm",
+                    "w-full md:w-[60vw] max-w-[700px] rounded-2xl p-7 md:p-0 backdrop-blur-sm",
                     "bg-black/50 md:bg-transparent",
-                    "md:pl-6 xl:pl-6 py-6 md:py-8",
+                    "md:pl-8 xl:pl-16 py-6 md:py-12",
                     "text-white animate-fade-in"
                   )}
                   style={{
                     minHeight: "375px"
                   }}
                 >
-                  <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary mb-3 select-none">
+                  <span className="block uppercase tracking-widest text-xs md:text-[15px] font-semibold text-anime-secondary mb-2 md:mb-4 select-none">
                     #{index + 1} Spotlight
                   </span>
-                  <h1 className="font-heading text-3xl md:text-5xl font-bold drop-shadow-lg mb-4 md:mb-8 leading-tight line-clamp-2">
+                  <h1 className="font-heading text-3xl md:text-5xl font-bold drop-shadow-lg mb-4 md:mb-7 leading-tight line-clamp-2 md:line-clamp-3 max-w-2xl md:max-w-3xl break-words">
                     {anime.title}
                   </h1>
-                  <div className="flex flex-wrap items-center mb-2 md:mb-4">
+                  <div className="flex flex-wrap items-center gap-2 mb-2 md:mb-5">
                     {meta.map(({ label, value }) => (
                       <MetaItem key={label} label={label} value={value} />
                     ))}
                   </div>
-                  <p className="text-base md:text-lg text-white/90 max-w-3xl mb-6 leading-relaxed drop-shadow-md line-clamp-3 md:line-clamp-5">
+                  <p className="text-base md:text-lg text-white/90 max-w-2xl md:max-w-3xl mb-7 leading-relaxed drop-shadow-md line-clamp-4 md:line-clamp-5">
                     {anime.synopsis}
                   </p>
-                  <div className="flex gap-5 flex-wrap mt-auto self-start md:self-auto">
+                  <div className="flex gap-5 flex-wrap mt-auto md:mt-0 w-full md:w-auto">
                     <Button asChild size={isMobile ? "default" : "lg"} className={cn(
                       "rounded-full px-8 py-3 font-heading font-bold shadow-lg",
                       "bg-gradient-to-r from-anime-secondary to-anime-primary text-white text-lg border-0",
@@ -208,19 +197,16 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                     </Button>
                   </div>
                 </div>
-                {/* Empty right - all handled by background image */}
                 <div className="hidden md:block flex-1"></div>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
       </Carousel>
-      {/* Slide navigation and progress (bottom center, soft animations) */}
       <div className={cn(
         "absolute bottom-10 left-0 w-full flex flex-col items-center z-30 gap-4 md:items-end md:pr-20"
       )}>
         <div className="flex gap-3">
-          {/* Dots for slide selection */}
           {animes.map((_, index) => (
             <button
               key={index}
@@ -237,7 +223,6 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           ))}
         </div>
         <div className="flex gap-3 mt-1">
-          {/* Navigation & autoplay (always bottom center) */}
           <Button
             variant="outline"
             size="icon"
@@ -276,7 +261,6 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
             <ChevronRight className="size-5" />
           </Button>
         </div>
-        {/* Progress bar */}
         <div className="w-36 md:w-72 bg-white/20 rounded-full overflow-hidden h-1.5 md:h-2 mt-2 md:mt-3 mx-auto">
           <div
             className="h-full bg-anime-secondary"
