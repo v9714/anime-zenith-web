@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => ({
     headers: {
       // Add compression and caching headers in development for testing
       'Cache-Control': 'max-age=31536000',
-      'X-Content-Type-Options': 'nosniff'
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Encoding': 'gzip'
     },
   },
   plugins: [
@@ -27,8 +28,17 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Enable minification and code splitting
-    minify: true,
+    minify: "terser",
     cssCodeSplit: true,
+    // Enable terser compression options
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    // Optimize asset loading
+    assetsInlineLimit: 4096, // 4KB - inline small assets
     rollupOptions: {
       output: {
         // Chunk by category to optimize caching
@@ -40,8 +50,16 @@ export default defineConfig(({ mode }) => ({
             '@/components/ui/card.tsx',
             '@/components/ui/skeleton.tsx',
           ],
-        }
+        },
+        // Add content hash to file names for cache busting
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
   },
+  // Optimize asset compression
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  }
 }));

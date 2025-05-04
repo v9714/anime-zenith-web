@@ -1,9 +1,10 @@
-
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useState, lazy, Suspense } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LazyImage } from "@/components/layout/LazyImage";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
+import { preloadCriticalImages } from "@/lib/image-optimizer";
 
 // Lazy-loaded components to reduce initial JavaScript payload
 const HeroSlider = lazy(() => import("@/components/anime/HeroSlider").then(mod => ({ default: mod.HeroSlider })));
@@ -29,42 +30,57 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Add compression meta tag for text resources
-    const metaCompress = document.createElement('meta');
-    metaCompress.name = 'Content-Encoding';
-    metaCompress.content = 'gzip';
-    document.head.appendChild(metaCompress);
-    
-    // Add cache control meta tag
-    const metaCache = document.createElement('meta');
-    metaCache.httpEquiv = 'Cache-Control';
-    metaCache.content = 'max-age=31536000';
-    document.head.appendChild(metaCache);
-    
-    // Use requestIdleCallback to defer non-critical operations
+    // Fetch data optimization with better error handling
     const fetchData = async () => {
       try {
+        // Fetch critical data first
         const topResponse: AnimeResponse = await getTopAnime(1, 20);
         const topResults = topResponse.data;
         
-        // Use first 5 anime for hero slider
-        setFeaturedAnime(topResults.slice(0, 5));
-        setTopAnime(topResults.slice(5, 15));
+        if (topResults && topResults.length > 0) {
+          // Preload hero images for LCP improvement
+          const criticalImages = topResults.slice(0, 5).map(
+            anime => anime.images.webp.large_image_url || anime.images.jpg.large_image_url
+          );
+          preloadCriticalImages(criticalImages);
+          
+          // Update state for top anime
+          setFeaturedAnime(topResults.slice(0, 5));
+          setTopAnime(topResults.slice(5, 15));
+        }
         
         // Defer less important data fetching
-        window.requestIdleCallback(() => {
-          Promise.all([
-            getTopAnime(2, 15),
-            getSeasonalAnime()
-          ]).then(([trendingResponse, seasonalResponse]) => {
-            setTrendingAnime(trendingResponse.data);
-            setSeasonalAnime(seasonalResponse.data.slice(0, 15));
-            setIsLoading(false);
-          }).catch(error => {
-            console.error('Error fetching secondary data:', error);
-            setIsLoading(false);
-          });
-        });
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          // @ts-ignore
+          window.requestIdleCallback(() => {
+            Promise.all([
+              getTopAnime(2, 15),
+              getSeasonalAnime()
+            ]).then(([trendingResponse, seasonalResponse]) => {
+              if (trendingResponse.data) setTrendingAnime(trendingResponse.data);
+              if (seasonalResponse.data) setSeasonalAnime(seasonalResponse.data.slice(0, 15));
+              setIsLoading(false);
+            }).catch(error => {
+              console.error('Error fetching secondary data:', error);
+              setIsLoading(false);
+            });
+          }, { timeout: 2000 });
+        } else {
+          // Fallback for browsers without requestIdleCallback
+          setTimeout(async () => {
+            Promise.all([
+              getTopAnime(2, 15),
+              getSeasonalAnime()
+            ]).then(([trendingResponse, seasonalResponse]) => {
+              if (trendingResponse.data) setTrendingAnime(trendingResponse.data);
+              if (seasonalResponse.data) setSeasonalAnime(seasonalResponse.data.slice(0, 15));
+              setIsLoading(false);
+            }).catch(error => {
+              console.error('Error fetching secondary data:', error);
+              setIsLoading(false);
+            });
+          }, 100);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         setIsLoading(false);
@@ -72,12 +88,6 @@ export default function Home() {
     };
 
     fetchData();
-    
-    // Cleanup function
-    return () => {
-      document.head.removeChild(metaCompress);
-      document.head.removeChild(metaCache);
-    };
   }, []);
 
   const handleSlideChange = (index: number) => {
@@ -87,19 +97,28 @@ export default function Home() {
     }
   };
 
-  // Render optimized skeleton with reduced size to minimize layout shifts
+  // Optimized skeleton with improved layout stability
   const renderSkeleton = () => (
     <>
-      {/* Banner Skeleton - optimized for LCP */}
-      <div className="w-full h-[500px] bg-muted/30 animate-pulse" style={{ contain: 'layout paint' }}></div>
+      {/* Banner Skeleton - preset dimensions to prevent CLS */}
+      <div 
+        className="w-full bg-muted/30 animate-pulse" 
+        style={{ 
+          height: "500px",
+          contain: 'layout paint' 
+        }} 
+        aria-label="Loading hero content"
+      ></div>
       
-      {/* Carousel Skeletons */}
+      {/* Carousel Skeletons - fixed dimensions for layout stability */}
       <div className="container py-6">
         <Skeleton className="h-8 w-48 mb-4" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {Array(6).fill(0).map((_, i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <Skeleton className="w-full h-64 rounded-md" />
+            <div key={i} className="flex flex-col gap-2" style={{ height: "300px" }}>
+              <div style={{ height: "225px" }}>
+                <Skeleton className="w-full h-full rounded-md" />
+              </div>
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-3 w-3/4" />
             </div>
@@ -122,7 +141,13 @@ export default function Home() {
           </div>
           
           {/* Hero Slider - High priority content, optimized for LCP */}
-          <Suspense fallback={<div className="w-full h-[500px] bg-muted/30" />}>
+          <Suspense fallback={
+            <div 
+              className="w-full bg-muted/30" 
+              style={{ height: "500px" }}
+              aria-label="Loading hero content"
+            />
+          }>
             {featuredAnime.length > 0 && (
               <HeroSlider 
                 animes={featuredAnime} 
@@ -132,7 +157,11 @@ export default function Home() {
           </Suspense>
           
           {/* Top Anime Section */}
-          <Suspense fallback={<div className="container py-6"><Skeleton className="h-8 w-48 mb-4" /></div>}>
+          <Suspense fallback={
+            <div className="container py-6">
+              <Skeleton className="h-8 w-48 mb-4" />
+            </div>
+          }>
             {topAnime.length > 0 && (
               <AnimeCarousel 
                 title="Top Anime" 
@@ -154,17 +183,12 @@ export default function Home() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {trendingAnime.slice(0, 8).map((anime) => (
                         <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
-                          <img 
+                          <LazyImage 
                             src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            loading="lazy"
                             width="64"
                             height="96"
                             className="w-16 h-24 object-cover rounded-md transition-all duration-200"
-                            style={{
-                              background: "#1A1F2C",
-                              objectFit: "cover"
-                            }}
                           />
                           <div>
                             <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
@@ -188,17 +212,12 @@ export default function Home() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {seasonalAnime.slice(0, 8).map((anime) => (
                         <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
-                          <img 
+                          <LazyImage 
                             src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            loading="lazy"
-                            width="64" 
+                            width="64"
                             height="96"
                             className="w-16 h-24 object-cover rounded-md transition-all duration-200"
-                            style={{
-                              background: "#1A1F2C",
-                              objectFit: "cover"
-                            }}
                           />
                           <div>
                             <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
@@ -213,7 +232,7 @@ export default function Home() {
                 )}
               </div>
               
-              {/* Sidebar */}
+              {/* Sidebar - with fixed height to avoid CLS */}
               <div className="md:w-1/4">
                 <AdBanner className="h-[600px]" slot="sidebar" />
               </div>

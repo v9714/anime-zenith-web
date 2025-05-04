@@ -13,16 +13,41 @@
     <meta http-equiv="Cache-Control" content="max-age=31536000" />
     <meta http-equiv="Content-Encoding" content="gzip" />
     <meta name="theme-color" content="#1A1F2C" />
+    
+    <!-- Resource Hints -->
     <link rel="preconnect" href="https://cdn.myanimelist.net" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.myanimelist.net" />
     
     <!-- Google Adsense -->
     <meta name="google-adsense-account" content="ca-pub-1482064518417083">
     
-    <!-- Fonts - Preloaded -->
+    <!-- Fonts - Preloaded and display swap to avoid render blocking -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    
+    <!-- Critical CSS inline for fast rendering -->
+    <style>
+      /* Critical CSS - Include styles for above-the-fold content */
+      :root { --background: 224 19% 14%; --foreground: 210 40% 98%; }
+      body { background-color: hsl(224, 19%, 14%); color: hsl(210, 40%, 98%); margin: 0; font-family: 'Inter', sans-serif; }
+      .skeleton { background: linear-gradient(110deg, #2a2f3a 8%, #353b4a 18%, #2a2f3a 33%); border-radius: 5px; background-size: 200% 100%; animation: shine 1.5s linear infinite; }
+      @keyframes shine { to { background-position-x: -200%; } }
+      
+      /* Layout pre-allocation to reduce layout shifts */
+      header { height: 64px; }
+      main { min-height: calc(100vh - 64px - 200px); }
+      
+      /* Hero section placeholder */
+      .hero-placeholder { width: 100%; height: 500px; background-color: rgba(42, 47, 58, 0.5); }
+      
+      /* Container Width */
+      .container { max-width: 1280px; margin: 0 auto; padding-left: 1rem; padding-right: 1rem; }
+      @media (min-width: 1024px) { .container { padding-left: 1.5rem; padding-right: 1.5rem; } }
+      
+      /* Font rendering optimization */
+      html { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    </style>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
@@ -40,15 +65,6 @@
     <meta name="twitter:title" content="OtakuTv - Your Ultimate Anime Streaming and Discovery Platform" />
     <meta name="twitter:description" content="Discover, watch, and track the best anime shows and movies. OtakuTv offers a vast library of subbed and dubbed anime content." />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    
-    <!-- Critical CSS inline (would be auto-injected in production) -->
-    <style>
-      /* Critical path CSS */
-      :root { --background: 224 19% 14%; --foreground: 210 40% 98%; }
-      body { background-color: hsl(224, 19%, 14%); color: hsl(210, 40%, 98%); margin: 0; }
-      .skeleton { background: linear-gradient(110deg, #2a2f3a 8%, #353b4a 18%, #2a2f3a 33%); border-radius: 5px; background-size: 200% 100%; animation: shine 1.5s linear infinite; }
-      @keyframes shine { to { background-position-x: -200%; } }
-    </style>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -68,9 +84,16 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <!-- Skeleton loader for progressive rendering -->
+    <div id="root">
+      <div style="height: 64px;"></div>
+      <div class="hero-placeholder"></div>
+    </div>
+    
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx" async></script>
+    
+    <!-- Main script with optimized loading -->
+    <script type="module" src="/src/main.tsx" defer></script>
   </body>
 </html>
