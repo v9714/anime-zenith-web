@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,10 +9,17 @@
     <meta name="author" content="OtakuTv" />
     <meta name="keywords" content="anime, streaming, watch anime, anime shows, anime movies, manga, otaku, anime episodes" />
   
+    <!-- Performance Optimizations -->
+    <meta http-equiv="Cache-Control" content="max-age=31536000" />
+    <meta http-equiv="Content-Encoding" content="gzip" />
+    <meta name="theme-color" content="#1A1F2C" />
+    <link rel="preconnect" href="https://cdn.myanimelist.net" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.myanimelist.net" />
+    
     <!-- Google Adsense -->
     <meta name="google-adsense-account" content="ca-pub-1482064518417083">
     
-    <!-- Fonts -->
+    <!-- Fonts - Preloaded -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,6 +40,15 @@
     <meta name="twitter:title" content="OtakuTv - Your Ultimate Anime Streaming and Discovery Platform" />
     <meta name="twitter:description" content="Discover, watch, and track the best anime shows and movies. OtakuTv offers a vast library of subbed and dubbed anime content." />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Critical CSS inline (would be auto-injected in production) -->
+    <style>
+      /* Critical path CSS */
+      :root { --background: 224 19% 14%; --foreground: 210 40% 98%; }
+      body { background-color: hsl(224, 19%, 14%); color: hsl(210, 40%, 98%); margin: 0; }
+      .skeleton { background: linear-gradient(110deg, #2a2f3a 8%, #353b4a 18%, #2a2f3a 33%); border-radius: 5px; background-size: 200% 100%; animation: shine 1.5s linear infinite; }
+      @keyframes shine { to { background-position-x: -200%; } }
+    </style>
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -54,6 +71,6 @@
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx" async></script>
   </body>
 </html>

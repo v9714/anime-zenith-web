@@ -1,53 +1,15 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { HeroSlider } from "@/components/anime/HeroSlider";
-import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
-import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 
-// const AdBanner = ({ className = "", label }: { className?: string; label?: string }) => {
-//   useEffect(() => {
-//     // Check if the AdSense script is already added
-//     const existingScript = document.querySelector(
-//       'script[src^="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
-//     );
+// Lazy-loaded components to reduce initial JavaScript payload
+const HeroSlider = lazy(() => import("@/components/anime/HeroSlider").then(mod => ({ default: mod.HeroSlider })));
+const AnimeCarousel = lazy(() => import("@/components/anime/AnimeCarousel").then(mod => ({ default: mod.AnimeCarousel })));
 
-//     if (!existingScript) {
-//       const script = document.createElement("script");
-//       script.src =
-//         "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9858886039044072";
-//       script.async = true;
-//       script.crossOrigin = "anonymous";
-//       document.head.appendChild(script);
-//     }
-
-//     // Try to push the ad
-//     try {
-//       // @ts-expect-error
-//       (window.adsbygoogle = window.adsbygoogle || []).push({});
-//     } catch (err) {
-//       console.error("Adsbygoogle push error:", err);
-//     }
-//   }, []);
-
-//   return (
-//     <div className={`relative ${className}`}>
-//       {label && <div className="text-xs text-muted-foreground text-center mb-1">Ad: {label}</div>}
-//       <ins
-//         className="adsbygoogle"
-//         style={{ display: "block" }}
-//         data-ad-client="ca-pub-9858886039044072"
-//         data-ad-slot="5125181623"
-//         data-ad-format="auto"
-//         data-full-width-responsive="true"
-//       ></ins>
-//     </div>
-//   );
-// };
-
-// Ad component placeholder (for Google AdSense)
+// Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
   <div className={`bg-muted/30 border border-dashed border-muted-foreground/20 rounded-md p-2 text-center text-xs text-muted-foreground ${className}`}>
     <div className="h-full w-full flex items-center justify-center">
@@ -67,6 +29,19 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Add compression meta tag for text resources
+    const metaCompress = document.createElement('meta');
+    metaCompress.name = 'Content-Encoding';
+    metaCompress.content = 'gzip';
+    document.head.appendChild(metaCompress);
+    
+    // Add cache control meta tag
+    const metaCache = document.createElement('meta');
+    metaCache.httpEquiv = 'Cache-Control';
+    metaCache.content = 'max-age=31536000';
+    document.head.appendChild(metaCache);
+    
+    // Use requestIdleCallback to defer non-critical operations
     const fetchData = async () => {
       try {
         const topResponse: AnimeResponse = await getTopAnime(1, 20);
@@ -76,13 +51,20 @@ export default function Home() {
         setFeaturedAnime(topResults.slice(0, 5));
         setTopAnime(topResults.slice(5, 15));
         
-        const trendingResponse: AnimeResponse = await getTopAnime(2, 15);
-        setTrendingAnime(trendingResponse.data);
-        
-        const seasonalResponse: AnimeResponse = await getSeasonalAnime();
-        setSeasonalAnime(seasonalResponse.data.slice(0, 15));
-        
-        setIsLoading(false);
+        // Defer less important data fetching
+        window.requestIdleCallback(() => {
+          Promise.all([
+            getTopAnime(2, 15),
+            getSeasonalAnime()
+          ]).then(([trendingResponse, seasonalResponse]) => {
+            setTrendingAnime(trendingResponse.data);
+            setSeasonalAnime(seasonalResponse.data.slice(0, 15));
+            setIsLoading(false);
+          }).catch(error => {
+            console.error('Error fetching secondary data:', error);
+            setIsLoading(false);
+          });
+        });
       } catch (error) {
         console.error('Error fetching data:', error);
         setIsLoading(false);
@@ -90,6 +72,12 @@ export default function Home() {
     };
 
     fetchData();
+    
+    // Cleanup function
+    return () => {
+      document.head.removeChild(metaCompress);
+      document.head.removeChild(metaCache);
+    };
   }, []);
 
   const handleSlideChange = (index: number) => {
@@ -99,10 +87,11 @@ export default function Home() {
     }
   };
 
+  // Render optimized skeleton with reduced size to minimize layout shifts
   const renderSkeleton = () => (
     <>
-      {/* Banner Skeleton */}
-      <div className="w-full h-[500px] bg-muted/30 animate-pulse"></div>
+      {/* Banner Skeleton - optimized for LCP */}
+      <div className="w-full h-[500px] bg-muted/30 animate-pulse" style={{ contain: 'layout paint' }}></div>
       
       {/* Carousel Skeletons */}
       <div className="container py-6">
@@ -132,22 +121,26 @@ export default function Home() {
             <meta itemProp="name" content="Otaku - Your Ultimate Anime Streaming Platform" />
           </div>
           
-          {/* Hero Slider */}
-          {featuredAnime.length > 0 && (
-            <HeroSlider 
-              animes={featuredAnime} 
-              onSlideChange={handleSlideChange}
-            />
-          )}
+          {/* Hero Slider - High priority content, optimized for LCP */}
+          <Suspense fallback={<div className="w-full h-[500px] bg-muted/30" />}>
+            {featuredAnime.length > 0 && (
+              <HeroSlider 
+                animes={featuredAnime} 
+                onSlideChange={handleSlideChange}
+              />
+            )}
+          </Suspense>
           
           {/* Top Anime Section */}
-          {topAnime.length > 0 && (
-            <AnimeCarousel 
-              title="Top Anime" 
-              animes={topAnime} 
-              link="/anime?sort=top" 
-            />
-          )}
+          <Suspense fallback={<div className="container py-6"><Skeleton className="h-8 w-48 mb-4" /></div>}>
+            {topAnime.length > 0 && (
+              <AnimeCarousel 
+                title="Top Anime" 
+                animes={topAnime} 
+                link="/anime?sort=top" 
+              />
+            )}
+          </Suspense>
           
           {/* Sidebar Ad and Content */}
           <div className="container py-6">
@@ -164,9 +157,10 @@ export default function Home() {
                           <img 
                             src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            // className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
-                             className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             loading="lazy"
+                            width="64"
+                            height="96"
+                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             style={{
                               background: "#1A1F2C",
                               objectFit: "cover"
@@ -197,9 +191,10 @@ export default function Home() {
                           <img 
                             src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
                             alt={anime.title}
-                            // className="w-28 h-40 sm:w-32 sm:h-48 object-cover rounded-lg shadow-2xl border-2 border-white/10"
-                             className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             loading="lazy"
+                            width="64" 
+                            height="96"
+                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
                             style={{
                               background: "#1A1F2C",
                               objectFit: "cover"
@@ -225,14 +220,16 @@ export default function Home() {
             </div>
           </div>
           
-          {/* More Recommended Anime */}
-          {seasonalAnime.length > 0 && (
-            <AnimeCarousel 
-              title="Seasonal Highlights" 
-              animes={seasonalAnime.slice(0, 10)} 
-              link="/seasonal" 
-            />
-          )}
+          {/* More Recommended Anime - Deferred loading */}
+          <Suspense fallback={<div className="container py-6"><Skeleton className="h-8 w-64 mb-4" /></div>}>
+            {seasonalAnime.length > 0 && (
+              <AnimeCarousel 
+                title="Seasonal Highlights" 
+                animes={seasonalAnime.slice(0, 10)} 
+                link="/seasonal" 
+              />
+            )}
+          </Suspense>
           
           {/* Bottom Banner Ad */}
           <div className="container py-6">
