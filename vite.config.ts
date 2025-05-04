@@ -10,10 +10,10 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     headers: {
-      // Add compression and caching headers in development for testing
+      // Remove content encoding headers in development to avoid decoding issues
       'Cache-Control': 'max-age=31536000',
       'X-Content-Type-Options': 'nosniff',
-      'Content-Encoding': 'gzip'
+      // Remove 'Content-Encoding' header which was causing the ERR_CONTENT_DECODING_FAILED error
     },
   },
   plugins: [
@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => ({
       }
     },
   },
-  // Optimize asset compression
+  // Optimize asset compression - disable built-in compression to avoid encoding issues
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
   }
