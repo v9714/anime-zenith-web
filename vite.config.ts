@@ -27,16 +27,16 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Enable minification and code splitting
-    minify: "terser",
+    // Configure different minification options based on mode
+    minify: mode === 'production' ? "terser" : false,
     cssCodeSplit: true,
-    // Enable terser compression options
-    terserOptions: {
+    // Only use terser options in production
+    terserOptions: mode === 'production' ? {
       compress: {
         drop_console: true,
         drop_debugger: true,
       },
-    },
+    } : undefined,
     // Optimize asset loading
     assetsInlineLimit: 4096, // 4KB - inline small assets
     rollupOptions: {
