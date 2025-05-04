@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 
 type Toast = {
@@ -57,7 +58,6 @@ const toastReducer = (state: ToasterState, action: ActionType): ToasterState => 
           t.id === action.toastId || action.toastId === undefined
             ? {
               ...t,
-              open: false,
             }
             : t
         ),
@@ -96,7 +96,6 @@ function toast({ ...props }: Toast) {
     toast: {
       ...props,
       id,
-      open: true,
       onOpenChange: (open: boolean) => {
         if (!open) dismiss();
       },
