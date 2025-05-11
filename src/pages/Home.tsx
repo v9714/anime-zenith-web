@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useState, lazy, Suspense } from "react";
 import { Layout } from "@/components/layout/Layout";
@@ -97,6 +98,17 @@ export default function Home() {
     }
   };
 
+  // Improved skeleton with consistent dimensions
+  const renderListItemSkeleton = () => (
+    <div className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 shadow-lg">
+      <Skeleton className="w-16 h-24 rounded-md flex-shrink-0" />
+      <div className="flex-1">
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-3 w-2/3" />
+      </div>
+    </div>
+  );
+
   // Optimized skeleton with improved layout stability
   const renderSkeleton = () => (
     <>
@@ -177,10 +189,10 @@ export default function Home() {
               {/* Main Content */}
               <div className="md:w-3/4">
                 {/* Trending Anime */}
-                {trendingAnime.length > 0 && (
+                {trendingAnime.length > 0 ? (
                   <div className="mb-8">
                     <h2 className="text-xl font-heading font-bold mb-4">Trending Now</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {trendingAnime.slice(0, 8).map((anime) => (
                         <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <LazyImage 
@@ -188,9 +200,9 @@ export default function Home() {
                             alt={anime.title}
                             width="64"
                             height="96"
-                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
+                            className="w-16 h-24 object-cover rounded-md flex-shrink-0"
                           />
-                          <div>
+                          <div className="flex-1">
                             <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
                             <p className="text-xs text-muted-foreground mt-1">
                               {anime.type} • {anime.score ? `${anime.score.toFixed(1)}★` : 'N/A'}
@@ -200,16 +212,25 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
+                ) : (
+                  <div className="mb-8">
+                    <h2 className="text-xl font-heading font-bold mb-4">Trending Now</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {Array(8).fill(0).map((_, i) => (
+                        <div key={i}>{renderListItemSkeleton()}</div>
+                      ))}
+                    </div>
+                  </div>
                 )}
                 
                 {/* In-content Ad */}
                 <AdBanner className="h-[250px] mb-8" slot="in-content" />
                 
                 {/* Seasonal Anime */}
-                {seasonalAnime.length > 0 && (
+                {seasonalAnime.length > 0 ? (
                   <div>
                     <h2 className="text-xl font-heading font-bold mb-4">This Season</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {seasonalAnime.slice(0, 8).map((anime) => (
                         <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <LazyImage 
@@ -217,15 +238,24 @@ export default function Home() {
                             alt={anime.title}
                             width="64"
                             height="96"
-                            className="w-16 h-24 object-cover rounded-md transition-all duration-200"
+                            className="w-16 h-24 object-cover rounded-md flex-shrink-0"
                           />
-                          <div>
+                          <div className="flex-1">
                             <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
                             <p className="text-xs text-muted-foreground mt-1">
                               {anime.type} • {anime.score ? `${anime.score.toFixed(1)}★` : 'N/A'}
                             </p>
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h2 className="text-xl font-heading font-bold mb-4">This Season</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {Array(8).fill(0).map((_, i) => (
+                        <div key={i}>{renderListItemSkeleton()}</div>
                       ))}
                     </div>
                   </div>
