@@ -26,6 +26,7 @@ export function LazyImage({
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const [imageSrc, setImageSrc] = useState(src);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   
   // Reset state if src changes
   useEffect(() => {
@@ -34,6 +35,15 @@ export function LazyImage({
     setHasError(false);
   }, [src]);
   
+  // Clean up observer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+  
   useEffect(() => {
     if (priority) {
       setIsVisible(true);
@@ -41,35 +51,35 @@ export function LazyImage({
     }
     
     // Use intersection observer for lazy loading
-    let observer: IntersectionObserver;
+    if (typeof window === 'undefined') return;
     
     try {
-      observer = new IntersectionObserver((entries) => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+      
+      observerRef.current = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             setIsVisible(true);
-            observer.disconnect();
+            if (observerRef.current) {
+              observerRef.current.disconnect();
+            }
           }
         });
       }, {
         rootMargin: '200px' // Start loading images 200px before they enter the viewport
       });
       
-      if (imgRef.current) {
-        observer.observe(imgRef.current);
+      if (imgRef.current && observerRef.current) {
+        observerRef.current.observe(imgRef.current);
       }
     } catch (error) {
       // Fallback for browsers that don't support IntersectionObserver
       console.error("IntersectionObserver error:", error);
       setIsVisible(true);
     }
-    
-    return () => {
-      if (observer) {
-        observer.disconnect();
-      }
-    };
-  }, [priority]);
+  }, [priority, imgRef.current]);
   
   useEffect(() => {
     if (isVisible && imgRef.current) {

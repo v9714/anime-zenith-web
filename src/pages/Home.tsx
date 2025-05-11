@@ -1,12 +1,10 @@
-
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LazyImage } from "@/components/layout/LazyImage";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { preloadCriticalImages } from "@/lib/image-optimizer";
-import { HeroSlider } from "@/components/anime/HeroSlider";
+import { HeroSlider } from "@/components/anime/HeroSlider";  // Use regular import instead of dynamic import
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 
 // Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
