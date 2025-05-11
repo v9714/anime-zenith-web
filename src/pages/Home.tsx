@@ -1,15 +1,13 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LazyImage } from "@/components/layout/LazyImage";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { preloadCriticalImages } from "@/lib/image-optimizer";
-
-// Lazy-loaded components to reduce initial JavaScript payload
-const HeroSlider = lazy(() => import("@/components/anime/HeroSlider").then(mod => ({ default: mod.HeroSlider })));
-const AnimeCarousel = lazy(() => import("@/components/anime/AnimeCarousel").then(mod => ({ default: mod.AnimeCarousel })));
+import { HeroSlider } from "@/components/anime/HeroSlider";
+import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 
 // Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -51,23 +49,7 @@ export default function Home() {
         }
         
         // Defer less important data fetching
-        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-          // @ts-ignore
-          window.requestIdleCallback(() => {
-            Promise.all([
-              getTopAnime(2, 15),
-              getSeasonalAnime()
-            ]).then(([trendingResponse, seasonalResponse]) => {
-              if (trendingResponse.data) setTrendingAnime(trendingResponse.data);
-              if (seasonalResponse.data) setSeasonalAnime(seasonalResponse.data.slice(0, 15));
-              setIsLoading(false);
-            }).catch(error => {
-              console.error('Error fetching secondary data:', error);
-              setIsLoading(false);
-            });
-          }, { timeout: 2000 });
-        } else {
-          // Fallback for browsers without requestIdleCallback
+        if (typeof window !== 'undefined') {
           setTimeout(async () => {
             Promise.all([
               getTopAnime(2, 15),
@@ -153,35 +135,21 @@ export default function Home() {
           </div>
           
           {/* Hero Slider - High priority content, optimized for LCP */}
-          <Suspense fallback={
-            <div 
-              className="w-full bg-muted/30" 
-              style={{ height: "500px" }}
-              aria-label="Loading hero content"
+          {featuredAnime.length > 0 && (
+            <HeroSlider 
+              animes={featuredAnime} 
+              onSlideChange={handleSlideChange}
             />
-          }>
-            {featuredAnime.length > 0 && (
-              <HeroSlider 
-                animes={featuredAnime} 
-                onSlideChange={handleSlideChange}
-              />
-            )}
-          </Suspense>
+          )}
           
           {/* Top Anime Section */}
-          <Suspense fallback={
-            <div className="container py-6">
-              <Skeleton className="h-8 w-48 mb-4" />
-            </div>
-          }>
-            {topAnime.length > 0 && (
-              <AnimeCarousel 
-                title="Top Anime" 
-                animes={topAnime} 
-                link="/anime?sort=top" 
-              />
-            )}
-          </Suspense>
+          {topAnime.length > 0 && (
+            <AnimeCarousel 
+              title="Top Anime" 
+              animes={topAnime} 
+              link="/anime?sort=top" 
+            />
+          )}
           
           {/* Sidebar Ad and Content */}
           <div className="container py-6">
@@ -270,15 +238,13 @@ export default function Home() {
           </div>
           
           {/* More Recommended Anime - Deferred loading */}
-          <Suspense fallback={<div className="container py-6"><Skeleton className="h-8 w-64 mb-4" /></div>}>
-            {seasonalAnime.length > 0 && (
-              <AnimeCarousel 
-                title="Seasonal Highlights" 
-                animes={seasonalAnime.slice(0, 10)} 
-                link="/seasonal" 
-              />
-            )}
-          </Suspense>
+          {seasonalAnime.length > 0 && (
+            <AnimeCarousel 
+              title="Seasonal Highlights" 
+              animes={seasonalAnime.slice(0, 10)} 
+              link="/seasonal" 
+            />
+          )}
           
           {/* Bottom Banner Ad */}
           <div className="container py-6">

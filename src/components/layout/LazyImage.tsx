@@ -25,6 +25,14 @@ export function LazyImage({
   const [isVisible, setIsVisible] = useState(priority);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const [imageSrc, setImageSrc] = useState(src);
+  
+  // Reset state if src changes
+  useEffect(() => {
+    setImageSrc(src);
+    setIsLoaded(false);
+    setHasError(false);
+  }, [src]);
   
   useEffect(() => {
     if (priority) {
@@ -32,32 +40,47 @@ export function LazyImage({
       return;
     }
     
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      });
-    }, {
-      rootMargin: '200px' // Start loading images 200px before they enter the viewport
-    });
+    // Use intersection observer for lazy loading
+    let observer: IntersectionObserver;
     
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    try {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      }, {
+        rootMargin: '200px' // Start loading images 200px before they enter the viewport
+      });
+      
+      if (imgRef.current) {
+        observer.observe(imgRef.current);
+      }
+    } catch (error) {
+      // Fallback for browsers that don't support IntersectionObserver
+      console.error("IntersectionObserver error:", error);
+      setIsVisible(true);
     }
     
     return () => {
-      observer.disconnect();
+      if (observer) {
+        observer.disconnect();
+      }
     };
   }, [priority]);
   
   useEffect(() => {
     if (isVisible && imgRef.current) {
       // Apply srcset for responsive images
-      addSrcSetToImage(imgRef.current, src);
+      try {
+        addSrcSetToImage(imgRef.current, imageSrc);
+      } catch (error) {
+        console.error("Error applying srcset:", error);
+      }
     }
-  }, [isVisible, src]);
+  }, [isVisible, imageSrc]);
   
   const handleLoad = () => {
     setIsLoaded(true);
@@ -66,6 +89,7 @@ export function LazyImage({
   const handleError = () => {
     setHasError(true);
     setIsLoaded(true);
+    console.warn(`Failed to load image: ${imageSrc}`);
   };
 
   // Calculate explicit dimensions for better CLS
@@ -82,6 +106,7 @@ export function LazyImage({
         width: imageWidth,
         height: imageHeight,
       }}
+      ref={!isVisible ? imgRef : undefined}
     >
       {/* Placeholder/skeleton */}
       {!isLoaded && (
@@ -90,8 +115,8 @@ export function LazyImage({
       
       {isVisible && !hasError && (
         <img
-          ref={imgRef}
-          src={src}
+          ref={isVisible ? imgRef : undefined}
+          src={imageSrc}
           alt={alt}
           width={typeof width === 'number' ? width : undefined}
           height={typeof height === 'number' ? height : undefined}

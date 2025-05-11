@@ -1,4 +1,6 @@
 
+"use client";
+
 import * as React from "react";
 
 type Theme = "dark" | "light" | "system";
@@ -27,17 +29,21 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>(
-    () => {
-      if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-        return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
-      }
-      return defaultTheme;
-    }
-  );
-
+  const [theme, setTheme] = React.useState<Theme>(defaultTheme);
+  
+  // Initialize theme from localStorage when component mounts
   React.useEffect(() => {
-    const root = window.document.documentElement;
+    const savedTheme = localStorage?.getItem(storageKey) as Theme | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, [storageKey]);
+
+  // Apply theme to document
+  React.useEffect(() => {
+    const root = window?.document?.documentElement;
+    
+    if (!root) return;
     
     root.classList.remove("light", "dark");
     
@@ -54,7 +60,7 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  const value = {
+  const value = React.useMemo(() => ({
     theme,
     setTheme: (theme: Theme) => {
       if (typeof localStorage !== "undefined") {
@@ -62,7 +68,7 @@ export function ThemeProvider({
       }
       setTheme(theme);
     },
-  };
+  }), [theme, storageKey]);
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>

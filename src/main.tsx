@@ -6,18 +6,19 @@ import App from './App.tsx';
 import './index.css';
 import { optimizeLCPImages } from './lib/image-optimizer';
 
-// Error handling for script loading issues
-window.addEventListener('error', (event) => {
-  if (event.target && (event.target as HTMLElement).tagName === 'SCRIPT') {
-    console.warn('Script loading error. Attempting recovery...');
-    
-    // Try to recover by manually loading critical resources
-    const failedSrc = (event.target as HTMLScriptElement).src;
-    if (failedSrc) {
-      console.info('Failed to load script:', failedSrc);
-    }
+// Create a proper error handler for the application
+const handleError = (event: ErrorEvent | PromiseRejectionEvent) => {
+  console.error('Application error:', event);
+  
+  // For resource loading errors like script/module failures
+  if (event instanceof ErrorEvent && event.target && (event.target as HTMLElement).tagName === 'SCRIPT') {
+    console.warn('Script loading error:', (event.target as HTMLScriptElement).src);
   }
-});
+};
+
+// Register global error handlers
+window.addEventListener('error', handleError);
+window.addEventListener('unhandledrejection', handleError);
 
 // Optimize LCP images when available
 optimizeLCPImages();
@@ -28,7 +29,7 @@ if (skeletonRoot) {
   skeletonRoot.remove();
 }
 
-// Function to initialize app with retry logic
+// Function to initialize app with proper error handling
 const initializeApp = () => {
   try {
     const rootElement = document.getElementById("root");
@@ -47,11 +48,16 @@ const initializeApp = () => {
   } catch (error) {
     console.error('Error initializing application:', error);
     
-    // Retry rendering after a delay if initial render fails
-    setTimeout(() => {
-      console.info('Retrying application initialization...');
-      initializeApp();
-    }, 1000);
+    // Create fallback UI in case of critical rendering errors
+    const rootElement = document.getElementById("root");
+    if (rootElement) {
+      rootElement.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+          <h2>Something went wrong</h2>
+          <p>The application failed to initialize. Please try refreshing the page.</p>
+        </div>
+      `;
+    }
   }
 };
 
