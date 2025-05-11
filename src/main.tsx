@@ -1,4 +1,5 @@
 
+import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from './lib/ThemeProvider';
 import App from './App.tsx';
@@ -30,10 +31,18 @@ if (skeletonRoot) {
 // Function to initialize app with retry logic
 const initializeApp = () => {
   try {
-    createRoot(document.getElementById("root")!).render(
-      <ThemeProvider defaultTheme="dark">
-        <App />
-      </ThemeProvider>
+    const rootElement = document.getElementById("root");
+    if (!rootElement) {
+      throw new Error("Root element not found");
+    }
+    
+    const root = createRoot(rootElement);
+    root.render(
+      <React.StrictMode>
+        <ThemeProvider defaultTheme="dark">
+          <App />
+        </ThemeProvider>
+      </React.StrictMode>
     );
   } catch (error) {
     console.error('Error initializing application:', error);
