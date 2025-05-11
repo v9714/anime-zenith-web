@@ -1,13 +1,12 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
+import { Play, ChevronRight, Pause } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Anime } from "@/services/api";
 import { cn } from "@/lib/utils";
-import { Slider } from "@/components/ui/slider";
 
-// Metadata item with simpler implementation
+// Simplified metadata item
 function MetaItem({ label, value }: { label: string, value?: string | number }) {
   if (!value) return null;
   return (
@@ -25,14 +24,44 @@ interface HeroSliderProps {
 
 export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const autoplayTimerRef = useRef<number | null>(null);
   
-  // Simplified slide change handler
-  const handleSlideChange = useCallback((value: number[]) => {
-    const newIndex = value[0];
+  // Auto-advance slides
+  useEffect(() => {
+    if (!isPlaying) return;
+    
+    // Clear any existing timer
+    if (autoplayTimerRef.current) {
+      window.clearTimeout(autoplayTimerRef.current);
+    }
+    
+    // Set new timer
+    autoplayTimerRef.current = window.setTimeout(() => {
+      const nextIndex = (activeIndex + 1) % animes.length;
+      setActiveIndex(nextIndex);
+      onSlideChange?.(nextIndex);
+    }, 5000); // 5 second interval
+    
+    // Cleanup
+    return () => {
+      if (autoplayTimerRef.current) {
+        window.clearTimeout(autoplayTimerRef.current);
+      }
+    };
+  }, [activeIndex, animes.length, isPlaying, onSlideChange]);
+  
+  // Handle slide change
+  const handleSlideChange = useCallback((newIndex: number) => {
     setActiveIndex(newIndex);
     onSlideChange?.(newIndex);
   }, [onSlideChange]);
-
+  
+  // Toggle autoplay
+  const toggleAutoplay = useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
+  
   const currentAnime = animes[activeIndex];
 
   // Get metadata for display
@@ -46,13 +75,13 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full h-auto min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-stretch overflow-hidden bg-black"
+      className="relative w-full h-auto min-h-[450px] sm:min-h-[500px] md:min-h-[550px] flex items-stretch overflow-hidden bg-black"
     >
       {/* Background with optimized gradient */}
       <div className="absolute inset-0 z-0">
-        {/* Background image with simpler styling */}
+        {/* Background image with improved opacity */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
           style={{
             backgroundImage: currentAnime
               ? `url(${currentAnime.images?.webp?.large_image_url || currentAnime.images?.jpg?.large_image_url})`
@@ -68,7 +97,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
         {/* Main content area with improved mobile layout */}
         <div className="container relative z-10 flex flex-col md:flex-row items-start md:items-center h-full py-4 md:py-8">
           {/* LEFT: anime info panel */}
-          <div className="w-full md:w-3/5 flex flex-col justify-center">
+          <div className="w-full md:w-1/2 flex flex-col justify-center">
             <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary mb-2">
               #{activeIndex + 1} Spotlight
             </span>
@@ -102,42 +131,66 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
             </div>
           </div>
           
-          {/* RIGHT: anime image with simplified layout */}
-          <div className="hidden md:flex w-2/5 justify-center items-center">
+          {/* RIGHT: enlarged anime image with improved styling */}
+          <div className="hidden md:flex w-1/2 justify-center items-center">
             <img
               src={currentAnime?.images?.webp?.large_image_url || currentAnime?.images?.jpg?.large_image_url}
               alt={currentAnime?.title}
-              className="object-cover rounded-xl shadow-lg h-64 w-auto max-w-full"
+              className="object-cover rounded-xl shadow-lg h-80 w-auto max-w-full transform transition-all duration-300"
+              loading="eager"
             />
           </div>
         </div>
         
-        {/* Slider control - simplified implementation */}
+        {/* Slide indicators and control buttons - simplified implementation */}
         <div className="container relative z-20 py-4">
-          <div className="flex flex-col gap-2">
-            <Slider
-              value={[activeIndex]}
-              max={animes.length - 1}
-              step={1}
-              onValueChange={handleSlideChange}
-              className="w-full max-w-md mx-auto"
-            />
+          <div className="flex justify-between items-center">
+            {/* Slide indicators in the center */}
+            <div className="flex-1">
+              <div className="flex justify-center gap-2 mt-1">
+                {animes.map((_, index) => (
+                  <button
+                    key={index}
+                    className={cn(
+                      "w-2 h-2 rounded-full transition-all",
+                      activeIndex === index 
+                        ? "bg-anime-secondary w-4" 
+                        : "bg-white/30 hover:bg-white/60"
+                    )}
+                    onClick={() => handleSlideChange(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
             
-            {/* Slide indicators */}
-            <div className="flex justify-center gap-2 mt-1">
-              {animes.map((_, index) => (
-                <button
-                  key={index}
-                  className={cn(
-                    "w-2 h-2 rounded-full transition-all",
-                    activeIndex === index 
-                      ? "bg-anime-secondary" 
-                      : "bg-white/30 hover:bg-white/60"
-                  )}
-                  onClick={() => handleSlideChange([index])}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
+            {/* Autoplay control button in right corner */}
+            <div className="absolute bottom-4 right-4 z-30">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleAutoplay}
+                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white"
+                title={isPlaying ? "Pause slideshow" : "Play slideshow"}
+                aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSlideChange((activeIndex + 1) % animes.length)}
+                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white ml-2"
+                title="Next slide"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
