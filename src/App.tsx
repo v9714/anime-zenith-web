@@ -37,14 +37,14 @@ const queryClient = new QueryClient({
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <BrowserRouter>
         <ThemeProvider defaultTheme="dark">
-          {/* Toaster components should be outside TooltipProvider */}
-          <Toaster />
-          <Sonner />
-          
-          <BrowserRouter>
-            {/* TooltipProvider wrapped around the routes only */}
+          <AuthProvider>
+            {/* Toaster components */}
+            <Toaster />
+            <Sonner />
+            
+            {/* Place TooltipProvider at a level where it won't cause hook problems */}
             <TooltipProvider>
               <Routes>
                 {/* Main Routes */}
@@ -66,9 +66,9 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </TooltipProvider>
-          </BrowserRouter>
+          </AuthProvider>
         </ThemeProvider>
-      </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -128,7 +127,8 @@ export default function AnimeList() {
                     <SelectValue placeholder="All Genres" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Genres</SelectItem>
+                    {/* Fix: Change empty string value to "all" */}
+                    <SelectItem value="all">All Genres</SelectItem>
                     {genres.map((g) => (
                       <SelectItem key={g.mal_id} value={g.mal_id.toString()}>
                         {g.name}

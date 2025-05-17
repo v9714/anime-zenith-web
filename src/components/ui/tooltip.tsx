@@ -4,8 +4,10 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
 
-// Wrap TooltipProvider in a functional component to ensure hooks are called properly
+// Fix: Ensure TooltipProvider properly handles React context
 const TooltipProvider = ({ children, ...props }: TooltipPrimitive.TooltipProviderProps) => {
+  // Use a proper React component instead of directly exporting the primitive
+  // This ensures that hooks are properly initialized within the component
   return <TooltipPrimitive.Provider {...props}>{children}</TooltipPrimitive.Provider>
 }
 
