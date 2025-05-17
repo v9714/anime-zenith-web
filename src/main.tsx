@@ -1,7 +1,6 @@
 
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ThemeProvider } from './lib/ThemeProvider';
 import App from './App.tsx';
 import './index.css';
 import { optimizeLCPImages } from './lib/image-optimizer';
@@ -40,9 +39,7 @@ const initializeApp = () => {
     const root = createRoot(rootElement);
     root.render(
       <React.StrictMode>
-        <ThemeProvider defaultTheme="dark">
-          <App />
-        </ThemeProvider>
+        <App />
       </React.StrictMode>
     );
   } catch (error) {
