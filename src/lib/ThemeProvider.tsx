@@ -29,23 +29,18 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
-  // Use React.useState instead of useState directly to avoid null reference
   const [theme, setTheme] = React.useState<Theme>(defaultTheme);
   
   // Initialize theme from localStorage when component mounts
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage?.getItem(storageKey) as Theme | null;
-      if (savedTheme) {
-        setTheme(savedTheme);
-      }
+    const savedTheme = localStorage?.getItem(storageKey) as Theme | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
     }
   }, [storageKey]);
 
   // Apply theme to document
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     const root = window?.document?.documentElement;
     
     if (!root) return;
@@ -68,9 +63,7 @@ export function ThemeProvider({
   const value = React.useMemo(() => ({
     theme,
     setTheme: (theme: Theme) => {
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem(storageKey, theme);
-      }
+      localStorage?.setItem(storageKey, theme);
       setTheme(theme);
     },
   }), [theme, storageKey]);

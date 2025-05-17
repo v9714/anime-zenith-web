@@ -122,11 +122,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Log in the new user
       setCurrentUser(newUser);
       toast({
+        id: String(Date.now()),
         title: "Account created!",
         description: "Welcome to Otaku Anime!"
       });
     } catch (error: any) {
       toast({
+        id: String(Date.now()),
         title: "Sign up failed",
         description: error.message || "There was a problem creating your account"
       });
@@ -159,11 +161,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setCurrentUser(userData);
       toast({
+        id: String(Date.now()),
         title: "Signed in successfully",
         description: `Welcome back, ${userData.displayName}!`
       });
     } catch (error: any) {
       toast({
+        id: String(Date.now()),
         title: "Sign in failed",
         description: error.message || "Invalid email or password"
       });
@@ -176,6 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCurrentUser(null);
     localStorage.removeItem("otaku-user");
     toast({
+      id: String(Date.now()),
       title: "Signed out",
       description: "You've been signed out successfully"
     });
@@ -240,6 +245,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           (item) => !(item.id === content.id && item.type === content.type)
         );
         toast({
+          id: String(Date.now()),
           title: "Removed from favorites",
           description: `${content.title} has been removed from your favorites`
         });
@@ -247,6 +253,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Add to liked content
         newLikedContent = [...prevUser.likedContent, content];
         toast({
+          id: String(Date.now()),
           title: "Added to favorites",
           description: `${content.title} has been added to your favorites`
         });

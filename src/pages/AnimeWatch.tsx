@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAnimeById } from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 // Dummy data
 const episodes = [
@@ -207,6 +207,7 @@ function AnimeInfoCard({ anime, animeId }: { anime: AnimeData; animeId: number }
   const handleLikeToggle = () => {
     if (!currentUser) {
       toast({
+        id: String(Date.now()),
         title: "Sign in required",
         description: "Please sign in to save to favorites"
       });
@@ -328,14 +329,8 @@ function CommentsSection() {
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg shadow-md">
                 {c.avatar}
               </div>
-              <div className="flex-1 pt-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-sm">{c.user}</span>
-                  <span className="text-xs text-muted-foreground">{c.ago}</span>
-                  {c.isPremium && (
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-black text-[10px]">Premium</Badge>
-                  )}
-                </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <h4 className="font-medium text-sm line-clamp-2 mb-1">{c.user}</h4>
                 <div className="text-sm mb-2">{c.content}</div>
                 <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground">
@@ -386,13 +381,11 @@ function MostPopularSidebar() {
                 </div>
                 
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <h4 className="font-medium text-sm line-clamp-2 mb-1">{a.title}</h4>
-                  <div className="text-xs text-muted-foreground mb-1.5">Episodes: {a.episodes}</div>
-                  <div className="flex items-center">
-                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs bg-primary/20 text-primary hover:bg-primary/30 rounded-full">
-                      <Play className="h-3 w-3 mr-1" /> Watch
-                    </Button>
-                  </div>
+                  <h4 className="font-medium text-sm line-clamp-1 mb-1">{a.title}</h4>
+                  <div className="text-xs text-muted-foreground">Episodes: {a.episodes}</div>
+                  <Button size="sm" className="w-full mt-2 bg-primary/90 hover:bg-primary">
+                    <Play className="h-3 w-3 mr-1" /> Watch
+                  </Button>
                 </div>
               </div>
             ))}
