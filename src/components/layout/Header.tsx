@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, Home, Film, Video, BookOpen, Mail } from "lucide-react";
+import { Search, Menu, Home, Film, Video, BookOpen, Mail, User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

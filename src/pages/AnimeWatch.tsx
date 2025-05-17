@@ -201,14 +201,14 @@ function EpisodeList({ episodes, active = 0 }: { episodes: string[]; active?: nu
 
 function AnimeInfoCard({ anime, animeId }: { anime: AnimeData; animeId: number }) {
   const { currentUser, toggleLikedContent, isContentLiked } = useAuth();
+  const { toast } = useToast();
   const isLiked = currentUser ? isContentLiked(animeId, "anime") : false;
   
   const handleLikeToggle = () => {
     if (!currentUser) {
       toast({
         title: "Sign in required",
-        description: "Please sign in to save to favorites",
-        variant: "default"
+        description: "Please sign in to save to favorites"
       });
       return;
     }

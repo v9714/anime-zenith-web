@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 // Define user types and interfaces
 export interface UserData {
@@ -75,6 +75,7 @@ const MOCK_USERS = [
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   // Check for existing user session on mount
   useEffect(() => {
@@ -122,13 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(newUser);
       toast({
         title: "Account created!",
-        description: "Welcome to Otaku Anime!",
+        description: "Welcome to Otaku Anime!"
       });
     } catch (error: any) {
       toast({
         title: "Sign up failed",
-        description: error.message || "There was a problem creating your account",
-        variant: "destructive",
+        description: error.message || "There was a problem creating your account"
       });
     } finally {
       setIsLoading(false);
@@ -160,13 +160,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(userData);
       toast({
         title: "Signed in successfully",
-        description: `Welcome back, ${userData.displayName}!`,
+        description: `Welcome back, ${userData.displayName}!`
       });
     } catch (error: any) {
       toast({
         title: "Sign in failed",
-        description: error.message || "Invalid email or password",
-        variant: "destructive",
+        description: error.message || "Invalid email or password"
       });
     } finally {
       setIsLoading(false);
@@ -178,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("otaku-user");
     toast({
       title: "Signed out",
-      description: "You've been signed out successfully",
+      description: "You've been signed out successfully"
     });
   };
 
@@ -242,14 +241,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
         toast({
           title: "Removed from favorites",
-          description: `${content.title} has been removed from your favorites`,
+          description: `${content.title} has been removed from your favorites`
         });
       } else {
         // Add to liked content
         newLikedContent = [...prevUser.likedContent, content];
         toast({
           title: "Added to favorites",
-          description: `${content.title} has been added to your favorites`,
+          description: `${content.title} has been added to your favorites`
         });
       }
       
