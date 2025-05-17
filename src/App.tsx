@@ -37,15 +37,14 @@ const queryClient = new QueryClient({
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider defaultTheme="dark">
-          <AuthProvider>
-            {/* Toaster components */}
-            <Toaster />
-            <Sonner />
-            
-            {/* Place TooltipProvider at a level where it won't cause hook problems */}
-            <TooltipProvider>
+      <TooltipProvider>
+        <BrowserRouter>
+          <ThemeProvider defaultTheme="dark">
+            <AuthProvider>
+              {/* Toaster components */}
+              <Toaster />
+              <Sonner />
+              
               <Routes>
                 {/* Main Routes */}
                 <Route path="/" element={<Home />} />
@@ -65,10 +64,10 @@ const App = () => {
                 {/* Catch-all Route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </TooltipProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </BrowserRouter>
+            </AuthProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };
