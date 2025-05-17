@@ -1,5 +1,5 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Play, Info, Star, Users, MessageSquare, Heart, Plus, Share, ThumbsUp, ThumbsDown, Volume, List } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAnimeById } from "@/services/api";
+import { toast } from "@/hooks/use-toast";
 
 // Dummy data
 const episodes = [
@@ -196,7 +199,28 @@ function EpisodeList({ episodes, active = 0 }: { episodes: string[]; active?: nu
   );
 }
 
-function AnimeInfoCard({ anime }: { anime: AnimeData }) {
+function AnimeInfoCard({ anime, animeId }: { anime: AnimeData; animeId: number }) {
+  const { currentUser, toggleLikedContent, isContentLiked } = useAuth();
+  const isLiked = currentUser ? isContentLiked(animeId, "anime") : false;
+  
+  const handleLikeToggle = () => {
+    if (!currentUser) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save to favorites",
+        variant: "default"
+      });
+      return;
+    }
+    
+    toggleLikedContent({
+      id: animeId,
+      type: "anime",
+      title: anime.title,
+      imageUrl: "https://cdn.myanimelist.net/images/anime/13/56139.jpg" // Replace with actual image URL
+    });
+  };
+  
   return (
     <Card className="bg-card/90 w-full shadow-xl border-border/50">
       <CardContent className="p-4">
@@ -248,15 +272,26 @@ function AnimeInfoCard({ anime }: { anime: AnimeData }) {
           <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90">
             <Play className="h-4 w-4 mr-1" /> Watch Now
           </Button>
-          <Button variant="outline" className="w-full border-primary/30 hover:bg-primary/10">
-            <Plus className="h-4 w-4 mr-1" /> Add to List
+          <Button 
+            variant="outline" 
+            className={`w-full ${isLiked ? 'bg-primary/10 border-primary/30' : 'border-primary/30 hover:bg-primary/10'}`}
+            onClick={handleLikeToggle}
+          >
+            <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} /> 
+            {isLiked ? 'Saved' : 'Add to List'}
           </Button>
         </div>
         
         {/* Extra options */}
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-            <Heart className="h-4 w-4 mr-1" /> Favorite
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`${isLiked ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={handleLikeToggle}
+          >
+            <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} /> 
+            {isLiked ? 'Favorited' : 'Favorite'}
           </Button>
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
             <Share className="h-4 w-4 mr-1" /> Share
@@ -422,6 +457,28 @@ function VideoControls() {
 }
 
 export default function AnimeWatch() {
+  const { id } = useParams<{ id: string }>();
+  const animeId = parseInt(id || "0");
+  const { updateWatchHistory } = useAuth();
+  const navigate = useNavigate();
+  
+  // Record watch history when component mounts
+  useEffect(() => {
+    if (!animeId) {
+      navigate("/");
+      return;
+    }
+    
+    updateWatchHistory({
+      animeId: animeId,
+      title: anime.title,
+      imageUrl: "https://cdn.myanimelist.net/images/anime/13/56139.jpg", // Replace with actual image URL
+      episodeNumber: 5 // Currently hardcoded, should be dynamic in a real app
+    });
+  }, [animeId, updateWatchHistory, navigate]);
+  
+  if (!animeId) return null;
+  
   return (
     <Layout>
       <div className="container max-w-[1600px] px-2 md:px-4 pt-4 pb-8 animate-fade-in">
@@ -440,7 +497,7 @@ export default function AnimeWatch() {
           
           {/* Anime Info Card (right) */}
           <div className="order-3 w-full lg:w-[260px] xl:w-[300px]">
-            <AnimeInfoCard anime={anime} />
+            <AnimeInfoCard anime={anime} animeId={animeId} />
           </div>
           
           {/* Popular Sidebar (far right, hidden below xl) */}

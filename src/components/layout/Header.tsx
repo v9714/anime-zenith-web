@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SITE_NAME, ROUTES } from "@/utils/constants";
+import { UserAuthButton } from "@/components/auth/UserAuthButton";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -72,7 +73,9 @@ export function Header() {
               </Link>
             ))}
           </nav>
+        </div>
 
+        <div className="flex items-center gap-2">
           <div className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-64' : 'w-10'} transition-all duration-300`}>
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="w-full">
@@ -96,6 +99,8 @@ export function Header() {
           </div>
           
           <ThemeToggle />
+          
+          <UserAuthButton />
 
           <Sheet>
             <SheetTrigger asChild>
@@ -138,6 +143,13 @@ export function Header() {
                       <span>{item.name}</span>
                     </Link>
                   ))}
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent hover:bg-opacity-10"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>My Profile</span>
+                  </Link>
                 </nav>
               </div>
             </SheetContent>
