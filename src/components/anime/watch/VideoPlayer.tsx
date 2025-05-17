@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Play, Pause, Volume, Languages, List, Share, Heart, 
-  Bookmark, Subtitles, Headphones, RotateCcw 
+  Bookmark, Subtitles, Headphones, RotateCcw, Maximize, Minimize 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +54,9 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   // Language and subtitle options
@@ -98,6 +100,18 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
     
     return () => clearInterval(saveInterval);
   }, [currentUser, animeId, episodeNumber]);
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement !== null);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
   
   // Save current playback progress
   const savePlaybackProgress = () => {
@@ -123,6 +137,23 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
         videoRef.current.play();
       }
       setIsPlaying(!isPlaying);
+    }
+  };
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(err => {
+        toast({
+          id: String(Date.now()),
+          title: "Fullscreen error",
+          description: `Error attempting to enable fullscreen: ${err.message}`,
+        });
+      });
+    } else {
+      document.exitFullscreen();
     }
   };
   
@@ -179,13 +210,14 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
   
   return (
     <div 
-      className="relative w-full h-64 sm:h-[350px] md:h-[450px] bg-black rounded-lg overflow-hidden shadow-xl mb-4 group"
+      ref={containerRef}
+      className={`relative w-full ${isFullscreen ? 'h-screen' : 'h-64 sm:h-[350px] md:h-[450px] lg:h-[500px]'} bg-black rounded-lg overflow-hidden shadow-xl mb-4 group`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
       onTouchStart={() => setShowControls(true)}
     >
       <video
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
         controls={false}
         ref={videoRef}
         onTimeUpdate={handleTimeUpdate}
@@ -290,6 +322,25 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Episodes</TooltipContent>
+            </Tooltip>
+
+            {/* Fullscreen button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-8 w-8 p-0 rounded-full bg-black/40 hover:bg-black/60 text-white"
+                  onClick={toggleFullscreen}
+                >
+                  {isFullscreen ? (
+                    <Minimize className="h-4 w-4" />
+                  ) : (
+                    <Maximize className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</TooltipContent>
             </Tooltip>
           </div>
         </div>

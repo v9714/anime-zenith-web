@@ -99,15 +99,15 @@ export default function AnimeWatch() {
   
   return (
     <Layout>
-      <div className="container max-w-[1600px] px-2 md:px-4 pt-4 pb-8 animate-fade-in">
+      <div className="container max-w-[1700px] px-2 md:px-4 pt-4 pb-8 animate-fade-in">
         {/* Main view grid: episode list, video, info card, popular sidebar */}
         <div className="flex flex-col lg:flex-row gap-4 xl:gap-6">
           {/* Episode List (left) */}
-          <div className="order-2 lg:order-1 w-full lg:w-[240px] xl:w-[280px]">
+          <div className="order-2 lg:order-1 w-full lg:w-[220px] xl:w-[240px]">
             <EpisodeList episodes={episodes} active={4} />
           </div>
           
-          {/* Video Player and Controls (center) */}
+          {/* Video Player and Controls (center) - Wider now */}
           <div className="order-1 lg:order-2 w-full lg:flex-1 flex flex-col">
             <VideoPlayer 
               animeId={animeId} 
@@ -119,18 +119,18 @@ export default function AnimeWatch() {
           </div>
           
           {/* Anime Info Card (right) */}
-          <div className="order-3 w-full lg:w-[260px] xl:w-[300px]">
+          <div className="order-3 w-full lg:w-[240px] xl:w-[260px]">
             <AnimeInfoCard anime={anime} animeId={animeId} />
           </div>
           
           {/* Popular Sidebar (far right, hidden below xl) */}
-          <div className="hidden xl:block order-4 w-[240px]">
+          <div className="hidden xl:block order-4 w-[220px]">
             <MostPopularSidebar popularAnime={popularAnime} />
           </div>
         </div>
         
         {/* Comments below player */}
-        <div className="w-full mt-4 xl:mt-6 lg:pr-[240px] xl:pr-0">
+        <div className="w-full mt-4 xl:mt-6 lg:pr-[220px] xl:pr-0">
           <CommentsSection comments={comments} />
         </div>
         
