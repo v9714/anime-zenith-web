@@ -24,12 +24,14 @@ import {
 } from "@/components/ui/select";
 import { Anime } from "@/services/api";
 import { format } from "date-fns";
+import { FileImage, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 const animeFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  cover_image_url: z.string().url("Please enter a valid URL").min(1, "Cover image URL is required"),
-  banner_image_url: z.string().url("Please enter a valid URL").optional(),
+  cover_image_url: z.string().min(1, "Cover image is required"),
+  banner_image_url: z.string().optional(),
   type: z.enum(["TV", "Movie", "OVA", "Special"]),
   genres: z.string().min(1, "At least one genre is required"),
   status: z.enum(["Airing", "Completed", "Upcoming"]),
@@ -45,6 +47,13 @@ interface AnimeFormProps {
 }
 
 export function AnimeForm({ anime, onSubmit }: AnimeFormProps) {
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
+    anime?.images.jpg.image_url || null
+  );
+  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(
+    anime?.images.jpg.large_image_url || null
+  );
+
   const form = useForm<AnimeFormValues>({
     resolver: zodResolver(animeFormSchema),
     defaultValues: anime ? {
@@ -69,6 +78,36 @@ export function AnimeForm({ anime, onSubmit }: AnimeFormProps) {
       total_episodes: 1,
     },
   });
+
+  // Handle image file uploads
+  const handleImageUpload = (file: File, type: 'cover' | 'banner') => {
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.includes('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (type === 'cover') {
+        form.setValue('cover_image_url', result);
+        setCoverImagePreview(result);
+      } else {
+        form.setValue('banner_image_url', result);
+        setBannerImagePreview(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (data: AnimeFormValues) => {
     // Transform the form data into the Anime format
@@ -156,9 +195,77 @@ export function AnimeForm({ anime, onSubmit }: AnimeFormProps) {
             name="cover_image_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cover Image URL</FormLabel>
+                <FormLabel>Cover Image</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/image.jpg" {...field} />
+                  <div className="space-y-3">
+                    {coverImagePreview ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="relative h-40 w-32 overflow-hidden rounded-md border border-border">
+                          <img
+                            src={coverImagePreview}
+                            alt="Cover preview"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setCoverImagePreview(null);
+                              form.setValue('cover_image_url', '');
+                            }}
+                          >
+                            Remove
+                          </Button>
+                          <div className="relative">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                            >
+                              <Upload className="mr-2 h-4 w-4" />
+                              Change
+                            </Button>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                  handleImageUpload(e.target.files[0], 'cover');
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-md hover:border-primary/50 transition-colors">
+                        <FileImage className="h-10 w-10 text-muted-foreground mb-2" />
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <p className="text-sm font-medium mb-1">
+                            Drag & drop or click to upload
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Recommended: 350x500px (max 5MB)
+                          </p>
+                        </div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              handleImageUpload(e.target.files[0], 'cover');
+                            }
+                          }}
+                        />
+                        <input type="hidden" {...field} />
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -170,9 +277,77 @@ export function AnimeForm({ anime, onSubmit }: AnimeFormProps) {
             name="banner_image_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Banner Image URL (optional)</FormLabel>
+                <FormLabel>Banner Image (optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/banner.jpg" {...field} />
+                  <div className="space-y-3">
+                    {bannerImagePreview ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="relative h-32 w-full overflow-hidden rounded-md border border-border">
+                          <img
+                            src={bannerImagePreview}
+                            alt="Banner preview"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setBannerImagePreview(null);
+                              form.setValue('banner_image_url', '');
+                            }}
+                          >
+                            Remove
+                          </Button>
+                          <div className="relative">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                            >
+                              <Upload className="mr-2 h-4 w-4" />
+                              Change
+                            </Button>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                  handleImageUpload(e.target.files[0], 'banner');
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-md hover:border-primary/50 transition-colors">
+                        <FileImage className="h-10 w-10 text-muted-foreground mb-2" />
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <p className="text-sm font-medium mb-1">
+                            Drag & drop or click to upload
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Recommended: 1280x720px (max 5MB)
+                          </p>
+                        </div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              handleImageUpload(e.target.files[0], 'banner');
+                            }
+                          }}
+                        />
+                        <input type="hidden" {...field} />
+                      </div>
+                    )}
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
