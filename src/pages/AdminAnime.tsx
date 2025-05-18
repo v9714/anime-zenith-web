@@ -77,7 +77,9 @@ const AdminAnime = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Anime Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-anime-primary to-anime-secondary bg-clip-text text-transparent">
+            Anime Management
+          </h1>
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -104,14 +106,14 @@ const AdminAnime = () => {
             <Input
               type="search"
               placeholder="Search anime..."
-              className="w-full pl-8"
+              className="w-full pl-8 border-secondary/30 focus-visible:ring-secondary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-lg border border-border overflow-hidden shadow-sm">
           <div className="relative w-full overflow-auto">
             <table className="w-full caption-bottom text-sm">
               <thead className="border-b bg-muted/50">
@@ -128,14 +130,14 @@ const AdminAnime = () => {
                 {filteredAnime.map((anime) => (
                   <tr 
                     key={anime.mal_id} 
-                    className="border-b transition-colors hover:bg-muted/50"
+                    className="border-b transition-colors hover:bg-muted/30"
                   >
                     <td className="p-4 align-middle">
                       <div className="flex items-center gap-3">
                         <img 
                           src={anime.images.webp.small_image_url} 
                           alt={anime.title}
-                          className="h-12 w-12 rounded-sm object-cover"
+                          className="h-12 w-12 rounded-md object-cover shadow-sm"
                         />
                         <div>
                           <p className="font-medium">{anime.title}</p>
@@ -148,8 +150,8 @@ const AdminAnime = () => {
                     <td className="p-4 align-middle">
                       <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         anime.airing 
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" 
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
+                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
                       }`}>
                         {anime.airing ? "Airing" : "Completed"}
                       </div>
@@ -159,13 +161,13 @@ const AdminAnime = () => {
                         {anime.genres.slice(0, 2).map((genre) => (
                           <span 
                             key={genre.mal_id} 
-                            className="inline-block bg-muted px-2 py-0.5 text-xs rounded-full"
+                            className="inline-block bg-muted/60 px-2 py-0.5 text-xs rounded-full"
                           >
                             {genre.name}
                           </span>
                         ))}
                         {anime.genres.length > 2 && (
-                          <span className="inline-block bg-muted px-2 py-0.5 text-xs rounded-full">
+                          <span className="inline-block bg-muted/60 px-2 py-0.5 text-xs rounded-full">
                             +{anime.genres.length - 2}
                           </span>
                         )}
@@ -173,11 +175,11 @@ const AdminAnime = () => {
                     </td>
                     <td className="p-4 align-middle">
                       <div className="flex items-center gap-2">
-                        <Button size="icon" variant="ghost">
+                        <Button size="icon" variant="ghost" className="hover:bg-primary/10 hover:text-primary">
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
-                        <Button size="icon" variant="ghost">
+                        <Button size="icon" variant="ghost" className="hover:bg-destructive/10 hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete</span>
                         </Button>

@@ -13,61 +13,83 @@ import {
   SidebarMenuButton
 } from "@/components/ui/sidebar";
 import { Database, Film, ListChecks, LayoutDashboard, Users, Settings } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
   return (
     <ThemeProvider defaultTheme="dark">
       <SidebarProvider>
         <div className="min-h-screen flex">
-          <Sidebar>
-            <SidebarHeader className="pb-2">
-              <div className="flex items-center gap-2 px-2">
-                <Settings className="h-6 w-6 text-primary" />
-                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Admin Panel</h1>
+          <Sidebar variant="inset" className="border-r border-sidebar-border">
+            <SidebarHeader className="pb-4">
+              <div className="flex flex-col gap-1 p-2">
+                <div className="flex items-center gap-2">
+                  <div className="bg-gradient-to-r from-anime-primary to-anime-secondary p-1.5 rounded-md">
+                    <Settings className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-xl font-bold bg-gradient-to-r from-anime-primary to-anime-secondary bg-clip-text text-transparent">
+                    OtakuTV
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground pl-2">Admin Panel</span>
               </div>
             </SidebarHeader>
             <SidebarContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <Link to="/admin">
-                    <SidebarMenuButton>
-                      <LayoutDashboard className="h-5 w-5" />
-                      <span>Dashboard</span>
+                    <SidebarMenuButton 
+                      isActive={currentPath === "/admin"}
+                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                    >
+                      <LayoutDashboard className={`h-5 w-5 ${currentPath === "/admin" ? "text-primary" : ""}`} />
+                      <span className={currentPath === "/admin" ? "text-white font-medium" : ""}>Dashboard</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/anime">
-                    <SidebarMenuButton>
-                      <Film className="h-5 w-5" />
-                      <span>Anime Management</span>
+                    <SidebarMenuButton 
+                      isActive={currentPath === "/admin/anime"}
+                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin/anime" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                    >
+                      <Film className={`h-5 w-5 ${currentPath === "/admin/anime" ? "text-primary" : ""}`} />
+                      <span className={currentPath === "/admin/anime" ? "text-white font-medium" : ""}>Anime Management</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/episodes">
-                    <SidebarMenuButton>
-                      <ListChecks className="h-5 w-5" />
-                      <span>Episodes</span>
+                    <SidebarMenuButton 
+                      isActive={currentPath === "/admin/episodes"}
+                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin/episodes" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                    >
+                      <ListChecks className={`h-5 w-5 ${currentPath === "/admin/episodes" ? "text-primary" : ""}`} />
+                      <span className={currentPath === "/admin/episodes" ? "text-white font-medium" : ""}>Episodes</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/users">
-                    <SidebarMenuButton>
-                      <Users className="h-5 w-5" />
-                      <span>Users</span>
+                    <SidebarMenuButton 
+                      isActive={currentPath === "/admin/users"}
+                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin/users" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                    >
+                      <Users className={`h-5 w-5 ${currentPath === "/admin/users" ? "text-primary" : ""}`} />
+                      <span className={currentPath === "/admin/users" ? "text-white font-medium" : ""}>Users</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/">
-                    <SidebarMenuButton>
+                    <SidebarMenuButton className="hover:bg-sidebar-accent/40">
                       <Database className="h-5 w-5" />
                       <span>Back to Site</span>
                     </SidebarMenuButton>
@@ -77,8 +99,28 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </SidebarContent>
           </Sidebar>
           <div className="flex-1 flex flex-col">
-            <Header />
-            <div className="flex-1 pt-16">
+            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm border-b">
+              <div className="flex h-14 items-center px-4">
+                <div className="flex-1 flex items-center justify-end gap-4">
+                  <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
+                    Home
+                  </Link>
+                  <Link to="/admin/anime" className="text-sm text-muted-foreground hover:text-foreground">
+                    Anime List
+                  </Link>
+                  <Link to="/admin/episodes" className="text-sm text-muted-foreground hover:text-foreground">
+                    Latest Episodes
+                  </Link>
+                  <Link to="/admin/manga" className="text-sm text-muted-foreground hover:text-foreground">
+                    Manga
+                  </Link>
+                  <Link to="/admin/contact" className="text-sm text-muted-foreground hover:text-foreground">
+                    Contact
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
               <main className="p-6 bg-background">
                 {children}
               </main>
