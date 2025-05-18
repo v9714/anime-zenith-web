@@ -119,8 +119,8 @@ const AdminAnime = () => {
                   <th className="h-12 px-4 text-left align-middle font-medium">Title</th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Type</th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Episodes</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Score</th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">Genres</th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Actions</th>
                 </tr>
               </thead>
@@ -145,7 +145,6 @@ const AdminAnime = () => {
                     </td>
                     <td className="p-4 align-middle">{anime.type}</td>
                     <td className="p-4 align-middle">{anime.episodes}</td>
-                    <td className="p-4 align-middle">{anime.score}</td>
                     <td className="p-4 align-middle">
                       <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         anime.airing 
@@ -153,6 +152,23 @@ const AdminAnime = () => {
                           : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
                       }`}>
                         {anime.airing ? "Airing" : "Completed"}
+                      </div>
+                    </td>
+                    <td className="p-4 align-middle">
+                      <div className="flex flex-wrap gap-1">
+                        {anime.genres.slice(0, 2).map((genre) => (
+                          <span 
+                            key={genre.mal_id} 
+                            className="inline-block bg-muted px-2 py-0.5 text-xs rounded-full"
+                          >
+                            {genre.name}
+                          </span>
+                        ))}
+                        {anime.genres.length > 2 && (
+                          <span className="inline-block bg-muted px-2 py-0.5 text-xs rounded-full">
+                            +{anime.genres.length - 2}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="p-4 align-middle">
