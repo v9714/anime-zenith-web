@@ -81,12 +81,12 @@ const AdminAnime = () => {
           
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="bg-primary hover:bg-primary/90">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add New Anime
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Anime</DialogTitle>
                 <DialogDescription>
@@ -114,8 +114,8 @@ const AdminAnime = () => {
         <div className="rounded-md border">
           <div className="relative w-full overflow-auto">
             <table className="w-full caption-bottom text-sm">
-              <thead className="border-b">
-                <tr className="border-b transition-colors hover:bg-muted/50">
+              <thead className="border-b bg-muted/50">
+                <tr className="border-b">
                   <th className="h-12 px-4 text-left align-middle font-medium">Title</th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Type</th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Episodes</th>
@@ -135,7 +135,7 @@ const AdminAnime = () => {
                         <img 
                           src={anime.images.webp.small_image_url} 
                           alt={anime.title}
-                          className="h-10 w-10 rounded-sm object-cover"
+                          className="h-12 w-12 rounded-sm object-cover"
                         />
                         <div>
                           <p className="font-medium">{anime.title}</p>

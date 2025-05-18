@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Database, Film, ListChecks, PlusCircle, Settings, Users } from "lucide-react";
+import { Database, Film, ListChecks, LayoutDashboard, Users, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface AdminLayoutProps {
@@ -25,10 +25,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <SidebarProvider>
         <div className="min-h-screen flex">
           <Sidebar>
-            <SidebarHeader className="pb-0">
+            <SidebarHeader className="pb-2">
               <div className="flex items-center gap-2 px-2">
-                <Settings className="h-6 w-6" />
-                <h1 className="text-lg font-bold">Admin Panel</h1>
+                <Settings className="h-6 w-6 text-primary" />
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Admin Panel</h1>
               </div>
             </SidebarHeader>
             <SidebarContent>
@@ -36,7 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <SidebarMenuItem>
                   <Link to="/admin">
                     <SidebarMenuButton>
-                      <Database className="h-5 w-5" />
+                      <LayoutDashboard className="h-5 w-5" />
                       <span>Dashboard</span>
                     </SidebarMenuButton>
                   </Link>
@@ -65,11 +65,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <Link to="/">
+                    <SidebarMenuButton>
+                      <Database className="h-5 w-5" />
+                      <span>Back to Site</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarContent>
           </Sidebar>
           <div className="flex-1 flex flex-col">
-            <div className="pt-16">
+            <Header />
+            <div className="flex-1 pt-16">
               <main className="p-6 bg-background">
                 {children}
               </main>
