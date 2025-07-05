@@ -75,13 +75,13 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full h-auto min-h-[450px] sm:min-h-[500px] md:min-h-[550px] flex items-stretch overflow-hidden bg-black"
+      className="relative w-full max-w-7xl mx-auto h-auto min-h-[450px] sm:min-h-[500px] md:min-h-[550px] flex items-stretch overflow-hidden bg-black rounded-lg"
     >
       {/* Background with optimized gradient */}
       <div className="absolute inset-0 z-0">
         {/* Background image with improved opacity */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 rounded-lg"
           style={{
             backgroundImage: currentAnime
               ? `url(${currentAnime.images?.webp?.large_image_url || currentAnime.images?.jpg?.large_image_url})`
@@ -89,15 +89,15 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           }}
         />
         {/* Simplified gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/60 rounded-lg" />
       </div>
 
       {/* Content */}
-      <div className="relative w-full h-full flex flex-col pt-16 md:pt-0 md:pb-0">
+      <div className="relative w-full h-full flex flex-col">
         {/* Main content area with improved mobile layout */}
-        <div className="container relative z-10 flex flex-col md:flex-row items-start md:items-center h-full py-4 md:py-8">
+        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-start md:items-center px-6 md:px-8 py-8 md:py-12">
           {/* LEFT: anime info panel */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center">
+          <div className="w-full md:w-1/2 flex flex-col justify-center pr-0 md:pr-8">
             <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary mb-2">
               #{activeIndex + 1} Spotlight
             </span>
@@ -118,7 +118,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
             </p>
             
             {/* Buttons with simplified styling */}
-            <div className="flex gap-3 md:gap-4 mt-2 mb-4 md:mt-4">
+            <div className="flex gap-3 md:gap-4 mb-6 md:mb-0">
               <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white">
                 <Link to={`/anime/${currentAnime?.mal_id}`} className="flex gap-2 items-center">
                   <Play className="w-4 h-4" />
@@ -142,30 +142,28 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           </div>
         </div>
         
-        {/* Slide indicators and control buttons - simplified implementation */}
-        <div className="container relative z-20 py-4">
-          <div className="flex justify-between items-center">
-            {/* Slide indicators in the center */}
-            <div className="flex-1">
-              <div className="flex justify-center gap-2 mt-1">
-                {animes.map((_, index) => (
-                  <button
-                    key={index}
-                    className={cn(
-                      "w-2 h-2 rounded-full transition-all",
-                      activeIndex === index 
-                        ? "bg-anime-secondary w-4" 
-                        : "bg-white/30 hover:bg-white/60"
-                    )}
-                    onClick={() => handleSlideChange(index)}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
+        {/* Navigation section - fixed spacing to prevent overlap */}
+        <div className="relative z-20 px-6 md:px-8 pb-6">
+          <div className="flex items-center justify-between">
+            {/* Slide indicators */}
+            <div className="flex justify-center gap-2 flex-1">
+              {animes.map((_, index) => (
+                <button
+                  key={index}
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-all",
+                    activeIndex === index 
+                      ? "bg-anime-secondary w-4" 
+                      : "bg-white/30 hover:bg-white/60"
+                  )}
+                  onClick={() => handleSlideChange(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
             </div>
             
-            {/* Autoplay control button in right corner */}
-            <div className="absolute bottom-4 right-4 z-30">
+            {/* Control buttons - fixed positioning */}
+            <div className="flex gap-2 ml-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -185,7 +183,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSlideChange((activeIndex + 1) % animes.length)}
-                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white ml-2"
+                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white"
                 title="Next slide"
                 aria-label="Next slide"
               >
