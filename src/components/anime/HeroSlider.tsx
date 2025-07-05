@@ -75,7 +75,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full max-w-7xl mx-auto h-auto min-h-[450px] sm:min-h-[500px] md:min-h-[550px] flex items-stretch overflow-hidden bg-black rounded-lg"
+      className="relative w-full h-[350px] sm:h-[380px] md:h-[400px] flex items-stretch overflow-hidden bg-gradient-to-r from-primary/20 to-secondary/20 backdrop-blur-sm border border-border/20 rounded-lg"
     >
       {/* Background with optimized gradient */}
       <div className="absolute inset-0 z-0">
@@ -92,58 +92,62 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/60 rounded-lg" />
       </div>
 
-      {/* Content */}
-      <div className="relative w-full h-full flex flex-col">
-        {/* Main content area with improved mobile layout */}
-        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-start md:items-center px-6 md:px-8 py-8 md:py-12">
-          {/* LEFT: anime info panel */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center pr-0 md:pr-8">
-            <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary mb-2">
-              #{activeIndex + 1} Spotlight
-            </span>
-            <h1 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 md:mb-4 leading-tight line-clamp-2">
-              {currentAnime?.title}
-            </h1>
-            
-            {/* Metadata with responsive display */}
-            <div className="flex flex-wrap items-center mb-2 md:mb-4">
-              {meta.slice(0, 3).map(({ label, value }) => (
-                <MetaItem key={label} label={label} value={value} />
-              ))}
-            </div>
-            
-            {/* Synopsis with better responsiveness */}
-            <p className="text-sm md:text-base text-white/90 max-w-2xl mb-4 md:mb-6 leading-relaxed line-clamp-2 sm:line-clamp-3 md:line-clamp-4">
-              {currentAnime?.synopsis}
-            </p>
-            
-            {/* Buttons with simplified styling */}
-            <div className="flex gap-3 md:gap-4 mb-6 md:mb-0">
-              <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white">
-                <Link to={`/anime/${currentAnime?.mal_id}`} className="flex gap-2 items-center">
-                  <Play className="w-4 h-4" />
-                  Watch
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="rounded-full border-white/30 px-4 py-2 bg-white/10 hover:bg-anime-primary/20 text-white">
-                <Link to={`/anime/${currentAnime?.mal_id}`}>Details</Link>
-              </Button>
+      {/* Content - Fixed positioning to prevent movement */}
+      <div className="absolute inset-0 flex flex-col">
+        {/* Main content area with fixed positioning */}
+        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-center px-6 md:px-8 py-6">
+          {/* LEFT: anime info panel - Fixed height container */}
+          <div className="w-full md:w-1/2 h-full flex flex-col justify-center pr-0 md:pr-8">
+            <div className="space-y-3">
+              <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary">
+                #{activeIndex + 1} Spotlight
+              </span>
+              <h1 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight line-clamp-2 min-h-[3rem]">
+                {currentAnime?.title}
+              </h1>
+              
+              {/* Metadata with responsive display */}
+              <div className="flex flex-wrap items-center min-h-[2rem]">
+                {meta.slice(0, 3).map(({ label, value }) => (
+                  <MetaItem key={label} label={label} value={value} />
+                ))}
+              </div>
+              
+              {/* Synopsis with fixed height */}
+              <p className="text-xs md:text-sm text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3.5rem]">
+                {currentAnime?.synopsis}
+              </p>
+              
+              {/* Buttons with fixed positioning */}
+              <div className="flex gap-3 pt-2">
+                <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white">
+                  <Link to={`/anime/${currentAnime?.mal_id}`} className="flex gap-2 items-center">
+                    <Play className="w-4 h-4" />
+                    Watch
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-full border-white/30 px-4 py-2 bg-white/10 hover:bg-anime-primary/20 text-white">
+                  <Link to={`/anime/${currentAnime?.mal_id}`}>Details</Link>
+                </Button>
+              </div>
             </div>
           </div>
           
-          {/* RIGHT: enlarged anime image with improved styling */}
-          <div className="hidden md:flex w-1/2 justify-center items-center">
-            <img
-              src={currentAnime?.images?.webp?.large_image_url || currentAnime?.images?.jpg?.large_image_url}
-              alt={currentAnime?.title}
-              className="object-cover rounded-xl shadow-lg h-80 w-auto max-w-full transform transition-all duration-300"
-              loading="eager"
-            />
+          {/* RIGHT: anime image with fixed dimensions */}
+          <div className="hidden md:flex w-1/2 h-full justify-center items-center">
+            <div className="relative w-48 h-64 flex-shrink-0">
+              <img
+                src={currentAnime?.images?.webp?.large_image_url || currentAnime?.images?.jpg?.large_image_url}
+                alt={currentAnime?.title}
+                className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
         
-        {/* Navigation section - fixed spacing to prevent overlap */}
-        <div className="relative z-20 px-6 md:px-8 pb-6">
+        {/* Navigation section - Absolute positioned to stay fixed */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-6 md:px-8 pb-4">
           <div className="flex items-center justify-between">
             {/* Slide indicators */}
             <div className="flex justify-center gap-2 flex-1">
@@ -162,13 +166,13 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               ))}
             </div>
             
-            {/* Control buttons - fixed positioning */}
-            <div className="flex gap-2 ml-4">
+            {/* Control buttons - Fixed positioning */}
+            <div className="flex gap-2 ml-4 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleAutoplay}
-                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white"
+                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white w-8 h-8 p-0"
                 title={isPlaying ? "Pause slideshow" : "Play slideshow"}
                 aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
               >
@@ -183,7 +187,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSlideChange((activeIndex + 1) % animes.length)}
-                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white"
+                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white w-8 h-8 p-0"
                 title="Next slide"
                 aria-label="Next slide"
               >

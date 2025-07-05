@@ -140,14 +140,16 @@ export default function Home() {
             />
           )}
           
-          {/* Top Anime Section */}
-          {topAnime.length > 0 && (
-            <AnimeCarousel 
-              title="Top Anime" 
-              animes={topAnime} 
-              link="/anime?sort=top" 
-            />
-          )}
+          {/* Top Anime Section with overflow styling */}
+          <div className="-mx-6 px-6">
+            {topAnime.length > 0 && (
+              <AnimeCarousel 
+                title="Top Anime" 
+                animes={topAnime} 
+                link="/anime?sort=top" 
+              />
+            )}
+          </div>
           
           {/* Sidebar Ad and Content */}
           <div className="container py-6">
