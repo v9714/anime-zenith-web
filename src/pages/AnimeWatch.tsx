@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, Play, Heart, Share, SkipBack, SkipForward, List } from "lucide-react";
+import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -79,6 +79,7 @@ export default function AnimeWatch() {
   const navigate = useNavigate();
   const episodeNumber = 5; // This would be dynamic in a real app
   const [showPlaylist, setShowPlaylist] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(true);
   
   // Record watch history when component mounts
   useEffect(() => {
@@ -102,7 +103,12 @@ export default function AnimeWatch() {
       <div className="min-h-screen bg-background">
         {/* Main content with container-fluid */}
         <div className="w-full px-4 pb-8">
-          <div className={`grid gap-6 ${showPlaylist ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1 lg:grid-cols-9'}`}>
+          <div className={`grid gap-6 ${
+            showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-12' :
+            showPlaylist && !showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
+            !showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
+            'grid-cols-1'
+          }`}>
             {/* Episode List Sidebar - Left (conditionally shown) */}
             {showPlaylist && (
               <div className="lg:col-span-3 order-3 lg:order-1">
@@ -113,7 +119,12 @@ export default function AnimeWatch() {
             )}
             
             {/* Main Video Section - Center */}
-            <div className={`${showPlaylist ? 'lg:col-span-6' : 'lg:col-span-6'} order-1 lg:order-2`}>
+            <div className={`${
+              showPlaylist && showSidebar ? 'lg:col-span-6' :
+              showPlaylist && !showSidebar ? 'lg:col-span-6' :
+              !showPlaylist && showSidebar ? 'lg:col-span-6' :
+              'lg:col-span-12'
+            } order-1 lg:order-2`}>
               <div className="space-y-4">
                 {/* Episode title header */}
                 <div className="flex items-center justify-between mb-4">
@@ -123,15 +134,26 @@ export default function AnimeWatch() {
                       Episode {episodeNumber}: {episodes[4]}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPlaylist(!showPlaylist)}
-                    className="gap-2"
-                  >
-                    <List className="h-4 w-4" />
-                    {showPlaylist ? 'Hide Playlist' : 'Show Playlist'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPlaylist(!showPlaylist)}
+                      className="gap-2"
+                    >
+                      <List className="h-4 w-4" />
+                      {showPlaylist ? 'Hide Playlist' : 'Show Playlist'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowSidebar(!showSidebar)}
+                      className="gap-2"
+                    >
+                      <Info className="h-4 w-4" />
+                      {showSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
+                    </Button>
+                  </div>
                 </div>
 
                 <VideoPlayer 
@@ -174,16 +196,18 @@ export default function AnimeWatch() {
             </div>
             
             {/* Anime Info & Popular - Right */}
-            <div className="lg:col-span-3 order-2 lg:order-3">
-              <div className="sticky top-24 space-y-6">
-                <AnimeInfoCard anime={anime} animeId={animeId} />
-                
-                {/* Popular Anime Section */}
-                <div className="hidden lg:block">
-                  <MostPopularSidebar popularAnime={popularAnime} />
+            {showSidebar && (
+              <div className="lg:col-span-3 order-2 lg:order-3">
+                <div className="sticky top-24 space-y-6">
+                  <AnimeInfoCard anime={anime} animeId={animeId} />
+                  
+                  {/* Popular Anime Section */}
+                  <div className="hidden lg:block">
+                    <MostPopularSidebar popularAnime={popularAnime} />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
           
           {/* Mobile Popular Anime */}
