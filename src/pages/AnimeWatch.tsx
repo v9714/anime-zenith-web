@@ -1,14 +1,13 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, Play } from "lucide-react";
+import { Star, Play, Heart, Share, SkipBack, SkipForward, List } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Import new components
 import { VideoPlayer } from "@/components/anime/watch/VideoPlayer";
-import { VideoControls } from "@/components/anime/watch/VideoControls";
 import { EpisodeList } from "@/components/anime/watch/EpisodeList";
 import { AnimeInfoCard } from "@/components/anime/watch/AnimeInfoCard";
 import { CommentsSection } from "@/components/anime/watch/CommentsSection";
@@ -79,6 +78,7 @@ export default function AnimeWatch() {
   const { updateWatchHistory } = useAuth();
   const navigate = useNavigate();
   const episodeNumber = 5; // This would be dynamic in a real app
+  const [showPlaylist, setShowPlaylist] = useState(true);
   
   // Record watch history when component mounts
   useEffect(() => {
@@ -98,40 +98,73 @@ export default function AnimeWatch() {
   if (!animeId) return null;
   
   return (
-    <div className="min-h-screen bg-background">
-      {/* Fixed header with proper spacing */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-foreground">{anime.title}</h1>
-            <div className="text-sm text-muted-foreground">
-              Episode {episodeNumber}: {episodes[4]}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content with proper top spacing */}
-      <div className="pt-20 pb-8">
-        <div className="container mx-auto max-w-[1800px] px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Episode List Sidebar - Left */}
-            <div className="lg:col-span-3 order-3 lg:order-1">
-              <div className="sticky top-24">
-                <EpisodeList episodes={episodes} active={4} />
+    <Layout>
+      <div className="min-h-screen bg-background pt-4">
+        {/* Main content with container-fluid */}
+        <div className="w-full px-4 pb-8">
+          <div className={`grid gap-6 ${showPlaylist ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1 lg:grid-cols-9'}`}>
+            {/* Episode List Sidebar - Left (conditionally shown) */}
+            {showPlaylist && (
+              <div className="lg:col-span-3 order-3 lg:order-1">
+                <div className="sticky top-24">
+                  <EpisodeList episodes={episodes} active={4} />
+                </div>
               </div>
-            </div>
+            )}
             
             {/* Main Video Section - Center */}
-            <div className="lg:col-span-6 order-1 lg:order-2">
+            <div className={`${showPlaylist ? 'lg:col-span-6' : 'lg:col-span-6'} order-1 lg:order-2`}>
               <div className="space-y-4">
+                {/* Episode title header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">{anime.title}</h1>
+                    <p className="text-sm text-muted-foreground">
+                      Episode {episodeNumber}: {episodes[4]}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPlaylist(!showPlaylist)}
+                    className="gap-2"
+                  >
+                    <List className="h-4 w-4" />
+                    {showPlaylist ? 'Hide Playlist' : 'Show Playlist'}
+                  </Button>
+                </div>
+
                 <VideoPlayer 
                   animeId={animeId} 
                   episodeNumber={episodeNumber}
                   title={anime.title}
                   episodeTitle={`Episode ${episodeNumber}: ${episodes[4]}`}
                 />
-                <VideoControls />
+                
+                {/* External Video Controls */}
+                <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
+                  <div className="flex items-center gap-3">
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <SkipBack className="h-4 w-4" />
+                      -10s
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <SkipForward className="h-4 w-4" />
+                      +10s
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Heart className="h-4 w-4" />
+                      Favorite
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Share className="h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
+                </div>
                 
                 {/* Comments Section */}
                 <div className="mt-8">
@@ -181,6 +214,6 @@ export default function AnimeWatch() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { 
-  Play, Pause, Volume, Languages, List, Share, Heart, 
-  Bookmark, Subtitles, Headphones, RotateCcw, Maximize, Minimize 
+  Play, Pause, Volume, Languages, Subtitles, Headphones, 
+  RotateCcw, Maximize, Minimize 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +20,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { LikeButton } from "./LikeButton";
-import { SaveButton } from "./SaveButton";
 
 // Define types for video configuration
 interface VideoConfig {
@@ -158,11 +155,10 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
     }
   };
   
-  // Handle video loaded
+  // Handle video loaded - DON'T auto-play
   const handleLoadedData = () => {
     setIsLoaded(true);
     if (videoRef.current) {
-      // Don't auto-play, let user control playback
       videoRef.current.pause();
       setIsPlaying(false);
     }
@@ -327,15 +323,6 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
               </TooltipTrigger>
               <TooltipContent>Toggle Audio</TooltipContent>
             </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full bg-black/40 hover:bg-black/60 text-white">
-                  <List className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Episodes</TooltipContent>
-            </Tooltip>
 
             {/* Fullscreen button */}
             <Tooltip>
@@ -429,20 +416,6 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
               )}
               
               <div className="text-xs text-white/70">{formatTime(currentTime)} / {formatTime(duration || 0)}</div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <LikeButton animeId={animeId} episodeNumber={episodeNumber} />
-              <SaveButton animeId={animeId} title={title} />
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/10 h-8 w-8 p-0">
-                    <Share className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Share</TooltipContent>
-              </Tooltip>
             </div>
           </div>
         </div>
