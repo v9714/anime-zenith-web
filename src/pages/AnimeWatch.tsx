@@ -98,69 +98,89 @@ export default function AnimeWatch() {
   if (!animeId) return null;
   
   return (
-    <Layout>
-      <div className="container max-w-[1700px] px-2 md:px-4 pt-4 pb-8 animate-fade-in">
-        {/* Main view grid: episode list, video, info card, popular sidebar */}
-        <div className="flex flex-col lg:flex-row gap-4 xl:gap-6">
-          {/* Episode List (left) */}
-          <div className="order-2 lg:order-1 w-full lg:w-[220px] xl:w-[240px]">
-            <EpisodeList episodes={episodes} active={4} />
-          </div>
-          
-          {/* Video Player and Controls (center) - Wider now */}
-          <div className="order-1 lg:order-2 w-full lg:flex-1 flex flex-col">
-            <VideoPlayer 
-              animeId={animeId} 
-              episodeNumber={episodeNumber}
-              title={anime.title}
-              episodeTitle={`Episode ${episodeNumber}: ${episodes[4]}`}
-            />
-            <VideoControls />
-          </div>
-          
-          {/* Anime Info Card (right) */}
-          <div className="order-3 w-full lg:w-[240px] xl:w-[260px]">
-            <AnimeInfoCard anime={anime} animeId={animeId} />
-          </div>
-          
-          {/* Popular Sidebar (far right, hidden below xl) */}
-          <div className="hidden xl:block order-4 w-[220px]">
-            <MostPopularSidebar popularAnime={popularAnime} />
-          </div>
-        </div>
-        
-        {/* Comments below player */}
-        <div className="w-full mt-4 xl:mt-6 lg:pr-[220px] xl:pr-0">
-          <CommentsSection comments={comments} />
-        </div>
-        
-        {/* Show popular sidebar below on mobile/tablet */}
-        <div className="block xl:hidden mt-6">
-          <h3 className="font-bold text-base mb-3 flex items-center gap-2">
-            <Star className="h-4 w-4 text-yellow-500" /> 
-            Popular Anime
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {popularAnime.map((a) => (
-              <div key={a.id} className="bg-card/90 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-border/50">
-                <div className="relative">
-                  <img src={a.img} alt={a.title} className="w-full h-40 object-cover" />
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs font-medium rounded-md px-1.5 py-0.5 shadow">
-                    {a.rating}
-                  </div>
-                </div>
-                <div className="p-3">
-                  <h4 className="font-medium text-sm line-clamp-1 mb-1">{a.title}</h4>
-                  <div className="text-xs text-muted-foreground">Episodes: {a.episodes}</div>
-                  <Button size="sm" className="w-full mt-2 bg-primary/90 hover:bg-primary">
-                    <Play className="h-3 w-3 mr-1" /> Watch
-                  </Button>
-                </div>
-              </div>
-            ))}
+    <div className="min-h-screen bg-background">
+      {/* Fixed header with proper spacing */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-foreground">{anime.title}</h1>
+            <div className="text-sm text-muted-foreground">
+              Episode {episodeNumber}: {episodes[4]}
+            </div>
           </div>
         </div>
       </div>
-    </Layout>
+
+      {/* Main content with proper top spacing */}
+      <div className="pt-20 pb-8">
+        <div className="container mx-auto max-w-[1800px] px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Episode List Sidebar - Left */}
+            <div className="lg:col-span-3 order-3 lg:order-1">
+              <div className="sticky top-24">
+                <EpisodeList episodes={episodes} active={4} />
+              </div>
+            </div>
+            
+            {/* Main Video Section - Center */}
+            <div className="lg:col-span-6 order-1 lg:order-2">
+              <div className="space-y-4">
+                <VideoPlayer 
+                  animeId={animeId} 
+                  episodeNumber={episodeNumber}
+                  title={anime.title}
+                  episodeTitle={`Episode ${episodeNumber}: ${episodes[4]}`}
+                />
+                <VideoControls />
+                
+                {/* Comments Section */}
+                <div className="mt-8">
+                  <CommentsSection comments={comments} />
+                </div>
+              </div>
+            </div>
+            
+            {/* Anime Info & Popular - Right */}
+            <div className="lg:col-span-3 order-2 lg:order-3">
+              <div className="sticky top-24 space-y-6">
+                <AnimeInfoCard anime={anime} animeId={animeId} />
+                
+                {/* Popular Anime Section */}
+                <div className="hidden lg:block">
+                  <MostPopularSidebar popularAnime={popularAnime} />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mobile Popular Anime */}
+          <div className="block lg:hidden mt-8">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" /> 
+              Popular Anime
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {popularAnime.map((a) => (
+                <div key={a.id} className="bg-card rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-border/50">
+                  <div className="relative">
+                    <img src={a.img} alt={a.title} className="w-full h-32 sm:h-40 object-cover" />
+                    <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-medium rounded px-1.5 py-0.5">
+                      {a.rating}
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h4 className="font-medium text-sm line-clamp-1 mb-1">{a.title}</h4>
+                    <div className="text-xs text-muted-foreground mb-2">Episodes: {a.episodes}</div>
+                    <Button size="sm" className="w-full h-7 text-xs">
+                      <Play className="h-3 w-3 mr-1" /> Watch
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

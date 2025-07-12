@@ -55,6 +55,7 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -157,6 +158,16 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
     }
   };
   
+  // Handle video loaded
+  const handleLoadedData = () => {
+    setIsLoaded(true);
+    if (videoRef.current) {
+      // Don't auto-play, let user control playback
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
   // Handle time update
   const handleTimeUpdate = () => {
     if (videoRef.current) {
@@ -211,7 +222,7 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full ${isFullscreen ? 'h-screen' : 'h-64 sm:h-[350px] md:h-[450px] lg:h-[500px]'} bg-black rounded-lg overflow-hidden shadow-xl mb-4 group`}
+      className={`relative w-full ${isFullscreen ? 'h-screen' : 'aspect-video'} bg-black rounded-lg overflow-hidden shadow-xl group`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
       onTouchStart={() => setShowControls(true)}
@@ -222,18 +233,20 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
         ref={videoRef}
         onTimeUpdate={handleTimeUpdate}
         onDurationChange={handleDurationChange}
+        onLoadedData={handleLoadedData}
         onEnded={() => savePlaybackProgress()}
         poster="https://cdn.myanimelist.net/images/anime/13/56139.jpg"
+        preload="metadata"
       >
         <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
       </video>
       
       {/* Custom video player overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4`}>
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 flex flex-col justify-between p-4`}>
         {/* Top controls */}
         <div className="flex items-center justify-between">
-          <Badge variant="outline" className="bg-black/70 text-white border-none">
-            {episodeTitle}
+          <Badge variant="outline" className="bg-black/70 text-white border-white/20">
+            Now Playing: {episodeTitle}
           </Badge>
           <div className="flex items-center gap-2">
             {/* Language Selection Dropdown */}
@@ -349,10 +362,14 @@ export function VideoPlayer({ animeId, episodeNumber, title, episodeTitle }: Vid
         <div className="absolute inset-0 flex items-center justify-center">
           <Button 
             size="lg" 
-            className={`h-16 w-16 rounded-full bg-primary/90 hover:bg-primary/100 text-white shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform ${isPlaying ? 'scale-0' : 'scale-100'}`}
+            className={`h-20 w-20 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 shadow-lg transition-all duration-300 ${isPlaying ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
             onClick={togglePlayPause}
           >
-            <Play className="h-7 w-7 fill-current" />
+            {isPlaying ? (
+              <Pause className="h-8 w-8" />
+            ) : (
+              <Play className="h-8 w-8 ml-1" />
+            )}
           </Button>
         </div>
         
