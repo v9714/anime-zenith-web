@@ -99,7 +99,7 @@ export default function AnimeWatch() {
   
   return (
     <Layout>
-      <div className="min-h-screen bg-background pt-4">
+      <div className="min-h-screen bg-background">
         {/* Main content with container-fluid */}
         <div className="w-full px-4 pb-8">
           <div className={`grid gap-6 ${showPlaylist ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1 lg:grid-cols-9'}`}>
