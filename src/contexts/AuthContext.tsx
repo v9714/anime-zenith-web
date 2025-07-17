@@ -1,13 +1,18 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { toast } from "@/hooks/use-toast"; // Changed from useToast to just toast
+import { toast } from "@/hooks/use-toast";
+import { authService, getCookie, setCookie, deleteCookie } from "@/services/authService";
 
 // Define user types and interfaces
 export interface UserData {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl: string | null;
+  isPremium: boolean;
   isAdmin: boolean;
+  createdAt: string;
+  lastLogin: string | null;
   watchHistory: {
     animeId: number;
     title: string;
@@ -50,27 +55,25 @@ interface AuthContextType {
 // Create the auth context
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Mock users for demo purposes
-const MOCK_USERS = [
-  {
-    id: "admin-1",
-    email: "admin@example.com",
-    password: "admin123", // In a real app, never store plain text passwords
-    displayName: "Admin User",
-    isAdmin: true,
-    watchHistory: [],
-    likedContent: [],
-  },
-  {
-    id: "user-1",
-    email: "user@example.com",
-    password: "user123", // In a real app, never store plain text passwords
-    displayName: "Regular User",
-    isAdmin: false,
-    watchHistory: [],
-    likedContent: [],
-  },
-];
+// Token refresh function
+const refreshToken = async () => {
+  try {
+    const response = await authService.refreshToken();
+    
+    if (response.success) {
+      const { user, accessToken, refreshToken: newRefreshToken } = response.data;
+      
+      // Set tokens in cookies
+      setCookie('accessToken', accessToken, 1); // 1 day
+      setCookie('refreshToken', newRefreshToken, 7); // 7 days
+      
+      return user;
+    }
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    return null;
+  }
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserData | null>(null);
@@ -78,52 +81,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing user session on mount
   useEffect(() => {
-    const storedUser = localStorage.getItem("otaku-user");
-    if (storedUser) {
-      try {
-        setCurrentUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing stored user", error);
+    const checkAuthState = async () => {
+      const storedUser = localStorage.getItem("otaku-user");
+      const accessToken = getCookie('accessToken');
+      const refreshTokenValue = getCookie('refreshToken');
+      
+      if (storedUser && accessToken) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setCurrentUser(userData);
+        } catch (error) {
+          console.error("Error parsing stored user", error);
+        }
+      } else if (refreshTokenValue) {
+        // Try to refresh token
+        const userData = await refreshToken();
+        if (userData) {
+          const userWithLocalData = {
+            ...userData,
+            watchHistory: JSON.parse(localStorage.getItem("otaku-watchHistory") || "[]"),
+            likedContent: JSON.parse(localStorage.getItem("otaku-likedContent") || "[]"),
+          };
+          setCurrentUser(userWithLocalData);
+          localStorage.setItem("otaku-user", JSON.stringify(userWithLocalData));
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    checkAuthState();
   }, []);
 
   // Update localStorage whenever user changes
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem("otaku-user", JSON.stringify(currentUser));
+      localStorage.setItem("otaku-watchHistory", JSON.stringify(currentUser.watchHistory));
+      localStorage.setItem("otaku-likedContent", JSON.stringify(currentUser.likedContent));
     }
   }, [currentUser]);
 
   const signUp = async (email: string, password: string, displayName: string) => {
     setIsLoading(true);
     try {
-      // Check if email already exists
-      const existingUser = MOCK_USERS.find(user => user.email === email);
-      if (existingUser) {
-        throw new Error("Email already in use");
-      }
-
-      // Create new user
-      const newUser: UserData = {
-        id: `user-${Date.now()}`,
-        email,
-        displayName,
-        isAdmin: false,
-        watchHistory: [],
-        likedContent: [],
-      };
-
-      // Add to mock users (in a real app, this would be a database operation)
-      MOCK_USERS.push({ ...newUser, password });
-
-      // Log in the new user
-      setCurrentUser(newUser);
+      // For now, keep the existing signup logic as the API endpoint wasn't provided
       toast({
         id: String(Date.now()),
-        title: "Account created!",
-        description: "Welcome to Otaku Anime!"
+        title: "Sign up unavailable",
+        description: "Please use the demo accounts for now"
       });
     } catch (error: any) {
       toast({
@@ -139,36 +144,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Find user with matching email and password
-      const user = MOCK_USERS.find(
-        (u) => u.email === email && u.password === password
-      );
+      const response = await authService.login(email, password);
 
-      if (!user) {
-        throw new Error("Invalid email or password");
+      if (response.success) {
+        const { user, accessToken, refreshToken: newRefreshToken } = response.data;
+        
+        // Set tokens in cookies
+        setCookie('accessToken', accessToken, 1); // 1 day
+        setCookie('refreshToken', newRefreshToken, 7); // 7 days
+        
+        // Create user data with local storage data
+        const userData: UserData = {
+          ...user,
+          watchHistory: JSON.parse(localStorage.getItem("otaku-watchHistory") || "[]"),
+          likedContent: JSON.parse(localStorage.getItem("otaku-likedContent") || "[]"),
+        };
+
+        setCurrentUser(userData);
+        toast({
+          id: String(Date.now()),
+          title: "Signed in successfully",
+          description: `Welcome back, ${userData.displayName}!`
+        });
       }
-
-      // Create user data without password
-      const userData: UserData = {
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
-        isAdmin: user.isAdmin,
-        watchHistory: user.watchHistory,
-        likedContent: user.likedContent,
-      };
-
-      setCurrentUser(userData);
-      toast({
-        id: String(Date.now()),
-        title: "Signed in successfully",
-        description: `Welcome back, ${userData.displayName}!`
-      });
     } catch (error: any) {
       toast({
         id: String(Date.now()),
         title: "Sign in failed",
-        description: error.message || "Invalid email or password"
+        description: error.response?.data?.message || error.message || "Invalid email or password"
       });
     } finally {
       setIsLoading(false);
@@ -178,6 +181,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = () => {
     setCurrentUser(null);
     localStorage.removeItem("otaku-user");
+    localStorage.removeItem("otaku-watchHistory");
+    localStorage.removeItem("otaku-likedContent");
+    deleteCookie('accessToken');
+    deleteCookie('refreshToken');
     toast({
       id: String(Date.now()),
       title: "Signed out",

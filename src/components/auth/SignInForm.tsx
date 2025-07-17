@@ -50,10 +50,10 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
   // Demo credentials for easy testing
   const fillDemoCredentials = (type: "user" | "admin") => {
     if (type === "admin") {
-      form.setValue("email", "admin@example.com");
+      form.setValue("email", "admin@gail.com");
       form.setValue("password", "admin123");
     } else {
-      form.setValue("email", "user@example.com");
+      form.setValue("email", "user@gail.com");
       form.setValue("password", "user123");
     }
   };
