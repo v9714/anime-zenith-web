@@ -115,15 +115,15 @@ const AdminAnime = () => {
 
         <div className="rounded-lg border border-border overflow-hidden shadow-sm">
           <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
+            <table className="w-full caption-bottom text-sm min-w-[800px]">
               <thead className="border-b bg-muted/50">
                 <tr className="border-b">
-                  <th className="h-12 px-4 text-left align-middle font-medium">Title</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Type</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Episodes</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Genres</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Actions</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Title</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Type</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Episodes</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Status</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Genres</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,22 +132,22 @@ const AdminAnime = () => {
                     key={anime.mal_id} 
                     className="border-b transition-colors hover:bg-muted/30"
                   >
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-3">
+                    <td className="p-2 sm:p-4 align-middle">
+                      <div className="flex items-center gap-2 sm:gap-3">
                         <img 
                           src={anime.images.webp.small_image_url} 
                           alt={anime.title}
-                          className="h-12 w-12 rounded-md object-cover shadow-sm"
+                          className="h-10 w-10 sm:h-12 sm:w-12 rounded-md object-cover shadow-sm"
                         />
-                        <div>
-                          <p className="font-medium">{anime.title}</p>
-                          <p className="text-xs text-muted-foreground">{anime.title_japanese}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{anime.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{anime.title_japanese}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 align-middle">{anime.type}</td>
-                    <td className="p-4 align-middle">{anime.episodes}</td>
-                    <td className="p-4 align-middle">
+                    <td className="p-2 sm:p-4 align-middle text-sm">{anime.type}</td>
+                    <td className="p-2 sm:p-4 align-middle text-sm">{anime.episodes}</td>
+                    <td className="p-2 sm:p-4 align-middle">
                       <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         anime.airing 
                           ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
@@ -156,30 +156,30 @@ const AdminAnime = () => {
                         {anime.airing ? "Airing" : "Completed"}
                       </div>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-2 sm:p-4 align-middle">
                       <div className="flex flex-wrap gap-1">
                         {anime.genres.slice(0, 2).map((genre) => (
                           <span 
                             key={genre.mal_id} 
-                            className="inline-block bg-muted/60 px-2 py-0.5 text-xs rounded-full"
+                            className="inline-block bg-muted/60 px-1.5 py-0.5 text-xs rounded-full"
                           >
                             {genre.name}
                           </span>
                         ))}
                         {anime.genres.length > 2 && (
-                          <span className="inline-block bg-muted/60 px-2 py-0.5 text-xs rounded-full">
+                          <span className="inline-block bg-muted/60 px-1.5 py-0.5 text-xs rounded-full">
                             +{anime.genres.length - 2}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-2">
-                        <Button size="icon" variant="ghost" className="hover:bg-primary/10 hover:text-primary">
+                    <td className="p-2 sm:p-4 align-middle">
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" className="hover:bg-primary/10 hover:text-primary">
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
-                        <Button size="icon" variant="ghost" className="hover:bg-destructive/10 hover:text-destructive">
+                        <Button size="sm" variant="ghost" className="hover:bg-destructive/10 hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete</span>
                         </Button>

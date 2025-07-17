@@ -26,7 +26,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <ThemeProvider defaultTheme="dark">
       <SidebarProvider>
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex w-full">
           <Sidebar variant="inset" className="border-r border-sidebar-border">
             <SidebarHeader className="pb-4">
               <div className="flex flex-col gap-1 p-2">
@@ -34,7 +34,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <div className="bg-gradient-to-r from-anime-primary to-anime-secondary p-1.5 rounded-md">
                     <Settings className="h-5 w-5 text-white" />
                   </div>
-                  <span className="text-xl font-bold bg-gradient-to-r from-anime-primary to-anime-secondary bg-clip-text text-transparent">
+                  <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-anime-primary to-anime-secondary bg-clip-text text-transparent">
                     OtakuTV
                   </span>
                 </div>
@@ -98,30 +98,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </SidebarMenu>
             </SidebarContent>
           </Sidebar>
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0">
             <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm border-b">
               <div className="flex h-14 items-center px-4">
-                <div className="flex-1 flex items-center justify-end gap-4">
-                  <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
+                <div className="flex-1 flex items-center justify-end gap-2 sm:gap-4">
+                  <Link to="/" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                     Home
                   </Link>
-                  <Link to="/admin/anime" className="text-sm text-muted-foreground hover:text-foreground">
+                  <Link to="/admin/anime" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                     Anime List
                   </Link>
-                  <Link to="/admin/episodes" className="text-sm text-muted-foreground hover:text-foreground">
-                    Latest Episodes
+                  <Link to="/admin/episodes" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
+                    Episodes
                   </Link>
-                  <Link to="/admin/manga" className="text-sm text-muted-foreground hover:text-foreground">
+                  <Link to="/admin/manga" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                     Manga
                   </Link>
-                  <Link to="/admin/contact" className="text-sm text-muted-foreground hover:text-foreground">
+                  <Link to="/admin/contact" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                     Contact
                   </Link>
                 </div>
               </div>
             </div>
             <div className="flex-1">
-              <main className="p-6 bg-background">
+              <main className="p-3 sm:p-6 bg-background">
                 {children}
               </main>
             </div>

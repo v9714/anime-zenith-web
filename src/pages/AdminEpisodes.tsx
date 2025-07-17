@@ -103,15 +103,15 @@ const AdminEpisodes = () => {
 
         <div className="rounded-md border">
           <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
+            <table className="w-full caption-bottom text-sm min-w-[700px]">
               <thead className="border-b">
                 <tr className="border-b transition-colors hover:bg-muted/50">
-                  <th className="h-12 px-4 text-left align-middle font-medium">Anime</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Episode</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Title</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Duration</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Aired Date</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Actions</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Anime</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Episode</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Title</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Duration</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Aired Date</th>
+                  <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -120,23 +120,23 @@ const AdminEpisodes = () => {
                     key={episode.id} 
                     className="border-b transition-colors hover:bg-muted/50"
                   >
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-3">
-                        <Film className="h-5 w-5 text-muted-foreground" />
-                        <span>{episode.animeTitle}</span>
+                    <td className="p-2 sm:p-4 align-middle">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <Film className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                        <span className="text-sm truncate">{episode.animeTitle}</span>
                       </div>
                     </td>
-                    <td className="p-4 align-middle">{episode.episodeNumber}</td>
-                    <td className="p-4 align-middle">{episode.title}</td>
-                    <td className="p-4 align-middle">{episode.duration} min</td>
-                    <td className="p-4 align-middle">{episode.airedDate}</td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-2">
-                        <Button size="icon" variant="ghost">
+                    <td className="p-2 sm:p-4 align-middle text-sm">{episode.episodeNumber}</td>
+                    <td className="p-2 sm:p-4 align-middle text-sm">{episode.title}</td>
+                    <td className="p-2 sm:p-4 align-middle text-sm">{episode.duration} min</td>
+                    <td className="p-2 sm:p-4 align-middle text-sm">{episode.airedDate}</td>
+                    <td className="p-2 sm:p-4 align-middle">
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost">
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
-                        <Button size="icon" variant="ghost">
+                        <Button size="sm" variant="ghost">
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete</span>
                         </Button>
