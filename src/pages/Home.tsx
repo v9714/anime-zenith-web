@@ -141,7 +141,7 @@ export default function Home() {
           )}
           
           {/* Top Anime Section with overflow styling */}
-          <div className="-mx-6 px-6">
+          <div>
             {topAnime.length > 0 && (
               <AnimeCarousel 
                 title="Top Anime" 
