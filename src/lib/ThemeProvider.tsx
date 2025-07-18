@@ -27,13 +27,13 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
   
   // Initialize theme from localStorage when component mounts
   useEffect(() => {
     const savedTheme = localStorage?.getItem(storageKey) as Theme | null;
     if (savedTheme) {
-      setTheme(savedTheme);
+      setThemeState(savedTheme);
     }
   }, [storageKey]);
 
@@ -62,7 +62,7 @@ export function ThemeProvider({
     theme,
     setTheme: (theme: Theme) => {
       localStorage?.setItem(storageKey, theme);
-      setTheme(theme);
+      setThemeState(theme);
     },
   }), [theme, storageKey]);
 
