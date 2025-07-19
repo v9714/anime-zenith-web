@@ -19,7 +19,7 @@ export function AnimeCard({ anime, className = "", showDescription = false }: An
       <div className="relative overflow-hidden">
         <AspectRatio ratio={3/4}>
           <img 
-            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url} 
+            src={anime?.images?.webp.large_image_url || anime?.images?.jpg?.large_image_url} 
             alt={anime.title}
             className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
             loading="lazy"

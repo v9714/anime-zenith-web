@@ -37,7 +37,7 @@ export default function Home() {
         if (topResults && topResults.length > 0) {
           // Preload hero images for LCP improvement
           const criticalImages = topResults.slice(0, 5).map(
-            anime => anime.images.webp.large_image_url || anime.images.jpg.large_image_url
+            anime => anime?.images?.webp?.large_image_url || anime?.images?.jpg?.large_image_url
           );
           preloadCriticalImages(criticalImages);
           
@@ -164,7 +164,7 @@ export default function Home() {
                       {trendingAnime.slice(0, 8).map((anime) => (
                         <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <LazyImage 
-                            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
+                            src={anime?.images?.webp?.large_image_url || anime?.images?.jpg.large_image_url}
                             alt={anime.title}
                             width="64"
                             height="96"

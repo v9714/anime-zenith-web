@@ -17,7 +17,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 w-full h-full">
         <img
-          src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
+          src={anime?.images?.webp?.large_image_url || anime?.images?.jpg?.large_image_url}
           alt={anime.title}
           className="w-full h-full object-cover"
         />
@@ -29,7 +29,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
         {/* Poster */}
         <div className="md:w-1/4 shrink-0">
           <img
-            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
+            src={anime.images.webp.large_image_url || anime?.images?.jpg?.large_image_url}
             alt={anime.title}
             className="w-full max-w-[220px] rounded-md shadow-lg mx-auto md:mx-0"
           />
