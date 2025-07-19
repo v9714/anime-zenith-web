@@ -41,17 +41,7 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 4096, // 4KB - inline small assets
     rollupOptions: {
       output: {
-        // Chunk by category to optimize caching
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          utils: ['@/lib/utils.ts', '@/services/api.ts'],
-          ui: [
-            '@/components/ui/button.tsx',
-            '@/components/ui/card.tsx',
-            '@/components/ui/skeleton.tsx',
-          ],
-        },
-        // Add content hash to file names for cache busting
+        // Simplified chunking to avoid React module issues
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
