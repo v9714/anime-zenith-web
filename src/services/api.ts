@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Base URLs for both custom API and fallback Jikan API
@@ -117,6 +116,18 @@ export interface SingleAnimeResponse {
   data: Anime;
 }
 
+// Get anime by ID (custom API first)
+export const getAnimeById = async (id: number | string) => {
+  try {
+    // Try custom API first
+    const response = await customApiInstance.get(`/anime/${id}`);
+    return response.data;
+  } catch (error) {
+    console.warn('Custom API failed for getAnimeById, using Jikan API:', error);
+    return fetchWithFallback(`/anime/${id}`, {}, false);
+  }
+};
+
 // Get anime list (custom API first)
 export const getTopAnime = async (page = 1, limit = 15) => {
   try {
@@ -138,18 +149,6 @@ export const getTopAnime = async (page = 1, limit = 15) => {
   } catch (error) {
     console.warn('Custom API failed for getTopAnime, using Jikan API:', error);
     return fetchWithFallback('/top/anime', { page, limit }, false);
-  }
-};
-
-// Get anime by ID (custom API first)
-export const getAnimeById = async (id: number | string) => {
-  try {
-    // Try custom API first
-    const response = await customApiInstance.get(`/anime/${id}`);
-    return response.data;
-  } catch (error) {
-    console.warn('Custom API failed for getAnimeById, using Jikan API:', error);
-    return fetchWithFallback(`/anime/${id}`, {}, false);
   }
 };
 

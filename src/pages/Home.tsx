@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LazyImage } from "@/components/layout/LazyImage";
@@ -20,11 +20,16 @@ const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slo
 );
 
 export default function Home() {
+  console.log('Home component starting to render');
+  console.log('React imported:', typeof useState);
+  
   const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
   const [topAnime, setTopAnime] = useState<Anime[]>([]);
   const [trendingAnime, setTrendingAnime] = useState<Anime[]>([]);
   const [seasonalAnime, setSeasonalAnime] = useState<Anime[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  console.log('State initialized successfully');
 
   useEffect(() => {
     // Fetch data optimization with better error handling
