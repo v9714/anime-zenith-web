@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import * as React from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -19,7 +19,7 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
 };
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+const ThemeProviderContext = React.createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
@@ -27,10 +27,16 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+  // Add defensive check for React
+  if (!React || !React.useState) {
+    console.error('React is not properly loaded');
+    return <div>{children}</div>;
+  }
+
+  const [theme, setThemeState] = React.useState<Theme>(defaultTheme);
   
   // Initialize theme from localStorage when component mounts
-  useEffect(() => {
+  React.useEffect(() => {
     const savedTheme = localStorage?.getItem(storageKey) as Theme | null;
     if (savedTheme) {
       setThemeState(savedTheme);
@@ -38,7 +44,7 @@ export function ThemeProvider({
   }, [storageKey]);
 
   // Apply theme to document
-  useEffect(() => {
+  React.useEffect(() => {
     const root = window?.document?.documentElement;
     
     if (!root) return;
@@ -58,7 +64,7 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  const value = useMemo(() => ({
+  const value = React.useMemo(() => ({
     theme,
     setTheme: (theme: Theme) => {
       localStorage?.setItem(storageKey, theme);
@@ -74,7 +80,7 @@ export function ThemeProvider({
 }
 
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
+  const context = React.useContext(ThemeProviderContext);
   
   if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider");

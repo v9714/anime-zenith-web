@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import * as React from "react";
 import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
 import { getCookie, setCookie, deleteCookie } from "@/services/backendApi";
@@ -54,7 +54,7 @@ interface AuthContextType {
 }
 
 // Create the auth context
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = React.createContext<AuthContextType | null>(null);
 
 // Token refresh function
 const refreshToken = async () => {
@@ -76,12 +76,12 @@ const refreshToken = async () => {
   }
 };
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   // Check for existing user session on mount
-  useEffect(() => {
+  React.useEffect(() => {
     const checkAuthState = async () => {
       const storedUser = localStorage.getItem("otaku-user");
       const accessToken = getCookie('accessToken');
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Update localStorage whenever user changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (currentUser) {
       localStorage.setItem("otaku-user", JSON.stringify(currentUser));
       localStorage.setItem("otaku-watchHistory", JSON.stringify(currentUser.watchHistory));
@@ -297,7 +297,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 // Custom hook to use auth context
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = React.useContext(AuthContext);
   if (context === null) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
