@@ -39,6 +39,25 @@ backendAPI.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Track refresh token state to prevent infinite loops
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Response interceptor to handle token refresh
 backendAPI.interceptors.response.use(
   (response) => response,
@@ -46,15 +65,34 @@ backendAPI.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // If refresh is already in progress, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return backendAPI(originalRequest);
+        }).catch(err => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        const response = await axios.post(`${BACKEND_API_BASE_URL}/auth/refresh-token`, {}, {
-          withCredentials: true
-        });
+        // Use a separate axios instance to avoid interceptor loops
+        const refreshResponse = await axios.post(
+          `${BACKEND_API_BASE_URL}/auth/refresh-token`, 
+          {}, 
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
 
-        if (response.data.success) {
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+        if (refreshResponse.data.success) {
+          const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
           
           // Set new tokens in cookies
           setCookie('accessToken', accessToken, 1); // 1 day
@@ -63,14 +101,29 @@ backendAPI.interceptors.response.use(
           // Update the original request with new token
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           
+          // Process the queued requests
+          processQueue(null, accessToken);
+          
           return backendAPI(originalRequest);
+        } else {
+          throw new Error('Refresh token failed');
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        // Process queue with error
+        processQueue(refreshError, null);
+        
+        // Clear tokens and redirect to login
         deleteCookie('accessToken');
         deleteCookie('refreshToken');
-        window.location.href = '/';
+        
+        // Only redirect if we're not already on the home page
+        if (window.location.pathname !== '/') {
+          window.location.href = '/';
+        }
+        
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
