@@ -31,6 +31,14 @@ if (skeletonRoot) {
 // Function to initialize app with proper error handling
 const initializeApp = () => {
   try {
+    // Ensure React is available globally
+    if (!React || typeof React.createElement !== 'function') {
+      throw new Error('React is not properly loaded');
+    }
+    
+    // Make React available globally as a fallback
+    (globalThis as any).React = React;
+    
     const rootElement = document.getElementById("root");
     if (!rootElement) {
       throw new Error("Root element not found");

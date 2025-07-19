@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Import pages
 import Home from "./pages/Home";
@@ -37,39 +38,41 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="dark">
-          <AuthProvider>
-            <TooltipProvider>
-              {/* Toaster components */}
-              <Toaster />
-              <Sonner />
-              
-              <Routes>
-                {/* Main Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/anime" element={<AnimeList />} />
-                <Route path="/anime/:id" element={<AnimeDetails />} />
-                <Route path="/watch/:id" element={<AnimeWatch />} />
-                <Route path="/episodes" element={<Episodes />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/profile" element={<UserProfile />} />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme="dark">
+            <AuthProvider>
+              <TooltipProvider>
+                {/* Toaster components */}
+                <Toaster />
+                <Sonner />
                 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/anime" element={<AdminAnime />} />
-                <Route path="/admin/episodes" element={<AdminEpisodes />} />
-                
-                {/* Catch-all Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </TooltipProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+                <Routes>
+                  {/* Main Routes */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/anime" element={<AnimeList />} />
+                  <Route path="/anime/:id" element={<AnimeDetails />} />
+                  <Route path="/watch/:id" element={<AnimeWatch />} />
+                  <Route path="/episodes" element={<Episodes />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/profile" element={<UserProfile />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/anime" element={<AdminAnime />} />
+                  <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                  
+                  {/* Catch-all Route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </TooltipProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

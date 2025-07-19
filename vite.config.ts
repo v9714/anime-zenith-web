@@ -50,6 +50,11 @@ export default defineConfig(({ mode }) => ({
   },
   // Optimize asset compression - disable built-in compression to avoid encoding issues
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-  }
+    include: ['react', 'react-dom', 'react-router-dom', '@radix-ui/react-tooltip'],
+    force: true, // Force re-optimization
+  },
+  // Ensure React is properly resolved
+  define: {
+    global: 'globalThis',
+  },
 }));
