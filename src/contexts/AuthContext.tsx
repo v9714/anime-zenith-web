@@ -1,7 +1,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "@/hooks/use-toast";
-import { authService, getCookie, setCookie, deleteCookie } from "@/services/authService";
+import { authService } from "@/services/authService";
+import { getCookie, setCookie, deleteCookie } from "@/services/backendApi";
 
 // Define user types and interfaces
 export interface UserData {

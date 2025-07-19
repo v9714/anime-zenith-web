@@ -1,18 +1,13 @@
 import axios from 'axios';
+import backendAPI from './backendApi';
 
 // Base URLs for both custom API and fallback Jikan API
-const CUSTOM_API_BASE_URL = 'http://localhost:8081/api';
 const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
 // Add delay to avoid rate limiting
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Create axios instances for both APIs
-const customApiInstance = axios.create({
-  baseURL: CUSTOM_API_BASE_URL,
-  timeout: 10000,
-});
-
+// Create axios instance for Jikan API
 const jikanApiInstance = axios.create({
   baseURL: JIKAN_API_BASE_URL,
 });
@@ -21,7 +16,7 @@ const jikanApiInstance = axios.create({
 async function fetchWithFallback(endpoint: string, params = {}, useCustom = true) {
   if (useCustom) {
     try {
-      const response = await customApiInstance.get(endpoint, { params });
+      const response = await backendAPI.get(`/api${endpoint}`, { params });
       return response.data;
     } catch (error) {
       console.warn('Custom API failed, falling back to Jikan API:', error);
@@ -120,7 +115,7 @@ export interface SingleAnimeResponse {
 export const getAnimeById = async (id: number | string) => {
   try {
     // Try custom API first
-    const response = await customApiInstance.get(`/anime/${id}`);
+    const response = await backendAPI.get(`/api/anime/${id}`);
     return response.data;
   } catch (error) {
     console.warn('Custom API failed for getAnimeById, using Jikan API:', error);
@@ -132,7 +127,7 @@ export const getAnimeById = async (id: number | string) => {
 export const getTopAnime = async (page = 1, limit = 15) => {
   try {
     // Try custom API first
-    const response = await customApiInstance.get('/anime', { params: { page, limit } });
+    const response = await backendAPI.get('/api/anime', { params: { page, limit } });
     return {
       data: response.data.data.anime,
       pagination: {
@@ -161,7 +156,7 @@ export const getAnimeEpisodes = async (id: number, page = 1) => {
 export const searchAnime = async (query: string, page = 1, limit = 15) => {
   try {
     // Try custom API first
-    const response = await customApiInstance.get('/search', { 
+    const response = await backendAPI.get('/api/search', { 
       params: { q: query, page, limit } 
     });
     return {
