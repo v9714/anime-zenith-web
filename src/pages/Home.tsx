@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LazyImage } from "@/components/layout/LazyImage";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { preloadCriticalImages } from "@/lib/image-optimizer";
-import { HeroSlider } from "@/components/anime/HeroSlider";  // Use regular import instead of dynamic import
+import { HeroSlider } from "@/components/anime/HeroSlider";
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 
 // Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
@@ -20,16 +20,12 @@ const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slo
 );
 
 export default function Home() {
-  console.log('Home component starting to render');
-  console.log('React imported:', typeof useState);
-  
+  // Initialize state step by step to isolate issues
   const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
   const [topAnime, setTopAnime] = useState<Anime[]>([]);
   const [trendingAnime, setTrendingAnime] = useState<Anime[]>([]);
   const [seasonalAnime, setSeasonalAnime] = useState<Anime[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  console.log('State initialized successfully');
 
   useEffect(() => {
     // Fetch data optimization with better error handling
@@ -40,10 +36,18 @@ export default function Home() {
         const topResults = topResponse.data;
         
         if (topResults && topResults.length > 0) {
-          // Preload hero images for LCP improvement
+          // Safely access image properties with fallbacks
           const criticalImages = topResults.slice(0, 5).map(
-            anime => anime.images.webp.large_image_url || anime.images.jpg.large_image_url
-          );
+            anime => {
+              if (anime?.images?.webp?.large_image_url) {
+                return anime.images.webp.large_image_url;
+              }
+              if (anime?.images?.jpg?.large_image_url) {
+                return anime.images.jpg.large_image_url;
+              }
+              return '';
+            }
+          ).filter(url => url); // Remove empty URLs
           preloadCriticalImages(criticalImages);
           
           // Update state for top anime
@@ -167,9 +171,9 @@ export default function Home() {
                     <h2 className="text-xl font-heading font-bold mb-4">Trending Now</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {trendingAnime.slice(0, 8).map((anime) => (
-                        <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
-                          <LazyImage 
-                            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
+                         <div key={anime.mal_id || anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
+                           <LazyImage 
+                             src={anime?.images?.webp?.large_image_url || anime?.images?.jpg?.large_image_url || anime?.coverImage || ''}
                             alt={anime.title}
                             width="64"
                             height="96"
@@ -177,9 +181,9 @@ export default function Home() {
                           />
                           <div className="flex-1">
                             <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {anime.type} • {anime.score ? `${anime.score.toFixed(1)}★` : 'N/A'}
-                            </p>
+                             <p className="text-xs text-muted-foreground mt-1">
+                               {anime.type} • {anime.score || anime.rating ? `${(anime.score || parseFloat(anime.rating || '0')).toFixed(1)}★` : 'N/A'}
+                             </p>
                           </div>
                         </div>
                       ))}
@@ -205,9 +209,9 @@ export default function Home() {
                     <h2 className="text-xl font-heading font-bold mb-4">This Season</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {seasonalAnime.slice(0, 8).map((anime) => (
-                        <div key={anime.mal_id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
-                          <LazyImage 
-                            src={anime.images.webp.large_image_url || anime.images.jpg.large_image_url}
+                         <div key={anime.mal_id || anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
+                           <LazyImage 
+                             src={anime?.images?.webp?.large_image_url || anime?.images?.jpg?.large_image_url || anime?.coverImage || ''}
                             alt={anime.title}
                             width="64"
                             height="96"
@@ -215,9 +219,9 @@ export default function Home() {
                           />
                           <div className="flex-1">
                             <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {anime.type} • {anime.score ? `${anime.score.toFixed(1)}★` : 'N/A'}
-                            </p>
+                             <p className="text-xs text-muted-foreground mt-1">
+                               {anime.type} • {anime.score || anime.rating ? `${(anime.score || parseFloat(anime.rating || '0')).toFixed(1)}★` : 'N/A'}
+                             </p>
                           </div>
                         </div>
                       ))}
