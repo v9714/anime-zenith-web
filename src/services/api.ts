@@ -123,29 +123,30 @@ export const getAnimeById = async (id: number | string) => {
   }
 };
 
-// Get anime list (custom API first)
-export const getTopAnime = async (page = 1, limit = 15) => {
-  try {
-    // Try custom API first
-    const response = await backendAPI.get('/api/anime', { params: { page, limit } });
-    return {
-      data: response.data.data.anime,
-      pagination: {
-        current_page: response.data.data.currentPage,
-        last_visible_page: response.data.data.totalPages,
-        has_next_page: response.data.data.currentPage < response.data.data.totalPages,
-        items: {
-          count: response.data.data.anime.length,
-          total: response.data.data.totalAnime,
-          per_page: response.data.data.limit
+  // Get anime list (custom API first)
+  export const getTopAnime = async (page = 1, limit = 15) => {
+    try {
+      // Try custom API first
+      const response = await backendAPI.get('/api/anime', { params: { page, limit } });
+      return {
+        data: response.data.data.anime,
+        pagination: {
+          current_page: response.data.data.currentPage,
+          last_visible_page: response.data.data.totalPages,
+          has_next_page: response.data.data.currentPage < response.data.data.totalPages,
+          items: {
+            count: response.data.data.anime.length,
+            total: response.data.data.totalAnime,
+            per_page: response.data.data.limit
+          }
         }
-      }
-    };
-  } catch (error) {
-    console.warn('Custom API failed for getTopAnime, using Jikan API:', error);
-    return fetchWithFallback('/top/anime', { page, limit }, false);
-  }
-};
+      };
+    } catch (error) {
+      console.warn('Custom API failed for getTopAnime, using Jikan API:', error);
+      // return fetchWithFallback('/top/anime', { page, limit }, false);
+      return [];
+    }
+  };
 
 // Get anime episodes
 export const getAnimeEpisodes = async (id: number, page = 1) => {
@@ -156,8 +157,8 @@ export const getAnimeEpisodes = async (id: number, page = 1) => {
 export const searchAnime = async (query: string, page = 1, limit = 15) => {
   try {
     // Try custom API first
-    const response = await backendAPI.get('/api/search', { 
-      params: { q: query, page, limit } 
+    const response = await backendAPI.get('/api/anime/search', { 
+      params: { title: query, page, limit } 
     });
     return {
       data: response.data.data.results || response.data.data.anime || [],
@@ -174,7 +175,7 @@ export const searchAnime = async (query: string, page = 1, limit = 15) => {
     };
   } catch (error) {
     console.warn('Custom API failed for searchAnime, using Jikan API:', error);
-    return fetchWithFallback('/anime', { q: query, page, limit, sfw: true }, false);
+    return fetchWithFallback('/anime', { title: query, page, limit, sfw: true }, false);
   }
 };
 

@@ -28,7 +28,7 @@ export default function Search() {
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   
-  const query = searchParams.get("q") || "";
+  const query = searchParams.get("title") || "";
   const page = parseInt(searchParams.get("page") || "1");
   const [searchInput, setSearchInput] = useState(query);
   
@@ -61,7 +61,7 @@ export default function Search() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchInput.trim()) {
-      searchParams.set("q", searchInput);
+      searchParams.set("title", searchInput);
       searchParams.set("page", "1");
       setSearchParams(searchParams);
     }

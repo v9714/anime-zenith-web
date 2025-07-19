@@ -74,7 +74,7 @@ export const getCustomAnime = async (page = 1, limit = 10): Promise<CustomAnimeR
 export const searchCustomAnime = async (query: string, page = 1, limit = 10): Promise<CustomSearchResponse> => {
   try {
     const response = await customApiInstance.get('/search', {
-      params: { q: query, page, limit }
+      params: { title: query, page, limit }
     });
     return response.data;
   } catch (error) {
