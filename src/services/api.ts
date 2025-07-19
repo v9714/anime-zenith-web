@@ -1,37 +1,74 @@
 
 import axios from 'axios';
 
-// Base URL for Jikan API (MyAnimeList unofficial API)
-const API_BASE_URL = 'https://api.jikan.moe/v4';
+// Base URLs for both custom API and fallback Jikan API
+const CUSTOM_API_BASE_URL = 'http://localhost:8081/api';
+const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
 // Add delay to avoid rate limiting
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// API rate limit handling - Jikan API has a rate limit of 3 requests per second
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+// Create axios instances for both APIs
+const customApiInstance = axios.create({
+  baseURL: CUSTOM_API_BASE_URL,
+  timeout: 10000,
 });
 
-// Function to fetch data with automatic delay to respect rate limits
-async function fetchWithRateLimit(endpoint: string, params = {}) {
-  try {
-    const response = await axiosInstance.get(endpoint, { params });
-    // Add a small delay to avoid hitting rate limits
-    await delay(350);
-    return response.data;
-  } catch (error) {
-    console.error('API Error:', error);
-    throw error;
+const jikanApiInstance = axios.create({
+  baseURL: JIKAN_API_BASE_URL,
+});
+
+// Function to fetch from custom API first, fallback to Jikan API
+async function fetchWithFallback(endpoint: string, params = {}, useCustom = true) {
+  if (useCustom) {
+    try {
+      const response = await customApiInstance.get(endpoint, { params });
+      return response.data;
+    } catch (error) {
+      console.warn('Custom API failed, falling back to Jikan API:', error);
+      // Fall back to Jikan API
+      const response = await jikanApiInstance.get(endpoint, { params });
+      await delay(350); // Rate limit for Jikan API
+      return response.data;
+    }
+  } else {
+    try {
+      const response = await jikanApiInstance.get(endpoint, { params });
+      await delay(350);
+      return response.data;
+    } catch (error) {
+      console.error('Jikan API Error:', error);
+      throw error;
+    }
   }
 }
 
-// Types
+// Unified Anime interface that works with both APIs
 export interface Anime {
-  mal_id: number;
+  // Custom API fields
+  id?: string;
   title: string;
-  title_english: string;
-  title_japanese: string;
-  images: {
+  alternativeTitles?: {
+    en: string;
+    jp: string;
+  };
+  description?: string;
+  coverImage?: string;
+  bannerImage?: string;
+  year?: number;
+  season?: string;
+  status?: string;
+  type?: string;
+  rating?: string;
+  votesCount?: number;
+  studio?: string;
+  episodeDuration?: string;
+  
+  // Jikan API fields (for backward compatibility)
+  mal_id?: number;
+  title_english?: string;
+  title_japanese?: string;
+  images?: {
     jpg: {
       image_url: string;
       small_image_url: string;
@@ -43,26 +80,23 @@ export interface Anime {
       large_image_url: string;
     };
   };
-  type: string;
-  episodes: number;
-  status: string;
-  airing: boolean;
-  synopsis: string;
-  score: number;
-  scored_by?: number; // Adding this field which appears in the API response
-  genres: { mal_id: number; name: string }[];
-  rating: string;
-  aired: {
+  episodes?: number;
+  airing?: boolean;
+  synopsis?: string;
+  score?: number;
+  scored_by?: number;
+  genres?: { mal_id: number; name: string }[];
+  aired?: {
     from: string;
     to: string;
   };
-  season: string;
-  year: number;
-  duration: string;
-  trailer: {
+  duration?: string;
+  trailer?: {
     youtube_id: string;
     url: string;
   };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AnimeResponse {
@@ -83,29 +117,71 @@ export interface SingleAnimeResponse {
   data: Anime;
 }
 
-// Get top anime
+// Get anime list (custom API first)
 export const getTopAnime = async (page = 1, limit = 15) => {
-  return fetchWithRateLimit('/top/anime', { page, limit });
+  try {
+    // Try custom API first
+    const response = await customApiInstance.get('/anime', { params: { page, limit } });
+    return {
+      data: response.data.data.anime,
+      pagination: {
+        current_page: response.data.data.currentPage,
+        last_visible_page: response.data.data.totalPages,
+        has_next_page: response.data.data.currentPage < response.data.data.totalPages,
+        items: {
+          count: response.data.data.anime.length,
+          total: response.data.data.totalAnime,
+          per_page: response.data.data.limit
+        }
+      }
+    };
+  } catch (error) {
+    console.warn('Custom API failed for getTopAnime, using Jikan API:', error);
+    return fetchWithFallback('/top/anime', { page, limit }, false);
+  }
 };
 
-// Get anime by ID
-export const getAnimeById = async (id: number) => {
-  return fetchWithRateLimit(`/anime/${id}`);
+// Get anime by ID (custom API first)
+export const getAnimeById = async (id: number | string) => {
+  try {
+    // Try custom API first
+    const response = await customApiInstance.get(`/anime/${id}`);
+    return response.data;
+  } catch (error) {
+    console.warn('Custom API failed for getAnimeById, using Jikan API:', error);
+    return fetchWithFallback(`/anime/${id}`, {}, false);
+  }
 };
 
 // Get anime episodes
 export const getAnimeEpisodes = async (id: number, page = 1) => {
-  return fetchWithRateLimit(`/anime/${id}/episodes`, { page });
+  return fetchWithFallback(`/anime/${id}/episodes`, { page }, false);
 };
 
-// Search anime
+// Search anime (custom API first)
 export const searchAnime = async (query: string, page = 1, limit = 15) => {
-  return fetchWithRateLimit('/anime', { 
-    q: query, 
-    page, 
-    limit,
-    sfw: true, // Safe for work content only
-  });
+  try {
+    // Try custom API first
+    const response = await customApiInstance.get('/search', { 
+      params: { q: query, page, limit } 
+    });
+    return {
+      data: response.data.data.results || response.data.data.anime || [],
+      pagination: {
+        current_page: response.data.data.currentPage,
+        last_visible_page: response.data.data.totalPages,
+        has_next_page: response.data.data.currentPage < response.data.data.totalPages,
+        items: {
+          count: (response.data.data.results || response.data.data.anime || []).length,
+          total: response.data.data.totalResults || response.data.data.totalAnime || 0,
+          per_page: response.data.data.limit
+        }
+      }
+    };
+  } catch (error) {
+    console.warn('Custom API failed for searchAnime, using Jikan API:', error);
+    return fetchWithFallback('/anime', { q: query, page, limit, sfw: true }, false);
+  }
 };
 
 // Get seasonal anime
@@ -126,20 +202,20 @@ export const getSeasonalAnime = async (year = new Date().getFullYear(), season =
     }
   }
   
-  return fetchWithRateLimit(`/seasons/${year}/${season}`, { page, limit });
+  return fetchWithFallback(`/seasons/${year}/${season}`, { page, limit }, false);
 };
 
 // Get anime by genre
 export const getAnimeByGenre = async (genreId: number, page = 1, limit = 15) => {
-  return fetchWithRateLimit('/anime', { genres: genreId, page, limit });
+  return fetchWithFallback('/anime', { genres: genreId, page, limit }, false);
 };
 
 // Get anime recommendations based on an anime ID
 export const getAnimeRecommendations = async (id: number) => {
-  return fetchWithRateLimit(`/anime/${id}/recommendations`);
+  return fetchWithFallback(`/anime/${id}/recommendations`, {}, false);
 };
 
 // Get popular anime genres
 export const getAnimeGenres = async () => {
-  return fetchWithRateLimit('/genres/anime');
+  return fetchWithFallback('/genres/anime', {}, false);
 };
