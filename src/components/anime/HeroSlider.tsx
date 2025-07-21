@@ -67,10 +67,9 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
   // Get metadata for display
   const meta = [
     { label: "Type", value: currentAnime?.type },
-    { label: "Episodes", value: currentAnime?.episodes },
     { label: "Year", value: currentAnime?.year },
     { label: "Status", value: currentAnime?.status },
-    { label: "Score", value: currentAnime?.score ? `${currentAnime.score.toFixed(1)}★` : undefined },
+    { label: "Rating", value: currentAnime?.rating ? `${currentAnime.rating}★` : undefined },
   ];
 
   return (
@@ -84,7 +83,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 rounded-lg"
           style={{
             backgroundImage: currentAnime
-              ? `url(${currentAnime.images?.webp?.large_image_url || currentAnime.images?.jpg?.large_image_url})`
+              ? `url(${currentAnime.coverImage || currentAnime.bannerImage})`
               : undefined,
           }}
         />
@@ -121,13 +120,13 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               {/* Buttons with fixed positioning */}
               <div className="flex gap-3 pt-2">
                 <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white">
-                  <Link to={`/anime/${currentAnime?.mal_id}`} className="flex gap-2 items-center">
+                  <Link to={`/anime/${currentAnime?.id}`} className="flex gap-2 items-center">
                     <Play className="w-4 h-4" />
                     Watch
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-full border-white/30 px-4 py-2 bg-white/10 hover:bg-anime-primary/20 text-white">
-                  <Link to={`/anime/${currentAnime?.mal_id}`}>Details</Link>
+                  <Link to={`/anime/${currentAnime?.id}`}>Details</Link>
                 </Button>
               </div>
             </div>
@@ -137,7 +136,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           <div className="hidden md:flex w-1/2 h-full justify-center items-center">
             <div className="relative w-48 h-64 flex-shrink-0">
               <img
-                src={currentAnime?.images?.webp?.large_image_url || currentAnime?.images?.jpg?.large_image_url}
+                src={currentAnime?.coverImage || currentAnime?.bannerImage}
                 alt={currentAnime?.title}
                 className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg"
                 loading="eager"

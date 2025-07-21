@@ -17,7 +17,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 w-full h-full">
         <img
-          src={anime?.images?.webp?.large_image_url || anime?.images?.jpg?.large_image_url}
+          src={anime?.coverImage || anime?.bannerImage}
           alt={anime.title}
           className="w-full h-full object-cover"
         />
@@ -29,7 +29,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
         {/* Poster */}
         <div className="md:w-1/4 shrink-0">
           <img
-            src={anime.images.webp.large_image_url || anime?.images?.jpg?.large_image_url}
+            src={anime.coverImage || anime.bannerImage}
             alt={anime.title}
             className="w-full max-w-[220px] rounded-md shadow-lg mx-auto md:mx-0"
           />
@@ -43,10 +43,10 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
                 {anime.type}
               </Badge>
             )}
-            {anime.score && (
+            {anime.rating && (
               <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500 text-yellow-500 flex items-center gap-1">
                 <Star className="h-3 w-3 fill-yellow-500" />
-                <span>{anime.score.toFixed(1)}</span>
+                <span>{anime.rating}</span>
               </Badge>
             )}
             {anime.status && (
@@ -57,8 +57,8 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
           </div>
 
           <h1 className="text-2xl md:text-4xl font-heading font-bold">{anime.title}</h1>
-          {anime.title_english && anime.title_english !== anime.title && (
-            <p className="text-lg text-muted-foreground mt-1">{anime.title_english}</p>
+          {anime.alternativeTitles?.en && anime.alternativeTitles.en !== anime.title && (
+            <p className="text-lg text-muted-foreground mt-1">{anime.alternativeTitles.en}</p>
           )}
 
           <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
@@ -70,18 +70,18 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
           </div>
 
           <p className="mt-6 text-muted-foreground line-clamp-3 max-w-2xl">
-            {anime.synopsis}
+            {anime.synopsis || anime.description}
           </p>
 
           <div className="flex flex-wrap gap-3 mt-6 justify-center md:justify-start">
             <Button asChild size="lg" className="rounded-full">
-              <Link to={`/anime/${anime.mal_id}`} className="flex items-center gap-2">
+              <Link to={`/anime/${anime.id}`} className="flex items-center gap-2">
                 <Play className="h-4 w-4" />
                 <span>Watch Now</span>
               </Link>
             </Button>
             <Button variant="outline" size="lg" className="rounded-full">
-              <Link to={`/anime/${anime.mal_id}/details`}>More Details</Link>
+              <Link to={`/anime/${anime.id}/details`}>More Details</Link>
             </Button>
           </div>
         </div>
