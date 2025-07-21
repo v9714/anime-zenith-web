@@ -4,8 +4,6 @@ import backendAPI from './backendApi';
 // Base URLs for both custom API and fallback Jikan API
 const JIKAN_API_BASE_URL = 'https://api.jikan.moe/v4';
 
-// Add delay to avoid rate limiting
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Create axios instance for Jikan API
 const jikanApiInstance = axios.create({
@@ -22,13 +20,11 @@ async function fetchWithFallback(endpoint: string, params = {}, useCustom = true
       console.warn('Custom API failed, falling back to Jikan API:', error);
       // Fall back to Jikan API
       const response = await jikanApiInstance.get(endpoint, { params });
-      await delay(350); // Rate limit for Jikan API
       return response.data;
     }
   } else {
     try {
       const response = await jikanApiInstance.get(endpoint, { params });
-      await delay(350);
       return response.data;
     } catch (error) {
       console.error('Jikan API Error:', error);
@@ -59,38 +55,36 @@ export interface Anime {
   episodeDuration?: string;
   
   // Jikan API fields (for backward compatibility)
-  // mal_id?: number;
-  // title_english?: string;
-  // title_japanese?: string;
-  // images?: {
-  //   jpg: {
-  //     image_url: string;
-  //     small_image_url: string;
-  //     large_image_url: string;
-  //   };
-  //   webp: {
-  //     image_url: string;
-  //     small_image_url: string;
-  //     large_image_url: string;
-  //   };
-  // };
-  // episodes?: number;
-  // airing?: boolean;
+  mal_id?: number;
+  title_english?: string;
+  title_japanese?: string;
+  images?: {
+    jpg: {
+      image_url: string;
+      small_image_url: string;
+      large_image_url: string;
+    };
+    webp: {
+      image_url: string;
+      small_image_url: string;
+      large_image_url: string;
+    };
+  };
+  episodes?: number;
+  airing?: boolean;
   synopsis?: string;
-  // score?: number;
-  // scored_by?: number;
+  score?: number;
+  scored_by?: number;
   genres?: { mal_id: number; name: string }[];
-  // aired?: {
-  //   from: string;
-  //   to: string;
-  // };
-  // duration?: string;
-  // trailer?: {
-  //   youtube_id: string;
-  //   url: string;
-  // };
-  // createdAt?: string;
-  // updatedAt?: string;
+  aired?: {
+    from: string;
+    to: string;
+  };
+  duration?: string;
+  trailer?: {
+    youtube_id: string;
+    url: string;
+  };
 }
 
 export interface AnimeResponse {
