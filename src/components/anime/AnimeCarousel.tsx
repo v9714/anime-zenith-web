@@ -72,7 +72,7 @@ export function AnimeCarousel({ title, animes, link }: AnimeCarouselProps) {
           >
             {animes.map((anime) => (
               <AnimeCard
-                key={anime.mal_id}
+                key={anime.id}
                 anime={anime}
                 className="w-[200px] flex-shrink-0"
               />

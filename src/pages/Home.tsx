@@ -31,7 +31,7 @@ export default function Home() {
     const fetchData = async () => {
       try {
         // Fetch critical data first
-        const topResponse: AnimeResponse = await getTopAnime(1, 20);
+        const topResponse = await getTopAnime(1, 20);
         const topResults = topResponse.data;
         
         if (topResults && topResults.length > 0) {

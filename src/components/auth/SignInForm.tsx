@@ -52,11 +52,11 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
   // Demo credentials for easy testing
   const fillDemoCredentials = (type: "user" | "admin") => {
     if (type === "admin") {
-      form.setValue("email", "admin@gail.com");
+      form.setValue("email", "admin@gmail.com");
       form.setValue("password", "admin@123");
     } else {
-      form.setValue("email", "user@gail.com");
-      form.setValue("password", "user123");
+      form.setValue("email", "user@gmail.com");
+      form.setValue("password", "User@123");
     }
   };
 

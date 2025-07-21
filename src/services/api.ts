@@ -59,38 +59,38 @@ export interface Anime {
   episodeDuration?: string;
   
   // Jikan API fields (for backward compatibility)
-  mal_id?: number;
-  title_english?: string;
-  title_japanese?: string;
-  images?: {
-    jpg: {
-      image_url: string;
-      small_image_url: string;
-      large_image_url: string;
-    };
-    webp: {
-      image_url: string;
-      small_image_url: string;
-      large_image_url: string;
-    };
-  };
-  episodes?: number;
-  airing?: boolean;
+  // mal_id?: number;
+  // title_english?: string;
+  // title_japanese?: string;
+  // images?: {
+  //   jpg: {
+  //     image_url: string;
+  //     small_image_url: string;
+  //     large_image_url: string;
+  //   };
+  //   webp: {
+  //     image_url: string;
+  //     small_image_url: string;
+  //     large_image_url: string;
+  //   };
+  // };
+  // episodes?: number;
+  // airing?: boolean;
   synopsis?: string;
-  score?: number;
-  scored_by?: number;
+  // score?: number;
+  // scored_by?: number;
   genres?: { mal_id: number; name: string }[];
-  aired?: {
-    from: string;
-    to: string;
-  };
-  duration?: string;
-  trailer?: {
-    youtube_id: string;
-    url: string;
-  };
-  createdAt?: string;
-  updatedAt?: string;
+  // aired?: {
+  //   from: string;
+  //   to: string;
+  // };
+  // duration?: string;
+  // trailer?: {
+  //   youtube_id: string;
+  //   url: string;
+  // };
+  // createdAt?: string;
+  // updatedAt?: string;
 }
 
 export interface AnimeResponse {
@@ -124,7 +124,7 @@ export const getAnimeById = async (id: number | string) => {
 };
 
   // Get anime list (custom API first)
-  export const getTopAnime = async (page = 1, limit = 15) => {
+  export const getTopAnime = async (page = 1, limit = 15) : Promise<AnimeResponse> => {
     try {
       // Try custom API first
       const response = await backendAPI.get('/api/anime', { params: { page, limit } });
@@ -144,7 +144,6 @@ export const getAnimeById = async (id: number | string) => {
     } catch (error) {
       console.warn('Custom API failed for getTopAnime, using Jikan API:', error);
       // return fetchWithFallback('/top/anime', { page, limit }, false);
-      return [];
     }
   };
 
