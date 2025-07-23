@@ -10,7 +10,7 @@ import { Heart, Clock, Film, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function UserProfile() {
-  const { currentUser, signOut } = useAuth();
+  const { currentUser, watchHistory, likedContent, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("history");
   
   if (!currentUser) {
@@ -24,8 +24,8 @@ export default function UserProfile() {
     );
   }
 
-  const hasWatchHistory = currentUser.watchHistory.length > 0;
-  const hasLikedContent = currentUser.likedContent.length > 0;
+  const hasWatchHistory = watchHistory.length > 0;
+  const hasLikedContent = likedContent.length > 0;
 
   return (
     <Layout>
@@ -61,7 +61,7 @@ export default function UserProfile() {
               <h2 className="text-2xl font-semibold mb-4">Watch History</h2>
               {hasWatchHistory ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {currentUser.watchHistory.map((item) => (
+                  {watchHistory.map((item) => (
                     <Link to={`/anime/${item.animeId}`} key={`${item.animeId}-${item.lastWatched}`}>
                       <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
                         <div className="aspect-video relative">
@@ -105,7 +105,7 @@ export default function UserProfile() {
               <h2 className="text-2xl font-semibold mb-4">Favorites</h2>
               {hasLikedContent ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {currentUser.likedContent.map((item) => (
+                  {likedContent.map((item) => (
                     <Link 
                       to={item.type === "anime" ? `/anime/${item.id}` : `/episodes/${item.id}`} 
                       key={`${item.type}-${item.id}`}
