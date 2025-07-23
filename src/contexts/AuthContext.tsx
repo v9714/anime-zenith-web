@@ -87,15 +87,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const accessToken = getCookie('accessToken');
       const refreshTokenValue = getCookie('refreshToken');
       
-      if (storedUser && accessToken) {
+      // If user data exists in localStorage but no access token
+      if (storedUser && !accessToken && refreshTokenValue) {
+        // Try to refresh token first
+        const userData = await refreshToken();
+        if (userData) {
+          const userWithLocalData = {
+            ...userData,
+            watchHistory: JSON.parse(localStorage.getItem("otaku-watchHistory") || "[]"),
+            likedContent: JSON.parse(localStorage.getItem("otaku-likedContent") || "[]"),
+          };
+          setCurrentUser(userWithLocalData);
+          localStorage.setItem("otaku-user", JSON.stringify(userWithLocalData));
+        } else {
+          // If refresh fails, clear localStorage
+          localStorage.removeItem("otaku-user");
+          localStorage.removeItem("otaku-watchHistory");
+          localStorage.removeItem("otaku-likedContent");
+        }
+      } else if (storedUser && accessToken) {
+        // Both localStorage and cookies exist
         try {
           const userData = JSON.parse(storedUser);
           setCurrentUser(userData);
         } catch (error) {
           console.error("Error parsing stored user", error);
+          localStorage.removeItem("otaku-user");
         }
-      } else if (refreshTokenValue) {
-        // Try to refresh token
+      } else if (!storedUser && refreshTokenValue) {
+        // No localStorage but refresh token exists
         const userData = await refreshToken();
         if (userData) {
           const userWithLocalData = {
@@ -106,7 +126,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setCurrentUser(userWithLocalData);
           localStorage.setItem("otaku-user", JSON.stringify(userWithLocalData));
         }
+      } else if (!accessToken && !refreshTokenValue) {
+        // No tokens at all, clear localStorage
+        localStorage.removeItem("otaku-user");
+        localStorage.removeItem("otaku-watchHistory");
+        localStorage.removeItem("otaku-likedContent");
       }
+      
       setIsLoading(false);
     };
 

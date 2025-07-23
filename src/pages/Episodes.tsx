@@ -52,13 +52,13 @@ export default function Episodes() {
           // For each anime, create 1-3 "latest" episodes
           const episodeCount = Math.min(3, Math.floor(Math.random() * 3) + 1);
           for (let i = 0; i < episodeCount; i++) {
-            const episodeNumber = anime.episodes ? anime.episodes - i : Math.floor(Math.random() * 12) + 1;
+            const episodeNumber = Math.floor(Math.random() * 12) + 1;
             mockEpisodes.push({
               id: mockEpisodes.length + 1,
-              animeId: anime.mal_id,
+              animeId: parseInt(anime.id),
               number: episodeNumber,
               title: `Episode ${episodeNumber}`,
-              image: anime.images.jpg.large_image_url,
+              image: anime.coverImage || anime.bannerImage || '/placeholder.svg',
               releaseDate: new Date(Date.now() - i * 86400000 * 3).toISOString().split('T')[0]
             });
           }
@@ -79,7 +79,7 @@ export default function Episodes() {
   
   // Helper to get anime info for an episode
   const getAnimeForEpisode = (animeId: number) => {
-    return animes.find(anime => anime.mal_id === animeId);
+    return animes.find(anime => parseInt(anime.id) === animeId);
   };
   
   // Format relative date

@@ -130,17 +130,10 @@ export default function AnimeDetails() {
     "@context": "https://schema.org",
     "@type": "Movie",
     "name": anime.title,
-    "alternateName": anime.title_english || anime.title_japanese,
-    "image": anime.images.jpg.large_image_url,
-    "description": anime.synopsis,
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": anime.score,
-      "bestRating": "10",
-      "worstRating": "1",
-      "ratingCount": anime.scored_by || 0
-    },
-    "datePublished": anime.aired?.from,
+    "alternateName": anime.alternativeTitles?.en || anime.alternativeTitles?.jp,
+    "image": anime.bannerImage || anime.coverImage,
+    "description": anime.synopsis || anime.description,
+    "datePublished": anime.year?.toString(),
     "genre": anime.genres?.map(g => g.name)
   };
 
@@ -153,7 +146,7 @@ export default function AnimeDetails() {
       <div className="relative w-full h-[300px] overflow-hidden mb-8">
         <div className="absolute inset-0">
           <img
-            src={anime.images.jpg.large_image_url}
+            src={anime.bannerImage || anime.coverImage || '/placeholder.svg'}
             alt={anime.title}
             className="w-full h-full object-cover"
           />
@@ -169,31 +162,18 @@ export default function AnimeDetails() {
             {/* Poster */}
             <div>
               <img
-                src={anime.images.jpg.large_image_url}
+                src={anime.coverImage || anime.bannerImage || '/placeholder.svg'}
                 alt={anime.title}
                 className="w-full max-w-[300px] md:max-w-full rounded-md shadow-lg mx-auto md:mx-0"
               />
               
               <div className="flex justify-center gap-2 mt-4">
                 <Button asChild className="flex-1 rounded-full">
-                  <Link to={`/anime/${anime.mal_id}/watch`} className="flex items-center justify-center gap-1">
+                  <Link to={`/watch/${anime.id}`} className="flex items-center justify-center gap-1">
                     <Play className="h-4 w-4" />
                     <span>Watch</span>
                   </Link>
                 </Button>
-                
-                {anime.trailer?.youtube_id && (
-                  <Button variant="outline" size="icon" className="rounded-full" asChild>
-                    <a 
-                      href={`https://www.youtube.com/watch?v=${anime.trailer.youtube_id}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <Youtube className="h-4 w-4" />
-                      <span className="sr-only">Watch Trailer</span>
-                    </a>
-                  </Button>
-                )}
               </div>
             </div>
             
@@ -213,20 +193,14 @@ export default function AnimeDetails() {
                 
                 {renderMetaItem(
                   <Calendar className="h-4 w-4 text-muted-foreground" />,
-                  "Aired",
-                  anime.aired?.from ? new Date(anime.aired.from).getFullYear() : null
+                  "Year",
+                  anime.year
                 )}
                 
                 {renderMetaItem(
                   <Clock className="h-4 w-4 text-muted-foreground" />,
                   "Status",
                   anime.status
-                )}
-                
-                {renderMetaItem(
-                  <Film className="h-4 w-4 text-muted-foreground" />,
-                  "Episodes",
-                  anime.episodes || 'Unknown'
                 )}
                 
                 {renderMetaItem(
@@ -238,7 +212,13 @@ export default function AnimeDetails() {
                 {renderMetaItem(
                   <Clock className="h-4 w-4 text-muted-foreground" />,
                   "Duration",
-                  anime.duration
+                  anime.episodeDuration
+                )}
+                
+                {renderMetaItem(
+                  <Film className="h-4 w-4 text-muted-foreground" />,
+                  "Studio",
+                  anime.studio
                 )}
               </div>
             </div>
@@ -253,23 +233,16 @@ export default function AnimeDetails() {
             <AdBanner className="h-[90px] mb-6" slot="details-top" />
             
             <h1 className="text-3xl font-heading font-bold">{anime.title}</h1>
-            {anime.title_english && anime.title_english !== anime.title && (
-              <p className="text-xl text-muted-foreground mt-1">{anime.title_english}</p>
+            {anime.alternativeTitles?.en && anime.alternativeTitles.en !== anime.title && (
+              <p className="text-xl text-muted-foreground mt-1">{anime.alternativeTitles.en}</p>
             )}
             
-            {anime.title_japanese && (
-              <p className="text-sm text-muted-foreground mt-1">{anime.title_japanese}</p>
+            {anime.alternativeTitles?.jp && (
+              <p className="text-sm text-muted-foreground mt-1">{anime.alternativeTitles.jp}</p>
             )}
             
             {/* Rating and Status */}
             <div className="flex flex-wrap gap-2 mt-4">
-              {anime.score && (
-                <Badge className="flex items-center gap-1 bg-yellow-500 text-primary-foreground">
-                  <Star className="h-3 w-3 fill-primary-foreground" />
-                  <span>{anime.score.toFixed(1)}</span>
-                </Badge>
-              )}
-              
               {anime.status && (
                 <Badge variant="outline">
                   {anime.status}
@@ -279,6 +252,12 @@ export default function AnimeDetails() {
               {anime.rating && (
                 <Badge variant="secondary">
                   {anime.rating}
+                </Badge>
+              )}
+              
+              {anime.year && (
+                <Badge className="bg-primary/10 text-primary">
+                  {anime.year}
                 </Badge>
               )}
             </div>

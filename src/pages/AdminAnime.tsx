@@ -22,45 +22,29 @@ const AdminAnime = () => {
   // Mock data - in a real app this would come from your API
   const [animes, setAnimes] = useState<Anime[]>([
     {
-      mal_id: 1,
+      id: "1",
       title: "Fullmetal Alchemist: Brotherhood",
-      title_english: "Fullmetal Alchemist: Brotherhood",
-      title_japanese: "鋼の錬金術師 FULLMETAL ALCHEMIST",
-      images: {
-        jpg: {
-          image_url: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
-          small_image_url: "https://cdn.myanimelist.net/images/anime/1223/96541t.jpg",
-          large_image_url: "https://cdn.myanimelist.net/images/anime/1223/96541l.jpg"
-        },
-        webp: {
-          image_url: "https://cdn.myanimelist.net/images/anime/1223/96541.webp",
-          small_image_url: "https://cdn.myanimelist.net/images/anime/1223/96541t.webp",
-          large_image_url: "https://cdn.myanimelist.net/images/anime/1223/96541l.webp"
-        }
+      alternativeTitles: {
+        en: "Fullmetal Alchemist: Brotherhood",
+        jp: "鋼の錬金術師 FULLMETAL ALCHEMIST"
       },
-      type: "TV",
-      episodes: 64,
-      status: "Finished Airing",
-      airing: false,
+      description: "After a terrible alchemy experiment gone wrong...",
       synopsis: "After a terrible alchemy experiment gone wrong...",
-      score: 9.11,
+      coverImage: "https://cdn.myanimelist.net/images/anime/1223/96541t.jpg",
+      bannerImage: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
+      year: 2009,
+      season: "Spring",
+      status: "Completed",
+      type: "TV",
+      rating: "R - 17+ (violence & profanity)",
+      votesCount: 1500000,
+      studio: "Bones",
+      episodeDuration: "24 min per ep",
       genres: [
         { mal_id: 1, name: "Action" },
         { mal_id: 2, name: "Adventure" },
         { mal_id: 8, name: "Drama" }
-      ],
-      rating: "R - 17+ (violence & profanity)",
-      aired: {
-        from: "2009-04-05T00:00:00+00:00",
-        to: "2010-07-04T00:00:00+00:00"
-      },
-      season: "spring",
-      year: 2009,
-      duration: "24 min per ep",
-      trailer: {
-        youtube_id: "--IcmZkvL0Q",
-        url: "https://www.youtube.com/watch?v=--IcmZkvL0Q"
-      }
+      ]
     }
   ]);
 
@@ -95,7 +79,7 @@ const AdminAnime = () => {
                   Fill in the details to add a new anime to the database.
                 </DialogDescription>
               </DialogHeader>
-              <AnimeForm onSubmit={handleAddAnime} />
+              <AnimeForm onSubmit={handleAddAnime} onCancel={() => setDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
@@ -129,36 +113,36 @@ const AdminAnime = () => {
               <tbody>
                 {filteredAnime.map((anime) => (
                   <tr 
-                    key={anime.mal_id} 
+                    key={anime.id} 
                     className="border-b transition-colors hover:bg-muted/30"
                   >
                     <td className="p-2 sm:p-4 align-middle">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <img 
-                          src={anime.images.webp.small_image_url} 
+                          src={anime.coverImage} 
                           alt={anime.title}
                           className="h-10 w-10 sm:h-12 sm:w-12 rounded-md object-cover shadow-sm"
                         />
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">{anime.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{anime.title_japanese}</p>
+                          <p className="text-xs text-muted-foreground truncate">{anime.alternativeTitles?.jp}</p>
                         </div>
                       </div>
                     </td>
                     <td className="p-2 sm:p-4 align-middle text-sm">{anime.type}</td>
-                    <td className="p-2 sm:p-4 align-middle text-sm">{anime.episodes}</td>
+                    <td className="p-2 sm:p-4 align-middle text-sm">-</td>
                     <td className="p-2 sm:p-4 align-middle">
                       <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        anime.airing 
+                        anime.status === "Airing" 
                           ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
                           : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
                       }`}>
-                        {anime.airing ? "Airing" : "Completed"}
+                        {anime.status || "Completed"}
                       </div>
                     </td>
                     <td className="p-2 sm:p-4 align-middle">
                       <div className="flex flex-wrap gap-1">
-                        {anime.genres.slice(0, 2).map((genre) => (
+                        {anime.genres?.slice(0, 2).map((genre) => (
                           <span 
                             key={genre.mal_id} 
                             className="inline-block bg-muted/60 px-1.5 py-0.5 text-xs rounded-full"
@@ -166,7 +150,7 @@ const AdminAnime = () => {
                             {genre.name}
                           </span>
                         ))}
-                        {anime.genres.length > 2 && (
+                        {anime.genres && anime.genres.length > 2 && (
                           <span className="inline-block bg-muted/60 px-1.5 py-0.5 text-xs rounded-full">
                             +{anime.genres.length - 2}
                           </span>
