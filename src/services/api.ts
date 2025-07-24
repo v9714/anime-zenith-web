@@ -77,13 +77,13 @@ export const searchAnime = async (query: string, page = 1, limit = 15) => {
     params: { title: query, page, limit } 
   });
   return {
-    data: response.data.data.results || response.data.data.anime || [],
+    data: response.data.data || response.data.data.anime || [],
     pagination: {
       current_page: response.data.data.currentPage,
       last_visible_page: response.data.data.totalPages,
       has_next_page: response.data.data.currentPage < response.data.data.totalPages,
       items: {
-        count: (response.data.data.results || response.data.data.anime || []).length,
+        count: (response.data.data || response.data.data.anime || []).length,
         total: response.data.data.totalResults || response.data.data.totalAnime || 0,
         per_page: response.data.data.limit
       }
