@@ -19,7 +19,7 @@ export interface UserProfileResponse {
 
 export const userService = {
   getProfile: async (): Promise<UserProfileResponse> => {
-    const response = await backendAPI.get<UserProfileResponse>('/users/me');
+    const response = await backendAPI.get<UserProfileResponse>('/api/users/me');
     return response.data;
   }
 };
