@@ -3,7 +3,7 @@ import * as React from "react";
 import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
 import { userService, UserProfile } from "@/services/userService";
-import { getCookie, setCookie, deleteCookie } from "@/services/backendApi";
+import { getToken, setToken, removeToken } from "@/services/backendApi";
 import { 
   watchHistoryUtils, 
   likedContentUtils, 
@@ -47,9 +47,9 @@ const refreshToken = async (): Promise<UserProfile | null> => {
     if (response.success) {
       const { user, accessToken, refreshToken: newRefreshToken } = response.data;
       
-      // Set tokens in cookies
-      setCookie('accessToken', accessToken, 1); // 1 day
-      setCookie('refreshToken', newRefreshToken, 7); // 7 days
+      // Set tokens in localStorage
+      setToken('accessToken', accessToken);
+      setToken('refreshToken', newRefreshToken);
       
       return user;
     }
@@ -88,8 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check for existing user session on mount
   React.useEffect(() => {
     const checkAuthState = async () => {
-      const accessToken = getCookie('accessToken');
-      const refreshTokenValue = getCookie('refreshToken');
+      const accessToken = getToken('accessToken');
+      const refreshTokenValue = getToken('refreshToken');
       
       if (accessToken) {
         // If we have access token, fetch current user profile
@@ -140,9 +140,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.success) {
         const { user, accessToken, refreshToken: newRefreshToken } = response.data;
         
-        // Set tokens in cookies
-        setCookie('accessToken', accessToken, 1); // 1 day
-        setCookie('refreshToken', newRefreshToken, 7); // 7 days
+        // Set tokens in localStorage
+        setToken('accessToken', accessToken);
+        setToken('refreshToken', newRefreshToken);
         
         // Set user data in state (no localStorage for user data)
         setCurrentUser(user);
@@ -170,8 +170,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     likedContentUtils.clear();
     setWatchHistory([]);
     setLikedContent([]);
-    deleteCookie('accessToken');
-    deleteCookie('refreshToken');
+    removeToken('accessToken');
+    removeToken('refreshToken');
     toast({
       id: String(Date.now()),
       title: "Signed out",

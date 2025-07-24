@@ -3,21 +3,30 @@ import axios from "axios";
 // Backend API base URL
 const BACKEND_API_BASE_URL = "http://localhost:8081";
 
-// Cookie utility functions
-export const getCookie = (name: string): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
+// LocalStorage utility functions for tokens
+export const getToken = (name: string): string | null => {
+  try {
+    return localStorage.getItem(name);
+  } catch (error) {
+    console.error('Error accessing localStorage:', error);
+    return null;
+  }
 };
 
-export const setCookie = (name: string, value: string, days: number = 7) => {
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+export const setToken = (name: string, value: string) => {
+  try {
+    localStorage.setItem(name, value);
+  } catch (error) {
+    console.error('Error setting localStorage:', error);
+  }
 };
 
-export const deleteCookie = (name: string) => {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+export const removeToken = (name: string) => {
+  try {
+    localStorage.removeItem(name);
+  } catch (error) {
+    console.error('Error removing from localStorage:', error);
+  }
 };
 
 // Create unified axios instance for backend API
@@ -30,7 +39,7 @@ const backendAPI = axios.create({
 // Request interceptor to add token to headers
 backendAPI.interceptors.request.use(
   (config) => {
-    const token = getCookie('accessToken');
+    const token = getToken('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -94,9 +103,9 @@ backendAPI.interceptors.response.use(
         if (refreshResponse.data.success) {
           const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
           
-          // Set new tokens in cookies
-          setCookie('accessToken', accessToken, 1); // 1 day
-          setCookie('refreshToken', newRefreshToken, 7); // 7 days
+          // Set new tokens in localStorage
+          setToken('accessToken', accessToken);
+          setToken('refreshToken', newRefreshToken);
           
           // Update the original request with new token
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -113,8 +122,8 @@ backendAPI.interceptors.response.use(
         processQueue(refreshError, null);
         
         // Clear tokens and redirect to login
-        deleteCookie('accessToken');
-        deleteCookie('refreshToken');
+        removeToken('accessToken');
+        removeToken('refreshToken');
         
         // Only redirect if we're not already on the home page
         if (window.location.pathname !== '/') {

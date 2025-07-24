@@ -28,15 +28,8 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Configure different minification options based on mode
-    minify: mode === 'production' ? "terser" : false,
+    minify: mode === 'production' ? "esbuild" : false,
     cssCodeSplit: true,
-    // Only use terser options in production
-    terserOptions: mode === 'production' ? {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    } : undefined,
     // Optimize asset loading
     assetsInlineLimit: 4096, // 4KB - inline small assets
     rollupOptions: {

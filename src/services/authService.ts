@@ -61,9 +61,9 @@ export const authService = {
       // Even if logout fails on server, we should clear local tokens
       console.error('Logout error:', error);
     } finally {
-      const { deleteCookie } = await import('./backendApi');
-      deleteCookie('accessToken');
-      deleteCookie('refreshToken');
+      const { removeToken } = await import('./backendApi');
+      removeToken('accessToken');
+      removeToken('refreshToken');
     }
   }
 };
