@@ -6,6 +6,7 @@ import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/
 import { preloadCriticalImages } from "@/lib/image-optimizer";
 import { HeroSlider } from "@/components/anime/HeroSlider";  // Use regular import instead of dynamic import
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
+import { getImageUrl } from "@/utils/commanFunction";
 
 // Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -164,7 +165,7 @@ export default function Home() {
                       {trendingAnime.slice(0, 8).map((anime) => (
                         <div key={anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <LazyImage 
-                            src={anime?.coverImage || anime?.bannerImage}
+                            src={getImageUrl(anime?.coverImage || anime?.bannerImage)}
                             alt={anime.title}
                             width="64"
                             height="96"
@@ -202,7 +203,7 @@ export default function Home() {
                       {seasonalAnime.slice(0, 8).map((anime) => (
                         <div key={anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
                           <LazyImage 
-                            src={anime.coverImage || anime.bannerImage}
+                            src={getImageUrl(anime.coverImage || anime.bannerImage)}
                             alt={anime.title}
                             width="64"
                             height="96"

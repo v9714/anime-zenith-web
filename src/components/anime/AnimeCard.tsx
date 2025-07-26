@@ -6,6 +6,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { getImageUrl } from "@/utils/commanFunction";
 
 interface AnimeCardProps {
   anime: Anime;
@@ -18,9 +19,8 @@ export function AnimeCard({ anime, className = "", showDescription = false }: An
     <Card className={`overflow-hidden group transition-all hover:shadow-md ${className}`}>
       <div className="relative overflow-hidden">
         <AspectRatio ratio={3/4}>
-          <img 
-            // src={anime?.images?.webp.large_image_url || anime?.images?.jpg?.large_image_url} 
-            src={anime?.coverImage} 
+          <img
+            src={getImageUrl(anime?.coverImage)}
             alt={anime.title}
             className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
             loading="lazy"

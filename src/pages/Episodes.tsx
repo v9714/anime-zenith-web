@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Play } from "lucide-react";
+import { getImageUrl } from "@/utils/commanFunction";
 
 // Ad component placeholder (for Google AdSense)
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -58,7 +59,7 @@ export default function Episodes() {
               animeId: parseInt(anime.id),
               number: episodeNumber,
               title: `Episode ${episodeNumber}`,
-              image: anime.coverImage || anime.bannerImage || '/placeholder.svg',
+              image: getImageUrl(anime.coverImage || anime.bannerImage),
               releaseDate: new Date(Date.now() - i * 86400000 * 3).toISOString().split('T')[0]
             });
           }

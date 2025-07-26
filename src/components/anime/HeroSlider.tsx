@@ -5,6 +5,7 @@ import { Play, ChevronRight, Pause } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Anime } from "@/services/api";
 import { cn } from "@/lib/utils";
+import { getImageUrl } from "@/utils/commanFunction";
 
 // Simplified metadata item
 function MetaItem({ label, value }: { label: string, value?: string | number }) {
@@ -26,23 +27,23 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const autoplayTimerRef = useRef<number | null>(null);
-  
+
   // Auto-advance slides
   useEffect(() => {
     if (!isPlaying) return;
-    
+
     // Clear any existing timer
     if (autoplayTimerRef.current) {
       window.clearTimeout(autoplayTimerRef.current);
     }
-    
+
     // Set new timer
     autoplayTimerRef.current = window.setTimeout(() => {
       const nextIndex = (activeIndex + 1) % animes.length;
       setActiveIndex(nextIndex);
       onSlideChange?.(nextIndex);
     }, 5000); // 5 second interval
-    
+
     // Cleanup
     return () => {
       if (autoplayTimerRef.current) {
@@ -50,18 +51,18 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
       }
     };
   }, [activeIndex, animes.length, isPlaying, onSlideChange]);
-  
+
   // Handle slide change
   const handleSlideChange = useCallback((newIndex: number) => {
     setActiveIndex(newIndex);
     onSlideChange?.(newIndex);
   }, [onSlideChange]);
-  
+
   // Toggle autoplay
   const toggleAutoplay = useCallback(() => {
     setIsPlaying(prev => !prev);
   }, []);
-  
+
   const currentAnime = animes[activeIndex];
 
   // Get metadata for display
@@ -79,11 +80,11 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
       {/* Background with optimized gradient */}
       <div className="absolute inset-0 z-0">
         {/* Background image with improved opacity */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 rounded-lg"
           style={{
             backgroundImage: currentAnime
-              ? `url(${currentAnime.coverImage || currentAnime.bannerImage})`
+              ? `url(${getImageUrl(currentAnime.coverImage || currentAnime.bannerImage)})`
               : undefined,
           }}
         />
@@ -104,19 +105,19 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               <h1 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight line-clamp-2 min-h-[3rem]">
                 {currentAnime?.title}
               </h1>
-              
+
               {/* Metadata with responsive display */}
               <div className="flex flex-wrap items-center min-h-[2rem]">
                 {meta.slice(0, 3).map(({ label, value }) => (
                   <MetaItem key={label} label={label} value={value} />
                 ))}
               </div>
-              
+
               {/* Synopsis with fixed height */}
               <p className="text-xs md:text-sm text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3.5rem]">
                 {currentAnime?.description}
               </p>
-              
+
               {/* Buttons with fixed positioning */}
               <div className="flex gap-3 pt-2">
                 <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white">
@@ -131,12 +132,12 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               </div>
             </div>
           </div>
-          
+
           {/* RIGHT: anime image with fixed dimensions */}
           <div className="hidden md:flex w-1/2 h-full justify-center items-center">
             <div className="relative w-48 h-64 flex-shrink-0">
               <img
-                src={currentAnime?.coverImage || currentAnime?.bannerImage}
+                src={getImageUrl(currentAnime?.coverImage || currentAnime?.bannerImage)}
                 alt={currentAnime?.title}
                 className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg"
                 loading="eager"
@@ -144,7 +145,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Navigation section - Absolute positioned to stay fixed */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-6 md:px-8 pb-4">
           <div className="flex items-center justify-between">
@@ -155,8 +156,8 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                   key={index}
                   className={cn(
                     "w-2 h-2 rounded-full transition-all",
-                    activeIndex === index 
-                      ? "bg-anime-secondary w-4" 
+                    activeIndex === index
+                      ? "bg-anime-secondary w-4"
                       : "bg-white/30 hover:bg-white/60"
                   )}
                   onClick={() => handleSlideChange(index)}
@@ -164,7 +165,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                 />
               ))}
             </div>
-            
+
             {/* Control buttons - Fixed positioning */}
             <div className="flex gap-2 ml-4 flex-shrink-0">
               <Button
@@ -181,7 +182,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                   <Play className="w-4 h-4" />
                 )}
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="sm"

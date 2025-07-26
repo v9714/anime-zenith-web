@@ -1,7 +1,6 @@
+import { BACKEND_API_BASE_URL } from "@/utils/constants";
 import axios from "axios";
 
-// Backend API base URL
-const BACKEND_API_BASE_URL = "http://localhost:8081";
 
 // LocalStorage utility functions for tokens
 export const getToken = (name: string): string | null => {
@@ -63,7 +62,7 @@ const processQueue = (error: any, token: string | null = null) => {
       resolve(token);
     }
   });
-  
+
   failedQueue = [];
 };
 
@@ -90,8 +89,8 @@ backendAPI.interceptors.response.use(
       try {
         // Use a separate axios instance to avoid interceptor loops
         const refreshResponse = await axios.post(
-          `${BACKEND_API_BASE_URL}/auth/refresh-token`, 
-          {}, 
+          `${BACKEND_API_BASE_URL}/auth/refresh-token`,
+          {},
           {
             withCredentials: true,
             headers: {
@@ -102,17 +101,17 @@ backendAPI.interceptors.response.use(
 
         if (refreshResponse.data.success) {
           const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
-          
+
           // Set new tokens in localStorage
           setToken('accessToken', accessToken);
           setToken('refreshToken', newRefreshToken);
-          
+
           // Update the original request with new token
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          
+
           // Process the queued requests
           processQueue(null, accessToken);
-          
+
           return backendAPI(originalRequest);
         } else {
           throw new Error('Refresh token failed');
@@ -120,16 +119,16 @@ backendAPI.interceptors.response.use(
       } catch (refreshError) {
         // Process queue with error
         processQueue(refreshError, null);
-        
+
         // Clear tokens and redirect to login
         removeToken('accessToken');
         removeToken('refreshToken');
-        
+
         // Only redirect if we're not already on the home page
         if (window.location.pathname !== '/') {
           window.location.href = '/';
         }
-        
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

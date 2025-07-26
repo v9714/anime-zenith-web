@@ -4,6 +4,7 @@ import { Play, Star } from "lucide-react";
 import { Anime } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/utils/commanFunction";
 
 interface AnimeBannerProps {
   anime: Anime;
@@ -17,7 +18,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 w-full h-full">
         <img
-          src={anime?.coverImage || anime?.bannerImage}
+          src={getImageUrl(anime?.coverImage || anime?.bannerImage)}
           alt={anime.title}
           className="w-full h-full object-cover"
         />
@@ -29,7 +30,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
         {/* Poster */}
         <div className="md:w-1/4 shrink-0">
           <img
-            src={anime.coverImage || anime.bannerImage}
+            src={getImageUrl(anime.coverImage || anime.bannerImage)}
             alt={anime.title}
             className="w-full max-w-[220px] rounded-md shadow-lg mx-auto md:mx-0"
           />

@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { getAnimeById, getAnimeRecommendations, Anime } from "@/services/api";
+import { getImageUrl } from "@/utils/commanFunction";
 
 // Ad component placeholder (for Google AdSense)
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -146,7 +147,7 @@ export default function AnimeDetails() {
       <div className="relative w-full h-[300px] overflow-hidden mb-8">
         <div className="absolute inset-0">
           <img
-            src={anime.bannerImage || anime.coverImage || '/placeholder.svg'}
+            src={getImageUrl(anime.bannerImage || anime.coverImage)}
             alt={anime.title}
             className="w-full h-full object-cover"
           />
@@ -162,7 +163,7 @@ export default function AnimeDetails() {
             {/* Poster */}
             <div>
               <img
-                src={anime.coverImage || anime.bannerImage || '/placeholder.svg'}
+                src={getImageUrl(anime.coverImage || anime.bannerImage)}
                 alt={anime.title}
                 className="w-full max-w-[300px] md:max-w-full rounded-md shadow-lg mx-auto md:mx-0"
               />

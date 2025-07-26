@@ -4,7 +4,8 @@ export const SITE_NAME = "OtakuTv";
 export const SITE_DESCRIPTION = "Your Ultimate Anime Streaming Platform";
 
 // API Endpoints
-export const API_BASE_URL = "https://api.jikan.moe/v4";
+export const BACKEND_API_BASE_URL = 'http://localhost:8081';
+export const BACKEND_API_Image_URL = 'http://localhost:8081/uploads/';
 
 // Theme Colors
 export const THEME_COLORS = {

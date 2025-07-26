@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { AnimeForm } from "@/components/admin/AnimeForm";
 import { Anime } from "@/services/api";
+import { getImageUrl } from "@/utils/commanFunction";
 
 const AdminAnime = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,7 +119,7 @@ const AdminAnime = () => {
                     <td className="p-2 sm:p-4 align-middle">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <img 
-                          src={anime.coverImage} 
+                          src={getImageUrl(anime.coverImage)} 
                           alt={anime.title}
                           className="h-10 w-10 sm:h-12 sm:w-12 rounded-md object-cover shadow-sm"
                         />
