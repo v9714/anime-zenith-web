@@ -9,7 +9,6 @@ export interface Anime {
     jp: string;
   };
   description?: string;
-  synopsis?: string;
   coverImage?: string;
   bannerImage?: string;
   year?: number;

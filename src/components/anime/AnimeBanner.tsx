@@ -70,7 +70,7 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
           </div>
 
           <p className="mt-6 text-muted-foreground line-clamp-3 max-w-2xl">
-            {anime.synopsis || anime.description}
+            {anime.description}
           </p>
 
           <div className="flex flex-wrap gap-3 mt-6 justify-center md:justify-start">

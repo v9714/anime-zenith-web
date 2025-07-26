@@ -56,8 +56,8 @@ export function AnimeCard({ anime, className = "", showDescription = false }: An
           {anime.votesCount && ` • ${anime.votesCount} episodes`}
         </p>
         
-        {showDescription && anime.synopsis && (
-          <p className="text-xs mt-2 text-muted-foreground line-clamp-3">{anime.synopsis}</p>
+        {showDescription && anime.description && (
+          <p className="text-xs mt-2 text-muted-foreground line-clamp-3">{anime.description}</p>
         )}
       </CardContent>
       

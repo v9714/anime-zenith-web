@@ -29,7 +29,6 @@ const AdminAnime = () => {
         jp: "鋼の錬金術師 FULLMETAL ALCHEMIST"
       },
       description: "After a terrible alchemy experiment gone wrong...",
-      synopsis: "After a terrible alchemy experiment gone wrong...",
       coverImage: "https://cdn.myanimelist.net/images/anime/1223/96541t.jpg",
       bannerImage: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
       year: 2009,

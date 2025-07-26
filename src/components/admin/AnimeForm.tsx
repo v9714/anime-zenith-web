@@ -48,7 +48,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
     resolver: zodResolver(animeFormSchema),
     defaultValues: anime ? {
       title: anime.title,
-      description: anime.description || anime.synopsis || "",
+      description: anime.description || "",
       cover_image_url: anime.coverImage || "",
       banner_image_url: anime.bannerImage || "",
       type: anime.type as "TV" | "Movie" | "OVA" | "Special" || "TV",
@@ -86,7 +86,6 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
         jp: ""
       },
       description: data.description,
-      synopsis: data.description,
       coverImage: data.cover_image_url,
       bannerImage: data.banner_image_url || data.cover_image_url,
       year: data.year,

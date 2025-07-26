@@ -1,14 +1,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { 
-  Calendar, 
-  Clock, 
-  Film, 
-  Info, 
-  Play, 
-  Star, 
-  Youtube 
+import {
+  Calendar,
+  Clock,
+  Film,
+  Info,
+  Play,
+  Star,
+  Youtube
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
@@ -39,14 +39,14 @@ export default function AnimeDetails() {
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Fetch anime details
         const response = await getAnimeById(parseInt(id));
         setAnime(response.data);
-        
+
         // Fetch recommendations
         const recsResponse = await getAnimeRecommendations(parseInt(id));
         if (recsResponse.data && Array.isArray(recsResponse.data)) {
@@ -55,10 +55,10 @@ export default function AnimeDetails() {
             .slice(0, 12)
             .map(rec => rec.entry)
             .filter(Boolean);
-          
+
           setRecommendations(recommendedAnimes);
         }
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching anime details:', error);
@@ -72,7 +72,7 @@ export default function AnimeDetails() {
   // Function to render meta data items
   const renderMetaItem = (icon: React.ReactNode, label: string, value: string | number | null) => {
     if (!value) return null;
-    
+
     return (
       <div className="flex items-center gap-2">
         {icon}
@@ -132,7 +132,7 @@ export default function AnimeDetails() {
     "name": anime.title,
     "alternateName": anime.alternativeTitles?.en || anime.alternativeTitles?.jp,
     "image": anime.bannerImage || anime.coverImage,
-    "description": anime.synopsis || anime.description,
+    "description": anime.description,
     "datePublished": anime.year?.toString(),
     "genre": anime.genres?.map(g => g.name)
   };
@@ -141,7 +141,7 @@ export default function AnimeDetails() {
     <Layout>
       {/* Structured Data for SEO */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      
+
       {/* Background Banner */}
       <div className="relative w-full h-[300px] overflow-hidden mb-8">
         <div className="absolute inset-0">
@@ -153,7 +153,7 @@ export default function AnimeDetails() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/70" />
         </div>
       </div>
-      
+
       {/* Main Content */}
       <div className="container -mt-40 relative z-10 mb-8">
         <div className="flex flex-col md:flex-row gap-8">
@@ -166,7 +166,7 @@ export default function AnimeDetails() {
                 alt={anime.title}
                 className="w-full max-w-[300px] md:max-w-full rounded-md shadow-lg mx-auto md:mx-0"
               />
-              
+
               <div className="flex justify-center gap-2 mt-4">
                 <Button asChild className="flex-1 rounded-full">
                   <Link to={`/watch/${anime.id}`} className="flex items-center justify-center gap-1">
@@ -176,45 +176,45 @@ export default function AnimeDetails() {
                 </Button>
               </div>
             </div>
-            
+
             {/* Metadata */}
             <div className="bg-card rounded-lg p-4 shadow-sm border border-border">
               <h3 className="font-medium mb-4 flex items-center gap-2">
                 <Info className="h-4 w-4" />
                 <span>Anime Info</span>
               </h3>
-              
+
               <div className="grid gap-4">
                 {renderMetaItem(
                   <Film className="h-4 w-4 text-muted-foreground" />,
                   "Type",
                   anime.type
                 )}
-                
+
                 {renderMetaItem(
                   <Calendar className="h-4 w-4 text-muted-foreground" />,
                   "Year",
                   anime.year
                 )}
-                
+
                 {renderMetaItem(
                   <Clock className="h-4 w-4 text-muted-foreground" />,
                   "Status",
                   anime.status
                 )}
-                
+
                 {renderMetaItem(
                   <Star className="h-4 w-4 text-muted-foreground" />,
                   "Rating",
                   anime.rating
                 )}
-                
+
                 {renderMetaItem(
                   <Clock className="h-4 w-4 text-muted-foreground" />,
                   "Duration",
                   anime.episodeDuration
                 )}
-                
+
                 {renderMetaItem(
                   <Film className="h-4 w-4 text-muted-foreground" />,
                   "Studio",
@@ -222,25 +222,25 @@ export default function AnimeDetails() {
                 )}
               </div>
             </div>
-            
+
             {/* Sidebar Ad */}
             <AdBanner className="h-[250px]" slot="details-sidebar" />
           </div>
-          
+
           {/* Main Details */}
           <div className="w-full md:w-3/4">
             {/* Top Banner Ad */}
             <AdBanner className="h-[90px] mb-6" slot="details-top" />
-            
+
             <h1 className="text-3xl font-heading font-bold">{anime.title}</h1>
             {anime.alternativeTitles?.en && anime.alternativeTitles.en !== anime.title && (
               <p className="text-xl text-muted-foreground mt-1">{anime.alternativeTitles.en}</p>
             )}
-            
+
             {anime.alternativeTitles?.jp && (
               <p className="text-sm text-muted-foreground mt-1">{anime.alternativeTitles.jp}</p>
             )}
-            
+
             {/* Rating and Status */}
             <div className="flex flex-wrap gap-2 mt-4">
               {anime.status && (
@@ -248,20 +248,20 @@ export default function AnimeDetails() {
                   {anime.status}
                 </Badge>
               )}
-              
+
               {anime.rating && (
                 <Badge variant="secondary">
                   {anime.rating}
                 </Badge>
               )}
-              
+
               {anime.year && (
                 <Badge className="bg-primary/10 text-primary">
                   {anime.year}
                 </Badge>
               )}
             </div>
-            
+
             {/* Genres */}
             <div className="flex flex-wrap gap-2 mt-4">
               {anime.genres?.map(genre => (
@@ -272,7 +272,7 @@ export default function AnimeDetails() {
                 </Link>
               ))}
             </div>
-            
+
             {/* Tabs for Details, Episodes, etc. */}
             <Tabs defaultValue="synopsis" className="mt-8">
               <TabsList className="mb-4">
@@ -280,16 +280,16 @@ export default function AnimeDetails() {
                 <TabsTrigger value="episodes">Episodes</TabsTrigger>
                 <TabsTrigger value="characters">Characters</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="synopsis" className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  {anime.synopsis || "No synopsis available."}
+                  {anime.description || "No synopsis available."}
                 </p>
-                
+
                 {/* In-content Ad */}
                 <AdBanner className="h-[250px] my-6" slot="details-in-content" />
               </TabsContent>
-              
+
               <TabsContent value="episodes">
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
@@ -297,7 +297,7 @@ export default function AnimeDetails() {
                   </p>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="characters">
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
@@ -309,17 +309,17 @@ export default function AnimeDetails() {
           </div>
         </div>
       </div>
-      
+
       {/* Recommended Anime */}
       {recommendations && recommendations.length > 0 && (
         <div className="py-8 border-t">
-          <AnimeCarousel 
-            title="You May Also Like" 
-            animes={recommendations} 
+          <AnimeCarousel
+            title="You May Also Like"
+            animes={recommendations}
           />
         </div>
       )}
-      
+
       {/* Bottom Banner Ad */}
       <div className="container py-6">
         <AdBanner className="h-[90px]" slot="details-bottom" />
