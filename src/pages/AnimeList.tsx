@@ -3,12 +3,12 @@ import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { AnimeGrid } from "@/components/anime/AnimeGrid";
 import { getTopAnime, getAnimeGenres, getAnimeByGenre, Anime } from "@/services/api";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,14 +29,14 @@ const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slo
 export default function AnimeList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [animes, setAnimes] = useState<Anime[]>([]);
-  const [genres, setGenres] = useState<{ mal_id: number; name: string }[]>([]);
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   const page = parseInt(searchParams.get("page") || "1");
   const genre = searchParams.get("genre") || "";
   const sort = searchParams.get("sort") || "top";
-  
+
   useEffect(() => {
     // Fetch available genres
     const fetchGenres = async () => {
@@ -49,16 +49,16 @@ export default function AnimeList() {
         console.error('Error fetching genres:', error);
       }
     };
-    
+
     fetchGenres();
   }, []);
-  
+
   useEffect(() => {
     const fetchAnime = async () => {
       setIsLoading(true);
       try {
         let response;
-        
+
         if (genre) {
           // Fetch anime by genre
           response = await getAnimeByGenre(parseInt(genre), page);
@@ -66,7 +66,7 @@ export default function AnimeList() {
           // Fetch top anime
           response = await getTopAnime(page, 24);
         }
-        
+
         if (response.data) {
           setAnimes(response.data);
           setTotalPages(response.pagination?.last_visible_page || 1);
@@ -77,16 +77,16 @@ export default function AnimeList() {
         setIsLoading(false);
       }
     };
-    
+
     fetchAnime();
   }, [page, genre, sort]);
-  
+
   const handlePageChange = (newPage: number) => {
     searchParams.set("page", newPage.toString());
     setSearchParams(searchParams);
     window.scrollTo(0, 0);
   };
-  
+
   const handleGenreChange = (value: string) => {
     if (value) {
       searchParams.set("genre", value);
@@ -96,13 +96,13 @@ export default function AnimeList() {
     searchParams.set("page", "1");
     setSearchParams(searchParams);
   };
-  
+
   const handleSortChange = (value: string) => {
     searchParams.set("sort", value);
     searchParams.set("page", "1");
     setSearchParams(searchParams);
   };
-  
+
   return (
     <Layout>
       {/* SEO Metadata */}
@@ -110,13 +110,13 @@ export default function AnimeList() {
         <meta itemProp="name" content="Anime List - Otaku" />
         <meta itemProp="description" content="Browse through our extensive collection of anime shows and movies. Filter by genre, sort by popularity, and discover new content." />
       </div>
-      
+
       <div className="container py-8">
         <h1 className="text-3xl font-heading font-bold mb-6">Anime List</h1>
-        
+
         {/* Top Banner Ad */}
         <AdBanner className="h-[90px] mb-8" slot="list-top" />
-        
+
         {/* Filters and Sorting */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1">
@@ -129,15 +129,15 @@ export default function AnimeList() {
                   <SelectContent>
                     {/* Fix: Change empty string value to "all" */}
                     <SelectItem value="all">All Genres</SelectItem>
-                    {genres.map((g) => (
-                      <SelectItem key={g.mal_id} value={g.mal_id.toString()}>
+                    {genres.map((g, inx) => (
+                      <SelectItem key={g.id ?? inx} value={g.id?.toString()}>
                         {g.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="w-full sm:w-auto">
                 <Select value={sort} onValueChange={handleSortChange}>
                   <SelectTrigger className="w-full sm:w-[200px]">
@@ -152,13 +152,13 @@ export default function AnimeList() {
               </div>
             </div>
           </div>
-          
+
           {/* Pagination Info */}
           <div className="text-muted-foreground text-sm flex items-center">
             Page {page} of {totalPages}
           </div>
         </div>
-        
+
         {/* Main Content */}
         <div className="flex gap-8">
           <div className="w-full">
@@ -175,7 +175,7 @@ export default function AnimeList() {
             ) : (
               <AnimeGrid animes={animes} />
             )}
-            
+
             {/* Pagination */}
             <div className="flex justify-center mt-8">
               <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function AnimeList() {
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Prev
                 </Button>
-                
+
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
@@ -201,7 +201,7 @@ export default function AnimeList() {
                     } else {
                       pageNum = page - 2 + i;
                     }
-                    
+
                     return (
                       <Button
                         key={i}
@@ -215,7 +215,7 @@ export default function AnimeList() {
                     );
                   })}
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -229,7 +229,7 @@ export default function AnimeList() {
             </div>
           </div>
         </div>
-        
+
         {/* Bottom Ad */}
         <AdBanner className="h-[90px] mt-8" slot="list-bottom" />
       </div>

@@ -40,13 +40,7 @@ export interface SingleAnimeResponse {
   data: Anime;
 }
 
-// Get anime by ID
-export const getAnimeById = async (id: number | string) => {
-  const response = await backendAPI.get(`/api/anime/${id}`);
-  return response.data;
-};
-
-// Get anime list
+// Get anime list Done
 export const getTopAnime = async (page = 1, limit = 15): Promise<AnimeResponse> => {
   const response = await backendAPI.get('/api/anime', { params: { page, limit } });
   return {
@@ -64,13 +58,7 @@ export const getTopAnime = async (page = 1, limit = 15): Promise<AnimeResponse> 
   };
 };
 
-// Get anime episodes
-export const getAnimeEpisodes = async (id: number, page = 1) => {
-  const response = await backendAPI.get(`/api/anime/${id}/episodes`, { params: { page } });
-  return response.data;
-};
-
-// Search anime
+// Search anime Done 
 export const searchAnime = async (query: string, page = 1, limit = 15) => {
   const response = await backendAPI.get('/api/anime/search', { 
     params: { title: query, page, limit } 
@@ -90,7 +78,7 @@ export const searchAnime = async (query: string, page = 1, limit = 15) => {
   };
 };
 
-// Get seasonal anime
+// Get seasonal anime Done
 export const getSeasonalAnime = async (year = new Date().getFullYear(), season = 'winter', page = 1, limit = 15) => {
   const response = await backendAPI.get('/api/anime/seasonal', { 
     params: { year, season, page, limit } 
@@ -98,7 +86,7 @@ export const getSeasonalAnime = async (year = new Date().getFullYear(), season =
   return response.data;
 };
 
-// Get anime by genre
+// Get anime by genre Done
 export const getAnimeByGenre = async (genreId: number, page = 1, limit = 15) => {
   const response = await backendAPI.get('/api/anime/genre', { 
     params: { genreId, page, limit } 
@@ -106,14 +94,28 @@ export const getAnimeByGenre = async (genreId: number, page = 1, limit = 15) => 
   return response.data;
 };
 
+// Get anime genres
+export const getAnimeGenres = async () => {
+  const response = await backendAPI.get('/api/anime/genres');
+  return response.data;
+};
+
+// Get anime by ID
+export const getAnimeById = async (id: number | string) => {
+  const response = await backendAPI.get(`/api/anime/${id}`);
+  return response.data;
+};
+
+// Get anime episodes
+export const getAnimeEpisodes = async (id: number, page = 1) => {
+  const response = await backendAPI.get(`/api/anime/${id}/episodes`, { params: { page } });
+  return response.data;
+};
+
+
 // Get anime recommendations
 export const getAnimeRecommendations = async (id: number) => {
   const response = await backendAPI.get(`/api/anime/${id}/recommendations`);
   return response.data;
 };
 
-// Get anime genres
-export const getAnimeGenres = async () => {
-  const response = await backendAPI.get('/api/genres');
-  return response.data;
-};
