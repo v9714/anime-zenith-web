@@ -131,7 +131,7 @@ export default function AnimeDetails() {
     "@context": "https://schema.org",
     "@type": "Movie",
     "name": anime.title,
-    "alternateName": anime.alternativeTitles?.en || anime.alternativeTitles?.jp,
+    "alternateName": anime.alternativeTitles,
     "image": anime.bannerImage || anime.coverImage,
     "description": anime.description,
     "datePublished": anime.year?.toString(),
@@ -234,13 +234,17 @@ export default function AnimeDetails() {
             <AdBanner className="h-[90px] mb-6" slot="details-top" />
 
             <h1 className="text-3xl font-heading font-bold">{anime.title}</h1>
-            {anime.alternativeTitles?.en && anime.alternativeTitles.en !== anime.title && (
-              <p className="text-xl text-muted-foreground mt-1">{anime.alternativeTitles.en}</p>
-            )}
+            {anime.alternativeTitles?.map((title, index) => (
+              title !== anime.title && (
+                <p
+                  key={index}
+                  className={`text-muted-foreground mt-1 ${index === 0 ? 'text-xl' : 'text-sm'}`}
+                >
+                  {title}
+                </p>
+              )
+            ))}
 
-            {anime.alternativeTitles?.jp && (
-              <p className="text-sm text-muted-foreground mt-1">{anime.alternativeTitles.jp}</p>
-            )}
 
             {/* Rating and Status */}
             <div className="flex flex-wrap gap-2 mt-4">
@@ -265,8 +269,8 @@ export default function AnimeDetails() {
 
             {/* Genres */}
             <div className="flex flex-wrap gap-2 mt-4">
-              {anime.genres?.map(genre => (
-                <Link key={genre.mal_id} to={`/genre/${genre.mal_id}`}>
+              {anime.genres?.map((genre, inx) => (
+                <Link key={inx} to={`/genre/${genre.mal_id}`}>
                   <Badge variant="outline" className="hover:bg-primary hover:text-primary-foreground">
                     {genre.name}
                   </Badge>

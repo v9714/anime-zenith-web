@@ -4,10 +4,7 @@ import backendAPI from './backendApi';
 export interface Anime {
   id: string;
   title: string;
-  alternativeTitles?: {
-    en: string;
-    jp: string;
-  };
+  alternativeTitles?: string[];
   description?: string;
   coverImage?: string;
   bannerImage?: string;

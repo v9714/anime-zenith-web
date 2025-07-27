@@ -4,13 +4,13 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Search, Edit, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
-  DialogTrigger 
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { AnimeForm } from "@/components/admin/AnimeForm";
 import { Anime } from "@/services/api";
@@ -19,16 +19,13 @@ import { getImageUrl } from "@/utils/commanFunction";
 const AdminAnime = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  
+
   // Mock data - in a real app this would come from your API
   const [animes, setAnimes] = useState<Anime[]>([
     {
       id: "1",
       title: "Fullmetal Alchemist: Brotherhood",
-      alternativeTitles: {
-        en: "Fullmetal Alchemist: Brotherhood",
-        jp: "鋼の錬金術師 FULLMETAL ALCHEMIST"
-      },
+      alternativeTitles: ["Fullmetal Alchemist: Brotherhood", "鋼の錬金術師 FULLMETAL ALCHEMIST"],
       description: "After a terrible alchemy experiment gone wrong...",
       coverImage: "https://cdn.myanimelist.net/images/anime/1223/96541t.jpg",
       bannerImage: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
@@ -48,7 +45,7 @@ const AdminAnime = () => {
     }
   ]);
 
-  const filteredAnime = animes.filter(anime => 
+  const filteredAnime = animes.filter(anime =>
     anime.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -64,7 +61,7 @@ const AdminAnime = () => {
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-anime-primary to-anime-secondary bg-clip-text text-transparent">
             Anime Management
           </h1>
-          
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">
@@ -112,39 +109,49 @@ const AdminAnime = () => {
               </thead>
               <tbody>
                 {filteredAnime.map((anime) => (
-                  <tr 
-                    key={anime.id} 
+                  <tr
+                    key={anime.id}
                     className="border-b transition-colors hover:bg-muted/30"
                   >
                     <td className="p-2 sm:p-4 align-middle">
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <img 
-                          src={getImageUrl(anime.coverImage)} 
+                        <img
+                          src={getImageUrl(anime.coverImage)}
                           alt={anime.title}
                           className="h-10 w-10 sm:h-12 sm:w-12 rounded-md object-cover shadow-sm"
                         />
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">{anime.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{anime.alternativeTitles?.jp}</p>
+                          {/* <p className="text-xs text-muted-foreground truncate">{anime.alternativeTitles?.jp}</p> */}
+                          {anime.alternativeTitles
+                            ?.filter((title) => title !== anime.title)
+                            .map((title, index) => (
+                              <p
+                                key={index}
+                                className={`text-muted-foreground truncate ${index === 0 ? 'text-xl' : 'text-sm'
+                                  }`}
+                              >
+                                {title}
+                              </p>
+                            ))}
                         </div>
                       </div>
                     </td>
                     <td className="p-2 sm:p-4 align-middle text-sm">{anime.type}</td>
                     <td className="p-2 sm:p-4 align-middle text-sm">-</td>
                     <td className="p-2 sm:p-4 align-middle">
-                      <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        anime.status === "Airing" 
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" 
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                      }`}>
+                      <div className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${anime.status === "Airing"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                        }`}>
                         {anime.status || "Completed"}
                       </div>
                     </td>
                     <td className="p-2 sm:p-4 align-middle">
                       <div className="flex flex-wrap gap-1">
                         {anime.genres?.slice(0, 2).map((genre) => (
-                          <span 
-                            key={genre.mal_id} 
+                          <span
+                            key={genre.mal_id}
                             className="inline-block bg-muted/60 px-1.5 py-0.5 text-xs rounded-full"
                           >
                             {genre.name}

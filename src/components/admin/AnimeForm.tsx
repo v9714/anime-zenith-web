@@ -81,10 +81,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
     const newAnime: Anime = {
       id: anime?.id || `anime_${Date.now()}`,
       title: data.title,
-      alternativeTitles: {
-        en: data.title,
-        jp: ""
-      },
+      alternativeTitles: [data.title],
       description: data.description,
       coverImage: data.cover_image_url,
       bannerImage: data.banner_image_url || data.cover_image_url,
