@@ -7,8 +7,7 @@ import {
   Film,
   Info,
   Play,
-  Star,
-  Youtube
+  Star
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";

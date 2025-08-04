@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Import new components
-import { VideoPlayer } from "@/components/anime/watch/VideoPlayer";
+// import { VideoPlayer } from "@/components/anime/watch/VideoPlayer"; 
 import { EpisodeList } from "@/components/anime/watch/EpisodeList";
 import { AnimeInfoCard } from "@/components/anime/watch/AnimeInfoCard";
 import { CommentsSection } from "@/components/anime/watch/CommentsSection";
 import { MostPopularSidebar } from "@/components/anime/watch/MostPopularSidebar";
+import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 
 // Dummy data
 const episodes = [
@@ -80,14 +81,14 @@ export default function AnimeWatch() {
   const episodeNumber = 5; // This would be dynamic in a real app
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
-  
+
   // Record watch history when component mounts
   useEffect(() => {
     if (!animeId) {
       navigate("/");
       return;
     }
-    
+
     updateWatchHistory({
       animeId: animeId,
       title: anime.title,
@@ -95,20 +96,19 @@ export default function AnimeWatch() {
       episodeNumber: episodeNumber // Currently hardcoded, should be dynamic in a real app
     });
   }, [animeId, updateWatchHistory, navigate]);
-  
+
   if (!animeId) return null;
-  
+
   return (
     <Layout>
       <div className="min-h-screen bg-background">
         {/* Main content with container-fluid */}
         <div className="w-full px-4 pb-8">
-          <div className={`grid gap-6 ${
-            showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-12' :
+          <div className={`grid gap-6 ${showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-12' :
             showPlaylist && !showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
-            !showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
-            'grid-cols-1'
-          }`}>
+              !showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
+                'grid-cols-1'
+            }`}>
             {/* Episode List Sidebar - Left (conditionally shown) */}
             {showPlaylist && (
               <div className="lg:col-span-3 order-3 lg:order-1">
@@ -117,14 +117,13 @@ export default function AnimeWatch() {
                 </div>
               </div>
             )}
-            
+
             {/* Main Video Section - Center */}
-            <div className={`${
-              showPlaylist && showSidebar ? 'lg:col-span-6' :
+            <div className={`${showPlaylist && showSidebar ? 'lg:col-span-6' :
               showPlaylist && !showSidebar ? 'lg:col-span-6' :
-              !showPlaylist && showSidebar ? 'lg:col-span-6' :
-              'lg:col-span-12'
-            } order-1 lg:order-2`}>
+                !showPlaylist && showSidebar ? 'lg:col-span-6' :
+                  'lg:col-span-12'
+              } order-1 lg:order-2`}>
               <div className="space-y-4">
                 {/* Episode title header */}
                 <div className="flex items-center justify-between mb-4">
@@ -156,26 +155,19 @@ export default function AnimeWatch() {
                   </div>
                 </div>
 
-                <VideoPlayer 
+                {/* <VideoPlayer 
                   animeId={animeId} 
                   episodeNumber={episodeNumber}
                   title={anime.title}
                   episodeTitle={`Episode ${episodeNumber}: ${episodes[4]}`}
-                />
-                
+                /> */}
+          
+                <VideoPlayer
+                  videoUrl="http://localhost:8081/uploads/demon_slayer/Season 1/dse1/output.m3u8"
+                  thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg" />
+
                 {/* External Video Controls */}
                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
-                  <div className="flex items-center gap-3">
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <SkipBack className="h-4 w-4" />
-                      -10s
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <SkipForward className="h-4 w-4" />
-                      +10s
-                    </Button>
-                  </div>
-                  
                   <div className="flex items-center gap-3">
                     <Button size="sm" variant="outline" className="gap-2">
                       <Heart className="h-4 w-4" />
@@ -187,20 +179,20 @@ export default function AnimeWatch() {
                     </Button>
                   </div>
                 </div>
-                
+
                 {/* Comments Section */}
                 <div className="mt-8">
                   <CommentsSection comments={comments} />
                 </div>
               </div>
             </div>
-            
+
             {/* Anime Info & Popular - Right */}
             {showSidebar && (
               <div className="lg:col-span-3 order-2 lg:order-3">
                 <div className="sticky top-24 space-y-6">
                   <AnimeInfoCard anime={anime} animeId={animeId} />
-                  
+
                   {/* Popular Anime Section */}
                   <div className="hidden lg:block">
                     <MostPopularSidebar popularAnime={popularAnime} />
@@ -209,11 +201,11 @@ export default function AnimeWatch() {
               </div>
             )}
           </div>
-          
+
           {/* Mobile Popular Anime */}
           <div className="block lg:hidden mt-8">
             <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500" /> 
+              <Star className="h-5 w-5 text-yellow-500" />
               Popular Anime
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
