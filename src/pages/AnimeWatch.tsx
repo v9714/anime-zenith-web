@@ -155,16 +155,26 @@ export default function AnimeWatch() {
                   </div>
                 </div>
 
-                {/* <VideoPlayer 
-                  animeId={animeId} 
-                  episodeNumber={episodeNumber}
-                  title={anime.title}
-                  episodeTitle={`Episode ${episodeNumber}: ${episodes[4]}`}
-                /> */}
-          
+
                 <VideoPlayer
-                  videoUrl="http://localhost:8081/uploads/demon_slayer/Season 1/dse1/output.m3u8"
-                  thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg" />
+                  videoUrl="http://localhost:8081/uploads/demon_slayer/season_1/episode_2/master.m3u8"
+                  thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg"
+                  subtitles={[
+                    { lang: 'jp', url: 'http://localhost:8081/uploads/demon_slayer/season_1/episode_2/subs_jp.vtt', label: '日本語' },
+                    { lang: 'en', url: 'http://localhost:8081/uploads/demon_slayer/season_1/episode_2/subs_en.vtt', label: 'English' }
+                  ]}
+                />
+
+
+                {/* <VideoPlayer
+                  videoUrl="http://localhost:8081/uploads/demon_slayer/season_1/episode_1/output.m3u8"
+                  thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg"
+                  subtitles={[
+                    { lang: 'en', url: 'http://localhost:8081/uploads/demon_slayer/season_1/episode_1/subs_en.vtt', label: 'English' },
+                    { lang: 'jp', url: 'http://localhost:8081/uploads/demon_slayer/season_1/episode_1/subs_jp.vtt', label: '日本語' }
+                  ]}
+                /> */}
+
 
                 {/* External Video Controls */}
                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
