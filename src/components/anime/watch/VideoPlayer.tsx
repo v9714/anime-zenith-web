@@ -14,6 +14,7 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
   useEffect(() => {
     if (!videoRef.current) return;
     const video = videoRef.current;
+    if (!video) return;
 
     if (Hls.isSupported()) {
       const hls = new Hls({ renderTextTracksNatively: false });
@@ -40,10 +41,14 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
       setHlsInstance(hls);
 
       return () => {
-        hls.destroy();
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+        }
       };
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = videoUrl;
+    } else {
+      console.error('HLS is not supported in this browser');
     }
   }, [videoUrl]);
 
@@ -76,10 +81,10 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
   };
 
   return (
-    <div className="relative w-full aspect-w-16 aspect-h-9 bg-black">
+    <div className="relative w-full bg-black rounded-lg overflow-hidden group">
       <video
         ref={videoRef}
-        className="w-full h-full object-contain"
+        className="w-full h-auto max-h-[70vh] object-contain"
         poster={thumbnailUrl}
         controls
         crossOrigin="anonymous"
