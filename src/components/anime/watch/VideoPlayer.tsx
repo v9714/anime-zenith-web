@@ -1,265 +1,373 @@
-// import React, { useEffect, useRef, useState } from 'react';
-// import Hls from 'hls.js';
-
-// interface Subtitle {
-//   lang: string;
-//   url: string;
-//   label?: string;
-// }
-
-// interface VideoPlayerProps {
-//   videoUrl: string;
-//   thumbnailUrl?: string;
-//   subtitles?: Subtitle[];
-// }
-
-// const VideoPlayer: React.FC<VideoPlayerProps> = ({
-//   videoUrl,
-//   thumbnailUrl,
-//   subtitles = [],
-// }) => {
-//   const videoRef = useRef<HTMLVideoElement>(null);
-//   const [hlsInstance, setHlsInstance] = useState<Hls | null>(null); // <-- Hls instance reference
-//   const [audioTracks, setAudioTracks] = useState<Hls.AudioTrack[]>([]);
-//   const [activeSub, setActiveSub] = useState<number>(0);
-
-//   useEffect(() => {
-//     if (!videoRef.current) return;
-
-//     if (Hls.isSupported()) {
-//       const hls = new Hls();
-//       hls.loadSource(videoUrl);
-//       hls.attachMedia(videoRef.current);
-//       setHlsInstance(hls);  // <-- Save Hls instance
-
-//       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-//         setAudioTracks(hls.audioTracks);
-//         if (videoRef.current && videoRef.current.textTracks.length > 0) {
-//           videoRef.current.textTracks[activeSub].mode = 'showing';
-//         }
-//       });
-
-//       hls.on(Hls.Events.AUDIO_TRACK_SWITCHED, (_, data) => {
-//         console.log('Audio switched to index', data.id);
-//       });
-
-//     } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-//       videoRef.current.src = videoUrl;
-//     }
-//   }, [videoUrl, activeSub]);
-
-//   // Subtitle Switching Logic
-//   useEffect(() => {
-//     if (!videoRef.current) return;
-//     const tr = videoRef.current.textTracks;
-//     for (let i = 0; i < tr.length; i++) {
-//       tr[i].mode = i === activeSub ? 'showing' : 'disabled';
-//     }
-//   }, [activeSub]);
-
-//   const switchAudio = (index: number) => {
-//     if (hlsInstance) {
-//       hlsInstance.audioTrack = index;
-//       console.log(`Switched audio to index: ${index}`);
-//     }
-//   };
-
-//   return (
-//     <div className="relative w-full aspect-w-16 aspect-h-9 bg-black">
-//       <video
-//         ref={videoRef}
-//         className="w-full h-full object-contain"
-//         poster={thumbnailUrl}
-//         controls
-//       >
-//         {subtitles.map((s, i) => (
-//           <track
-//             key={i}
-//             kind="subtitles"
-//             srcLang={s.lang}
-//             src={s.url}
-//             label={s.label || s.lang}
-//             default={i === activeSub}
-//           />
-//         ))}
-        
-//       </video>
-
-//       {(audioTracks.length > 1 || subtitles.length > 0) && (
-//         <div className="absolute bottom-2 right-2 bg-black/50 text-white text-sm p-2 rounded-md space-y-1">
-//           {audioTracks.length > 1 && (
-//             <div>
-//               Audio:
-//               {audioTracks.map((a, idx) => (
-//                 <button
-//                   key={idx}
-//                   onClick={() => switchAudio(idx)}
-//                   className="ml-2 px-2 py-1 bg-white/10 hover:bg-white/20 rounded"
-//                 >
-//                   {a.name || a.lang || `Track ${idx + 1}`}
-//                 </button>
-//               ))}
-              
-//             </div>
-//           )}
-//           {subtitles.length > 0 && (
-//             <div>
-//               Subs:
-//               {subtitles.map((s, idx) => (
-//                 <button
-//                   key={s.lang}
-//                   onClick={() => setActiveSub(idx)}
-//                   className={`ml-2 px-2 py-1 rounded ${activeSub === idx ? 'bg-white/30' : 'bg-white/10'
-//                     }`}
-//                 >
-//                   {s.label || s.lang}
-//                 </button>
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default VideoPlayer;
-
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Hls from 'hls.js';
-
-interface Subtitle {
-  lang: string;
-  url: string;
-  label?: string;
-}
+import { Play, Pause, Volume2, VolumeX, Maximize, Settings, SkipBack, SkipForward } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 interface VideoPlayerProps {
   videoUrl: string;
   thumbnailUrl?: string;
-  subtitles?: Subtitle[];
+  subtitles?: Array<{
+    lang: string;
+    url: string;
+    label: string;
+  }>;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  videoUrl,
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+  videoUrl, 
   thumbnailUrl,
-  subtitles = [],
+  subtitles = []
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [hlsInstance, setHlsInstance] = useState<Hls | null>(null);
-  const [audioTracks, setAudioTracks] = useState<Hls.AudioTrack[]>([]);
-  const [activeSub, setActiveSub] = useState<number>(0);
+  const hlsRef = useRef<Hls | null>(null);
+  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState([100]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedQuality, setSelectedQuality] = useState('Auto');
+  const [selectedSubtitle, setSelectedSubtitle] = useState('Off');
 
   useEffect(() => {
-    if (!videoRef.current) return;
-
     const video = videoRef.current;
+    if (!video) return;
+
+    const handleDurationChange = () => {
+      setDuration(video.duration);
+    };
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime);
+    };
+
+    video.addEventListener('durationchange', handleDurationChange);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener('durationchange', handleDurationChange);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
 
     if (Hls.isSupported()) {
       const hls = new Hls({
-        renderTextTracksNatively: false,
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90
       });
+      hlsRef.current = hls;
 
+      hls.loadSource(videoUrl);
       hls.attachMedia(video);
 
-      hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-        hls.loadSource(videoUrl);
-      });
-
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setAudioTracks(hls.audioTracks);
-        hls.subtitleTrack = 0;
+        console.log('HLS manifest loaded');
       });
 
-      hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, (_, data) => {
-        setAudioTracks(data.audioTracks);
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error('HLS error:', data);
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              console.log('Network error, trying to recover...');
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.log('Media error, trying to recover...');
+              hls.recoverMediaError();
+              break;
+            default:
+              console.log('Fatal error, cannot recover');
+              hls.destroy();
+              break;
+          }
+        }
       });
-
-      hls.on(Hls.Events.AUDIO_TRACK_SWITCHED, (_, data) => {
-        console.log('Audio switched to index:', data.id);
-      });
-
-      hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, data) => {
-        console.log('Subtitles switched to index:', data.id);
-      });
-
-      setHlsInstance(hls);
 
       return () => {
-        hls.destroy();
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+        }
       };
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = videoUrl;
+    } else {
+      console.error('HLS is not supported in this browser');
     }
   }, [videoUrl]);
 
-  useEffect(() => {
-    if (!videoRef.current) return;
-    const tracks = videoRef.current.textTracks;
-    for (let i = 0; i < tracks.length; i++) {
-      tracks[i].mode = i === activeSub ? 'showing' : 'disabled';
-    }
-  }, [activeSub]);
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
 
-  const switchAudio = (index: number) => {
-    if (hlsInstance) {
-      hlsInstance.audioTrack = index;
+    if (video.paused) {
+      video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
     }
   };
 
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const handleVolumeChange = (newVolume: number[]) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const volumeValue = newVolume[0] / 100;
+    video.volume = volumeValue;
+    setVolume(newVolume);
+    setIsMuted(volumeValue === 0);
+  };
+
+  const handleSeek = (newTime: number[]) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.currentTime = newTime[0];
+    setCurrentTime(newTime[0]);
+  };
+
+  const toggleFullscreen = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (!document.fullscreenElement) {
+      video.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const skipTime = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateTime = () => setCurrentTime(video.currentTime);
+    const updateDuration = () => setDuration(video.duration);
+
+    video.addEventListener('timeupdate', updateTime);
+    video.addEventListener('loadedmetadata', updateDuration);
+
+    return () => {
+      video.removeEventListener('timeupdate', updateTime);
+      video.removeEventListener('loadedmetadata', updateDuration);
+    };
+  }, []);
+
+  // Auto-hide controls
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    
+    const resetTimeout = () => {
+      clearTimeout(timeout);
+      setShowControls(true);
+      timeout = setTimeout(() => {
+        if (isPlaying) {
+          setShowControls(false);
+        }
+      }, 3000);
+    };
+
+    const handleMouseMove = () => resetTimeout();
+    const handleMouseLeave = () => {
+      if (isPlaying) {
+        setShowControls(false);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(timeout);
+    };
+  }, [isPlaying]);
+
   return (
-    <div className="relative w-full aspect-w-16 aspect-h-9 bg-black">
+    <div className="relative w-full bg-black rounded-lg overflow-hidden group">
       <video
         ref={videoRef}
-        className="w-full h-full object-contain"
+        className="w-full h-auto max-h-[70vh] object-contain"
         poster={thumbnailUrl}
-        controls
+        onClick={togglePlay}
+        onLoadedMetadata={() => {
+          const video = videoRef.current;
+          if (video) {
+            setDuration(video.duration);
+          }
+        }}
       >
-        {subtitles.map((s, i) => (
+        {subtitles.map((subtitle) => (
           <track
-            key={i}
+            key={subtitle.lang}
             kind="subtitles"
-            srcLang={s.lang}
-            src={s.url}
-            label={s.label || s.lang}
-            default={i === activeSub}
+            src={subtitle.url}
+            srcLang={subtitle.lang}
+            label={subtitle.label}
+            default={subtitle.lang === 'en'}
           />
         ))}
       </video>
 
-      {(audioTracks.length > 1 || subtitles.length > 0) && (
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-sm p-2 rounded-md space-y-1">
-          {audioTracks.length > 1 && (
-            <div>
-              Audio:
-              {audioTracks.map((track, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => switchAudio(idx)}
-                  className="ml-2 px-2 py-1 bg-white/10 hover:bg-white/20 rounded"
-                >
-                  {track.name || track.lang || `Track ${idx + 1}`}
-                </button>
-              ))}
-            </div>
-          )}
-          {subtitles.length > 0 && (
-            <div>
-              Subs:
-              {subtitles.map((sub, idx) => (
-                <button
-                  key={sub.lang}
-                  onClick={() => setActiveSub(idx)}
-                  className={`ml-2 px-2 py-1 rounded ${activeSub === idx ? 'bg-white/30' : 'bg-white/10'}`}
-                >
-                  {sub.label || sub.lang}
-                </button>
-              ))}
-            </div>
-          )}
+      {/* Controls Overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        {/* Play/Pause Button (Center) */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Button
+            size="lg"
+            variant="ghost"
+            className="text-white hover:bg-white/20 h-16 w-16 rounded-full"
+            onClick={togglePlay}
+          >
+            {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+          </Button>
         </div>
-      )}
+
+        {/* Bottom Controls */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+          {/* Progress Bar */}
+          <div className="w-full">
+            <Slider
+              value={[currentTime]}
+              max={duration || 100}
+              step={1}
+              onValueChange={handleSeek}
+              className="w-full"
+            />
+          </div>
+
+          {/* Control Buttons */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={togglePlay}>
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+
+              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={() => skipTime(-10)}>
+                <SkipBack className="h-4 w-4" />
+              </Button>
+
+              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={() => skipTime(10)}>
+                <SkipForward className="h-4 w-4" />
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={toggleMute}>
+                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </Button>
+                <div className="w-20">
+                  <Slider
+                    value={volume}
+                    max={100}
+                    step={1}
+                    onValueChange={handleVolumeChange}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <span className="text-white text-sm">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Quality Settings */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setSelectedQuality('Auto')}>
+                    Auto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedQuality('1080p')}>
+                    1080p
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedQuality('720p')}>
+                    720p
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedQuality('480p')}>
+                    480p
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Subtitle Settings */}
+              {subtitles.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                      CC
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setSelectedSubtitle('Off')}>
+                      Off
+                    </DropdownMenuItem>
+                    {subtitles.map((subtitle) => (
+                      <DropdownMenuItem
+                        key={subtitle.lang}
+                        onClick={() => setSelectedSubtitle(subtitle.label)}
+                      >
+                        {subtitle.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              <Button size="sm" variant="ghost" className="text-white hover:bg-white/20" onClick={toggleFullscreen}>
+                <Maximize className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
