@@ -159,7 +159,6 @@ export default function AnimeWatch() {
                 <VideoPlayer
                   videoUrl="http://localhost:8081/uploads/demon_slayer/season_1/episode_25/test25/master.m3u8"
                   thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg"
-
                 />
 
                 {/* External Video Controls */}
