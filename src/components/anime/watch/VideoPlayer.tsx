@@ -41,8 +41,8 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
       setHlsInstance(hls);
 
       return () => {
-        if (hlsRef.current) {
-          hlsRef.current.destroy();
+        if (hls) {
+          hls.destroy();
         }
       };
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
