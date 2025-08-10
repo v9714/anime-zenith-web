@@ -7,6 +7,13 @@ export const SITE_DESCRIPTION = "Your Ultimate Anime Streaming Platform";
 export const BACKEND_API_BASE_URL = 'http://localhost:8081';
 export const BACKEND_API_Image_URL = 'http://localhost:8081/uploads';
 
+// Open Characters API (Jikan)
+export const OPEN_CHAR_API_BASE_URL = 'https://api.jikan.moe/v4';
+
+// Episodes seasons options
+export const EPISODE_SEASONS = ["winter", "spring", "summer", "fall"] as const;
+export type EpisodeSeason = typeof EPISODE_SEASONS[number];
+
 // Theme Colors
 export const THEME_COLORS = {
   primary: "hsl(var(--primary))",

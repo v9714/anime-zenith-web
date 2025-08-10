@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { getAnimeById, getAnimeRecommendations, Anime } from "@/services/api";
 import { getImageUrl } from "@/utils/commanFunction";
+import EpisodesTab from "@/components/anime/details/EpisodesTab";
+import CharactersTab from "@/components/anime/details/CharactersTab";
 
 // Ad component placeholder (for Google AdSense)
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (

@@ -103,12 +103,36 @@ export const getAnimeById = async (id: number | string) => {
   return response.data;
 };
 
-// Get anime episodes
+// Get anime episodes (paginated)
 export const getAnimeEpisodes = async (id: number, page = 1) => {
   const response = await backendAPI.get(`/api/anime/${id}/episodes`, { params: { page } });
   return response.data;
 };
 
+// Get anime episodes by season
+export interface Episode {
+  id: number;
+  animeId: number;
+  title: string;
+  episodeNumber: number;
+  thumbnail?: string;
+  videoUrl?: string;
+  duration?: number;
+  description?: string;
+  airDate?: string;
+}
+
+export interface EpisodesBySeasonResponse {
+  statusCode: number;
+  data: Episode[];
+  message: string;
+  success: boolean;
+}
+
+export const getAnimeEpisodesBySeason = async (id: number | string, season: string): Promise<EpisodesBySeasonResponse> => {
+  const response = await backendAPI.get(`/api/anime/${id}/episodes/${season}`);
+  return response.data;
+};
 
 // Get anime recommendations
 export const getAnimeRecommendations = async (id: number) => {

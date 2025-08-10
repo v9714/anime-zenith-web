@@ -1,0 +1,152 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Episode, getAnimeEpisodesBySeason } from '@/services/api';
+import { EPISODE_SEASONS, EpisodeSeason, BACKEND_API_Image_URL } from '@/utils/constants';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Clock, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+interface EpisodesTabProps {
+  animeId: number | string;
+  defaultSeason?: string;
+}
+
+export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps) {
+  const normalizedDefault = (defaultSeason || '').toLowerCase();
+  const initialSeason: EpisodeSeason = (EPISODE_SEASONS as readonly string[]).includes(normalizedDefault)
+    ? (normalizedDefault as EpisodeSeason)
+    : 'spring';
+
+  const [season, setSeason] = useState<EpisodeSeason>(initialSeason);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+
+    getAnimeEpisodesBySeason(animeId, season)
+      .then((res) => {
+        if (!isMounted) return;
+        if (res?.success) {
+          setEpisodes(res.data || []);
+        } else {
+          setEpisodes([]);
+          setError(res?.message || 'Failed to load episodes');
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setError('Failed to load episodes');
+        setEpisodes([]);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [animeId, season]);
+
+  const content = useMemo(() => {
+    if (loading) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-4 space-y-3 animate-fade-in">
+              <Skeleton className="w-full h-40 rounded-md" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="text-center py-10 text-muted-foreground">{error}</div>
+      );
+    }
+
+    if (!episodes.length) {
+      return (
+        <div className="text-center py-10 text-muted-foreground">No episodes found for this season.</div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {episodes.map((ep) => (
+          <Card key={ep.id} className="p-3 overflow-hidden hover-scale animate-fade-in">
+            <div className="relative aspect-video rounded-md overflow-hidden mb-3">
+              <img
+                src={`${BACKEND_API_Image_URL}/${ep.thumbnail}`}
+                alt={`Episode ${ep.episodeNumber} thumbnail`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Badge variant="secondary">Ep {ep.episodeNumber}</Badge>
+                {ep.duration ? (
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {Math.round((ep.duration || 0) / 60)}m
+                  </span>
+                ) : null}
+              </div>
+              <h4 className="font-medium line-clamp-1">{ep.title}</h4>
+              {ep.description ? (
+                <p className="text-sm text-muted-foreground line-clamp-2">{ep.description}</p>
+              ) : null}
+              <div className="flex gap-2 pt-1">
+                <Button asChild size="sm" className="rounded-full">
+                  <Link to={`/watch/${ep.animeId}`}> 
+                    <Play className="h-4 w-4 mr-1" /> Watch
+                  </Link>
+                </Button>
+                {ep.airDate ? (
+                  <Badge variant="outline" className="rounded-full">{new Date(ep.airDate).toLocaleDateString()}</Badge>
+                ) : null}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }, [loading, error, episodes]);
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Episodes</h3>
+        <div className="w-44">
+          <Select value={season} onValueChange={(val) => setSeason(val as EpisodeSeason)}>
+            <SelectTrigger aria-label="Select season">
+              <SelectValue placeholder="Select season" />
+            </SelectTrigger>
+            <SelectContent>
+              {EPISODE_SEASONS.map((s) => (
+                <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      {content}
+    </section>
+  );
+}
