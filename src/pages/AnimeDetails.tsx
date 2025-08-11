@@ -297,19 +297,11 @@ export default function AnimeDetails() {
               </TabsContent>
 
               <TabsContent value="episodes">
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">
-                    Episodes are available to watch. Please click the Watch button to start watching.
-                  </p>
-                </div>
+                <EpisodesTab animeId={anime.id} defaultSeason={(anime as any)?.season} />
               </TabsContent>
 
               <TabsContent value="characters">
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">
-                    Character information will be available soon.
-                  </p>
-                </div>
+                <CharactersTab animeTitle={anime.title} />
               </TabsContent>
             </Tabs>
           </div>
