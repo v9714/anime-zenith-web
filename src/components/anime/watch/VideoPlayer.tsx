@@ -81,45 +81,62 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
   };
 
   return (
-    <div className="relative w-full bg-black rounded-lg overflow-hidden group">
-      <video
-        ref={videoRef}
-        className="w-full h-auto max-h-[70vh] object-contain"
-        poster={thumbnailUrl}
-        controls
-        crossOrigin="anonymous"
-      ></video>
+    <div className="w-full space-y-4">
+      {/* Video Container */}
+      <div className="relative w-full bg-black rounded-lg overflow-hidden">
+        <video
+          ref={videoRef}
+          className="w-full h-auto max-h-[70vh] object-contain"
+          poster={thumbnailUrl}
+          controls
+          crossOrigin="anonymous"
+        ></video>
+      </div>
 
-      {(audioTracks.length > 1 ||
-        subtitleTracks.length > 0 ||
-        qualityLevels.length > 1) && (
-          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-sm p-2 rounded-md space-y-2">
-
-            {/* Audio Selection */}
-            {audioTracks.length > 1 && (
-              <div>
-                Audio:
+      {/* Interactive Video Controls */}
+      {(audioTracks.length > 1 || subtitleTracks.length > 0 || qualityLevels.length > 1) && (
+        <div className="bg-card rounded-lg p-4 border border-border/30 space-y-4">
+          
+          {/* Audio Selection */}
+          {audioTracks.length > 1 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                Audio Language
+              </h4>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
                 {audioTracks.map((track, idx) => (
                   <button
                     key={idx}
                     onClick={() => switchAudio(track.name || track.lang)}
-                    className={`ml-2 px-2 py-1 rounded ${currentAudio === idx ? "bg-white/30" : "bg-white/10"
-                      }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                      currentAudio === idx 
+                        ? "bg-primary text-primary-foreground shadow-md" 
+                        : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     {track.name || track.lang || `Track ${idx + 1}`}
                   </button>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Subtitle Selection */}
-            {subtitleTracks.length > 0 && (
-              <div>
-                Subs:
+          {/* Subtitle Selection */}
+          {subtitleTracks.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                Subtitles
+              </h4>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
                 <button
                   onClick={() => switchSubtitle(-1)}
-                  className={`ml-2 px-2 py-1 rounded ${currentSubtitle === -1 ? "bg-white/30" : "bg-white/10"
-                    }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    currentSubtitle === -1 
+                      ? "bg-primary text-primary-foreground shadow-md" 
+                      : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   Off
                 </button>
@@ -127,23 +144,34 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
                   <button
                     key={idx}
                     onClick={() => switchSubtitle(idx)}
-                    className={`ml-2 px-2 py-1 rounded ${currentSubtitle === idx ? "bg-white/30" : "bg-white/10"
-                      }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                      currentSubtitle === idx 
+                        ? "bg-primary text-primary-foreground shadow-md" 
+                        : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     {sub.name || sub.lang}
                   </button>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Quality Selection */}
-            {qualityLevels.length > 1 && (
-              <div>
-                Quality:
+          {/* Quality Selection */}
+          {qualityLevels.length > 1 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                Video Quality
+              </h4>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
                 <button
                   onClick={() => switchQuality(-1)}
-                  className={`ml-2 px-2 py-1 rounded ${currentLevel === -1 ? "bg-white/30" : "bg-white/10"
-                    }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    currentLevel === -1 
+                      ? "bg-primary text-primary-foreground shadow-md" 
+                      : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   Auto
                 </button>
@@ -151,16 +179,20 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
                   <button
                     key={idx}
                     onClick={() => switchQuality(idx)}
-                    className={`ml-2 px-2 py-1 rounded ${currentLevel === idx ? "bg-white/30" : "bg-white/10"
-                      }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                      currentLevel === idx 
+                        ? "bg-primary text-primary-foreground shadow-md" 
+                        : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     {level.height}p
                   </button>
                 ))}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
