@@ -1,17 +1,20 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info } from "lucide-react";
+import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, MessageCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
-// Import new components
-// import { VideoPlayer } from "@/components/anime/watch/VideoPlayer"; 
+// Import components
 import { EpisodeList } from "@/components/anime/watch/EpisodeList";
 import { AnimeInfoCard } from "@/components/anime/watch/AnimeInfoCard";
 import { CommentsSection } from "@/components/anime/watch/CommentsSection";
 import { MostPopularSidebar } from "@/components/anime/watch/MostPopularSidebar";
+import { LikeButton } from "@/components/anime/watch/LikeButton";
+import { SaveButton } from "@/components/anime/watch/SaveButton";
 import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 
 // Dummy data
@@ -76,13 +79,18 @@ const popularAnime = [
 export default function AnimeWatch() {
   const { id } = useParams<{ id: string }>();
   const animeId = parseInt(id || "0");
-  const { updateWatchHistory } = useAuth();
+  const { updateWatchHistory, currentUser } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const episodeNumber = 5; // This would be dynamic in a real app
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [likes, setLikes] = useState(1247);
+  const [views, setViews] = useState(125634);
 
-  // Record watch history when component mounts
+  // Record watch history and load user preferences when component mounts
   useEffect(() => {
     if (!animeId) {
       navigate("/");
@@ -93,9 +101,115 @@ export default function AnimeWatch() {
       animeId: animeId,
       title: anime.title,
       imageUrl: "https://cdn.myanimelist.net/images/anime/13/56139.jpg",
-      episodeNumber: episodeNumber // Currently hardcoded, should be dynamic in a real app
+      episodeNumber: episodeNumber
     });
-  }, [animeId, updateWatchHistory, navigate]);
+
+    // Load user preferences from localStorage or API
+    if (currentUser) {
+      const userLikes = localStorage.getItem(`likes_${currentUser.id}`);
+      const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
+      if (userLikes) {
+        const likesData = JSON.parse(userLikes);
+        setIsLiked(likesData.includes(`${animeId}_${episodeNumber}`));
+      }
+      if (userSaved) {
+        const savedData = JSON.parse(userSaved);
+        setIsSaved(savedData.includes(animeId));
+      }
+    }
+
+    // Increment view count
+    setViews(prev => prev + 1);
+  }, [animeId, updateWatchHistory, navigate, currentUser, episodeNumber]);
+
+  const handleLike = () => {
+    if (!currentUser) {
+      toast({
+        id: String(Date.now()),
+        title: "Login Required",
+        description: "Please login to like episodes"
+      });
+      return;
+    }
+
+    setIsLiked(!isLiked);
+    setLikes(prev => isLiked ? prev - 1 : prev + 1);
+    
+    // Save to localStorage
+    const userLikes = localStorage.getItem(`likes_${currentUser.id}`);
+    const likesData = userLikes ? JSON.parse(userLikes) : [];
+    const episodeKey = `${animeId}_${episodeNumber}`;
+    
+    if (isLiked) {
+      const index = likesData.indexOf(episodeKey);
+      if (index > -1) likesData.splice(index, 1);
+    } else {
+      likesData.push(episodeKey);
+    }
+    
+    localStorage.setItem(`likes_${currentUser.id}`, JSON.stringify(likesData));
+    
+    toast({
+      id: String(Date.now()),
+      title: isLiked ? "Removed Like" : "Liked Episode",
+      description: `Episode ${episodeNumber} has been ${isLiked ? 'unliked' : 'liked'}`
+    });
+  };
+
+  const handleSave = () => {
+    if (!currentUser) {
+      toast({
+        id: String(Date.now()),
+        title: "Login Required", 
+        description: "Please login to save anime"
+      });
+      return;
+    }
+
+    setIsSaved(!isSaved);
+    
+    // Save to localStorage
+    const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
+    const savedData = userSaved ? JSON.parse(userSaved) : [];
+    
+    if (isSaved) {
+      const index = savedData.indexOf(animeId);
+      if (index > -1) savedData.splice(index, 1);
+    } else {
+      savedData.push(animeId);
+    }
+    
+    localStorage.setItem(`saved_${currentUser.id}`, JSON.stringify(savedData));
+    
+    toast({
+      id: String(Date.now()),
+      title: isSaved ? "Removed from List" : "Added to List",
+      description: `${anime.title} has been ${isSaved ? 'removed from' : 'added to'} your watchlist`
+    });
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `${anime.title} - Episode ${episodeNumber}`,
+      text: `Watch ${anime.title} Episode ${episodeNumber}: ${episodes[episodeNumber - 1]}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        id: String(Date.now()),
+        title: "Link Copied",
+        description: "Episode link copied to clipboard"
+      });
+    }
+  };
 
   if (!animeId) return null;
 
@@ -127,11 +241,24 @@ export default function AnimeWatch() {
               <div className="space-y-4">
                 {/* Episode title header */}
                 <div className="flex items-center justify-between mb-4">
-                  <div>
+                  <div className="flex-1">
                     <h1 className="text-xl font-bold text-foreground">{anime.title}</h1>
-                    <p className="text-sm text-muted-foreground">
-                      Episode {episodeNumber}: {episodes[4]}
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Episode {episodeNumber}: {episodes[episodeNumber - 1]}
                     </p>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="h-3 w-3" />
+                        {likes.toLocaleString()} likes
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Play className="h-3 w-3" />
+                        {views.toLocaleString()} views
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {anime.status}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -141,7 +268,7 @@ export default function AnimeWatch() {
                       className="gap-2"
                     >
                       <List className="h-4 w-4" />
-                      {showPlaylist ? 'Hide Playlist' : 'Show Playlist'}
+                      {showPlaylist ? 'Hide' : 'Show'} Playlist
                     </Button>
                     <Button
                       variant="outline"
@@ -150,7 +277,7 @@ export default function AnimeWatch() {
                       className="gap-2"
                     >
                       <Info className="h-4 w-4" />
-                      {showSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
+                      {showSidebar ? 'Hide' : 'Show'} Info
                     </Button>
                   </div>
                 </div>
@@ -161,16 +288,40 @@ export default function AnimeWatch() {
                   thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg"
                 />
 
-                {/* External Video Controls */}
+                {/* Interactive Video Controls */}
                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
                   <div className="flex items-center gap-3">
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <Heart className="h-4 w-4" />
-                      Favorite
+                    <Button 
+                      size="sm" 
+                      variant={isLiked ? "default" : "outline"} 
+                      className="gap-2"
+                      onClick={handleLike}
+                    >
+                      <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                      {isLiked ? 'Liked' : 'Like'} ({likes})
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-2">
+                    <Button 
+                      size="sm" 
+                      variant={isSaved ? "default" : "outline"} 
+                      className="gap-2"
+                      onClick={handleSave}
+                    >
+                      <BookmarkPlus className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                      {isSaved ? 'Saved' : 'Save'}
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
                       <Share className="h-4 w-4" />
                       Share
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="ghost" className="gap-2">
+                      <SkipBack className="h-4 w-4" />
+                      Prev
+                    </Button>
+                    <Button size="sm" variant="ghost" className="gap-2">
+                      <SkipForward className="h-4 w-4" />
+                      Next
                     </Button>
                   </div>
                 </div>
