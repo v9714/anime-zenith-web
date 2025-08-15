@@ -1,12 +1,14 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, MessageCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getAnimeById, getAnimeEpisodesBySeason, Anime, Episode } from "@/services/api";
+import { BACKEND_API_Image_URL } from "@/utils/constants";
 
 // Import components
 import { EpisodeList } from "@/components/anime/watch/EpisodeList";
@@ -17,82 +19,7 @@ import { LikeButton } from "@/components/anime/watch/LikeButton";
 import { SaveButton } from "@/components/anime/watch/SaveButton";
 import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 
-// Dummy data
-const episodes = [
-  "Emperor, focus and drive",
-  "Desperate situation",
-  "Penalty win to victory",
-  "Fierce battle! Resolve",
-  "Ryuuma goes!",
-  "The summitt battle koma...",
-  "Partly cloudy",
-  "5th representative trainin...",
-  "World match decision",
-  "Whole home, rematch...",
-  "The challenge",
-  "Raise the curtain! High sc...",
-  "New total football",
-  "Storm warning"
-];
-
-// Define the anime type correctly
-interface AnimeData {
-  title: string;
-  description: string;
-  rating: number;
-  votes: number;
-  genres?: string[];
-  year?: number;
-  studio?: string;
-  duration?: string;
-  status?: string;
-}
-
-const anime: AnimeData = {
-  title: "The Knight in the Area",
-  description: "Kakeru and Suguru are brothers who both follow a flaming star for football. But only one, Suguru, becomes a rising star. Kakeru tries to keep up and struggles, but success takes its toll on the relationships closest to him.",
-  rating: 8.7,
-  votes: 4167,
-  genres: ["Sports", "Drama", "Slice of Life"],
-  year: 2012,
-  studio: "Shin-Ei Animation",
-  duration: "24 min per ep",
-  status: "Completed"
-};
-
-// Episode-specific comments data
-const episodeComments = {
-  0: [
-    { user: "AnimeExplorer", avatar: "A", ago: "2 hours ago", content: "What an incredible start to the series! The animation quality is outstanding.", likes: 45, isPremium: true },
-    { user: "MangaReader", avatar: "M", ago: "5 hours ago", content: "They adapted this episode perfectly from the manga. So faithful!", likes: 23 },
-    { user: "FirstTimer", avatar: "F", ago: "1 day ago", content: "Never watched this series before, but this episode got me hooked!", likes: 67 }
-  ],
-  1: [
-    { user: "ActionFan", avatar: "A", ago: "3 hours ago", content: "The desperate situation was portrayed so well. My heart was racing!", likes: 78 },
-    { user: "EmotionalViewer", avatar: "E", ago: "6 hours ago", content: "This episode hit me right in the feels. Such great character development.", likes: 34 }
-  ],
-  2: [
-    { user: "SportsAnime", avatar: "S", ago: "1 hour ago", content: "Best penalty scene I've ever seen in anime! The tension was incredible.", likes: 92 },
-    { user: "TacticsGuru", avatar: "T", ago: "4 hours ago", content: "The strategy behind this win was brilliant. Love how they explained it.", likes: 56 }
-  ],
-  3: [
-    { user: "BattleFan", avatar: "B", ago: "30 minutes ago", content: "Fierce battle indeed! The resolve shown by the characters was amazing.", likes: 43 },
-    { user: "CharacterLover", avatar: "C", ago: "2 hours ago", content: "The character growth in this episode was phenomenal!", likes: 29 }
-  ],
-  4: [
-    { user: "momie", avatar: "M", ago: "25 days ago", content: "to fast re again reely", likes: 12 },
-    { user: "Amazing", avatar: "A", ago: "3 months ago", content: "BOI THAT shot", likes: 45, isPremium: true },
-    { user: "Chopper", avatar: "C", ago: "8 months ago", content: "i am stuck relooping scenes for him again", likes: 8 },
-    { user: "SakuraFan", avatar: "S", ago: "9 months ago", content: "The animation in this episode was top-notch! Can't wait for more!", likes: 23 }
-  ]
-};
-
-// Get comments for current episode or default to episode 5 comments
-const getCurrentComments = (episodeIndex: number) => {
-  return episodeComments[episodeIndex as keyof typeof episodeComments] || episodeComments[4];
-};
-
-// Dummy popular anime
+// Dummy popular anime data
 const popularAnime = [
   { title: "One Piece", episodes: 1122, img: "https://cdn.myanimelist.net/images/anime/6/73245.jpg", id: 1, rating: 8.9 },
   { title: "Naruto: Shippuden", episodes: 500, img: "https://cdn.myanimelist.net/images/anime/5/17407.jpg", id: 2, rating: 8.7 },
@@ -112,30 +39,102 @@ export default function AnimeWatch() {
   // Get dynamic values from URL query parameters
   const videoUrl = searchParams.get('videoUrl') || "";
   const thumbnailUrl = searchParams.get('thumbnailUrl') || "";
-  const episodeNumber = parseInt(searchParams.get('episode') || "1");
+  const episodeParam = searchParams.get('episode');
+  const episodeNumber = parseInt(episodeParam || "1");
+  
+  // State management
+  const [anime, setAnime] = useState<Anime | null>(null);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentSeason, setCurrentSeason] = useState<string>('spring');
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(1247);
   const [views, setViews] = useState(125634);
-  const [activeEpisode, setActiveEpisode] = useState(episodeNumber - 1);
+  const [activeEpisode, setActiveEpisode] = useState(0);
 
-  // Record watch history and load user preferences when component mounts
+  // Fetch anime and episode data
   useEffect(() => {
-    if (!animeId || !videoUrl) {
-      navigate("/");
+    const fetchData = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        
+        // Fetch anime details
+        const animeResponse = await getAnimeById(parseInt(id));
+        setAnime(animeResponse.data);
+        
+        // Fetch episodes for the current season
+        const episodesResponse = await getAnimeEpisodesBySeason(id, currentSeason);
+        if (episodesResponse?.success) {
+          setEpisodes(episodesResponse.data || []);
+          
+          // Set active episode based on URL param or find by episode number
+          if (episodeParam) {
+            const foundIndex = episodesResponse.data.findIndex((ep: Episode) => ep.episodeNumber === episodeNumber);
+            setActiveEpisode(foundIndex >= 0 ? foundIndex : 0);
+          }
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, currentSeason, episodeParam, episodeNumber]);
+
+  // Get current episode data
+  const getCurrentEpisode = () => {
+    if (episodes.length > 0 && episodes[activeEpisode]) {
+      return episodes[activeEpisode];
+    }
+    return null;
+  };
+
+  // Get episode titles for EpisodeList component
+  const episodeTitles = episodes.map(ep => ep.title || `Episode ${ep.episodeNumber}`);
+
+  // Get video URL and thumbnail based on current episode or URL params
+  const getVideoUrl = () => {
+    if (videoUrl) return videoUrl;
+    const currentEpisode = getCurrentEpisode();
+    if (currentEpisode?.masterUrl) {
+      return `${BACKEND_API_Image_URL}${currentEpisode.masterUrl}`;
+    }
+    return "";
+  };
+
+  const getThumbnailUrl = () => {
+    if (thumbnailUrl) return thumbnailUrl;
+    const currentEpisode = getCurrentEpisode();
+    if (currentEpisode?.thumbnail) {
+      return `${BACKEND_API_Image_URL}${currentEpisode.thumbnail}`;
+    }
+    return "";
+  };
+
+  // Record watch history when component mounts
+  useEffect(() => {
+    if (!animeId || (!videoUrl && !getVideoUrl())) {
       return;
     }
 
-    updateWatchHistory({
-      animeId: animeId,
-      title: anime.title,
-      imageUrl: "https://cdn.myanimelist.net/images/anime/13/56139.jpg",
-      episodeNumber: episodeNumber
-    });
+    if (anime) {
+      updateWatchHistory({
+        animeId: animeId,
+        title: anime.title,
+        imageUrl: anime.coverImage || "",
+        episodeNumber: episodeNumber
+      });
+    }
 
-    // Load user preferences from localStorage or API
+    // Load user preferences from localStorage
     if (currentUser) {
       const userLikes = localStorage.getItem(`likes_${currentUser.id}`);
       const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
@@ -151,10 +150,7 @@ export default function AnimeWatch() {
 
     // Increment view count
     setViews(prev => prev + 1);
-    
-    // Update active episode when URL changes
-    setActiveEpisode(episodeNumber - 1);
-  }, [animeId, updateWatchHistory, navigate, currentUser, episodeNumber]);
+  }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, videoUrl]);
 
   const handleLike = () => {
     if (!currentUser) {
@@ -218,32 +214,49 @@ export default function AnimeWatch() {
     toast({
       id: String(Date.now()),
       title: isSaved ? "Removed from List" : "Added to List",
-      description: `${anime.title} has been ${isSaved ? 'removed from' : 'added to'} your watchlist`
+      description: `${anime?.title} has been ${isSaved ? 'removed from' : 'added to'} your watchlist`
     });
   };
 
-  const handleEpisodeSelect = (episodeIndex: number) => {
-    setActiveEpisode(episodeIndex);
-    const newEpisodeNumber = episodeIndex + 1;
+  const handleEpisodeSelect = useCallback((index: number) => {
+    if (!episodes[index]) return;
     
-    // Update URL with new episode parameters - you would get these from your API
-    const newVideoUrl = `http://localhost:8081/uploads/demon_slayer/season_1/episode_${newEpisodeNumber}/master.m3u8`;
-    const newThumbnailUrl = `http://localhost:8081/uploads/demon_slayer/episode_${newEpisodeNumber}_thumb.jpg`;
+    setActiveEpisode(index);
+    const episode = episodes[index];
+    
+    // Generate new URLs based on episode data
+    const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
+    const newThumbnailUrl = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
     
     // Navigate to new episode URL
-    navigate(`/watch/${animeId}?episode=${newEpisodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
+    navigate(`/watch/${id}?episode=${episode.episodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
     
     toast({
       id: String(Date.now()),
-      title: "Episode Changed",
-      description: `Now playing Episode ${newEpisodeNumber}: ${episodes[episodeIndex]}`
+      title: "Episode Changed", 
+      description: `Now playing: ${episode.title}`,
+      duration: 2000,
+      action: null
     });
+  }, [id, navigate, toast, episodes]);
+
+  const handlePreviousEpisode = () => {
+    if (activeEpisode > 0) {
+      handleEpisodeSelect(activeEpisode - 1);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    if (activeEpisode < episodes.length - 1) {
+      handleEpisodeSelect(activeEpisode + 1);
+    }
   };
 
   const handleShare = async () => {
+    const currentEpisode = getCurrentEpisode();
     const shareData = {
-      title: `${anime.title} - Episode ${episodeNumber}`,
-      text: `Watch ${anime.title} Episode ${episodeNumber}: ${episodes[episodeNumber - 1]}`,
+      title: `${anime?.title} - Episode ${episodeNumber}`,
+      text: `Watch ${anime?.title} Episode ${episodeNumber}: ${currentEpisode?.title}`,
       url: window.location.href
     };
 
@@ -263,7 +276,35 @@ export default function AnimeWatch() {
     }
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <p className="mt-4 text-muted-foreground">Loading anime...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!anime) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Anime Not Found</h1>
+            <p className="text-muted-foreground">The anime you're looking for couldn't be found.</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   if (!animeId) return null;
+
+  const currentEpisode = getCurrentEpisode();
 
   return (
     <Layout>
@@ -280,7 +321,7 @@ export default function AnimeWatch() {
               <div className="lg:col-span-3 order-3 lg:order-1">
                 <div className="sticky top-24">
                   <EpisodeList 
-                    episodes={episodes} 
+                    episodes={episodeTitles} 
                     active={activeEpisode} 
                     onSelectEpisode={handleEpisodeSelect}
                   />
@@ -300,7 +341,7 @@ export default function AnimeWatch() {
                   <div className="flex-1">
                     <h1 className="text-xl font-bold text-foreground">{anime.title}</h1>
                     <p className="text-sm text-muted-foreground mb-2">
-                      Episode {episodeNumber}: {episodes[activeEpisode] || episodes[episodeNumber - 1]}
+                      Episode {currentEpisode?.episodeNumber || episodeNumber}: {currentEpisode?.title || `Episode ${episodeNumber}`}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -338,10 +379,9 @@ export default function AnimeWatch() {
                   </div>
                 </div>
 
-
                 <VideoPlayer
-                  videoUrl={videoUrl}
-                  thumbnailUrl={thumbnailUrl}
+                  videoUrl={getVideoUrl()}
+                  thumbnailUrl={getThumbnailUrl()}
                 />
 
                 {/* Interactive Video Controls */}
@@ -371,11 +411,23 @@ export default function AnimeWatch() {
                     </Button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="ghost" className="gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="gap-2"
+                      onClick={handlePreviousEpisode}
+                      disabled={activeEpisode === 0}
+                    >
                       <SkipBack className="h-4 w-4" />
                       Prev
                     </Button>
-                    <Button size="sm" variant="ghost" className="gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="gap-2"
+                      onClick={handleNextEpisode}
+                      disabled={activeEpisode === episodes.length - 1}
+                    >
                       <SkipForward className="h-4 w-4" />
                       Next
                     </Button>
@@ -384,7 +436,7 @@ export default function AnimeWatch() {
 
                 {/* Comments Section */}
                 <div className="mt-8">
-                  <CommentsSection comments={getCurrentComments(activeEpisode)} />
+                  <CommentsSection comments={[]} />
                 </div>
               </div>
             </div>
@@ -393,7 +445,20 @@ export default function AnimeWatch() {
             {showSidebar && (
               <div className="lg:col-span-3 order-2 lg:order-3">
                 <div className="sticky top-24 space-y-6">
-                  <AnimeInfoCard anime={anime} animeId={animeId} />
+                  <AnimeInfoCard 
+                    anime={{
+                      title: anime.title,
+                      description: anime.description || "",
+                      rating: Number(anime.rating) || 0,
+                      votes: 4167,
+                      genres: anime.genres?.map(g => g.name) || [],
+                      year: anime.year,
+                      studio: anime.studio,
+                      duration: anime.episodeDuration,
+                      status: anime.status
+                    }} 
+                    animeId={animeId} 
+                  />
 
                   {/* Popular Anime Section */}
                   <div className="hidden lg:block">
