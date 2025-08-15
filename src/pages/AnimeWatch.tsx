@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, MessageCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -78,11 +78,16 @@ const popularAnime = [
 
 export default function AnimeWatch() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const animeId = parseInt(id || "0");
   const { updateWatchHistory, currentUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const episodeNumber = 5; // This would be dynamic in a real app
+  
+  // Get dynamic values from URL query parameters
+  const videoUrl = searchParams.get('videoUrl') || "";
+  const thumbnailUrl = searchParams.get('thumbnailUrl') || "";
+  const episodeNumber = parseInt(searchParams.get('episode') || "1");
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
@@ -92,7 +97,7 @@ export default function AnimeWatch() {
 
   // Record watch history and load user preferences when component mounts
   useEffect(() => {
-    if (!animeId) {
+    if (!animeId || !videoUrl) {
       navigate("/");
       return;
     }
@@ -284,8 +289,8 @@ export default function AnimeWatch() {
 
 
                 <VideoPlayer
-                  videoUrl="http://localhost:8081/uploads/demon_slayer/season_1/episode_25/test25/master.m3u8"
-                  thumbnailUrl="http://localhost:8081/uploads/demon_slayer/hdcover.jpg"
+                  videoUrl={videoUrl}
+                  thumbnailUrl={thumbnailUrl}
                 />
 
                 {/* Interactive Video Controls */}
