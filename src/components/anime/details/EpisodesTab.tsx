@@ -16,11 +16,7 @@ interface EpisodesTabProps {
 
 export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps) {
   const normalizedDefault = (defaultSeason || '').toLowerCase();
-  const initialSeason: EpisodeSeason = (EPISODE_SEASONS as readonly string[]).includes(normalizedDefault)
-    ? (normalizedDefault as EpisodeSeason)
-    : 'spring';
 
-  const [season, setSeason] = useState<EpisodeSeason>(initialSeason);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +26,7 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
     setLoading(true);
     setError(null);
 
-    getAnimeEpisodesBySeason(animeId, season)
+    getAnimeEpisodesBySeason(animeId)
       .then((res) => {
         if (!isMounted) return;
         if (res?.success) {
@@ -53,7 +49,7 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
     return () => {
       isMounted = false;
     };
-  }, [animeId, season]);
+  }, [animeId]);
 
   const content = useMemo(() => {
     if (loading) {
@@ -114,9 +110,9 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
               ) : null}
               <div className="flex gap-2 pt-1">
                 <Button asChild size="sm" className="rounded-full">
-                  <Link 
+                  <Link
                     to={`/watch/${ep.animeId}?videoUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.masterUrl}`)}&thumbnailUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.thumbnail}`)}&episode=${ep.episodeNumber}`}
-                  > 
+                  >
                     <Play className="h-4 w-4 mr-1" /> Watch
                   </Link>
                 </Button>
@@ -135,18 +131,6 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Episodes</h3>
-        <div className="w-44">
-          <Select value={season} onValueChange={(val) => setSeason(val as EpisodeSeason)}>
-            <SelectTrigger aria-label="Select season">
-              <SelectValue placeholder="Select season" />
-            </SelectTrigger>
-            <SelectContent>
-              {EPISODE_SEASONS.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
       {content}
     </section>

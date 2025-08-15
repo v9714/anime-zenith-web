@@ -68,7 +68,7 @@ export default function AnimeWatch() {
         setAnime(animeResponse.data);
         
         // Fetch episodes for the current season
-        const episodesResponse = await getAnimeEpisodesBySeason(id, currentSeason);
+        const episodesResponse = await getAnimeEpisodesBySeason(id);
         if (episodesResponse?.success) {
           setEpisodes(episodesResponse.data || []);
           

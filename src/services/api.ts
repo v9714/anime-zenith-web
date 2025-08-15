@@ -57,8 +57,8 @@ export const getTopAnime = async (page = 1, limit = 15): Promise<AnimeResponse> 
 
 // Search anime Done 
 export const searchAnime = async (query: string, page = 1, limit = 15) => {
-  const response = await backendAPI.get('/api/anime/search', { 
-    params: { title: query, page, limit } 
+  const response = await backendAPI.get('/api/anime/search', {
+    params: { title: query, page, limit }
   });
   return {
     data: response.data.data || response.data.data.anime || [],
@@ -77,16 +77,16 @@ export const searchAnime = async (query: string, page = 1, limit = 15) => {
 
 // Get seasonal anime Done
 export const getSeasonalAnime = async (year = new Date().getFullYear(), season = 'winter', page = 1, limit = 15) => {
-  const response = await backendAPI.get('/api/anime/seasonal', { 
-    params: { year, season, page, limit } 
+  const response = await backendAPI.get('/api/anime/seasonal', {
+    params: { year, season, page, limit }
   });
   return response.data;
 };
 
 // Get anime by genre Done
 export const getAnimeByGenre = async (genreId: number, page = 1, limit = 15) => {
-  const response = await backendAPI.get('/api/anime/genre', { 
-    params: { genreId, page, limit } 
+  const response = await backendAPI.get('/api/anime/genre', {
+    params: { genreId, page, limit }
   });
   return response.data;
 };
@@ -130,8 +130,8 @@ export interface EpisodesBySeasonResponse {
   success: boolean;
 }
 
-export const getAnimeEpisodesBySeason = async (id: number | string, season: string): Promise<EpisodesBySeasonResponse> => {
-  const response = await backendAPI.get(`/api/anime/${id}/episodes/${season}`);
+export const getAnimeEpisodesBySeason = async (id: number | string): Promise<EpisodesBySeasonResponse> => {
+  const response = await backendAPI.get(`/api/anime/${id}/episodes`);
   return response.data;
 };
 
