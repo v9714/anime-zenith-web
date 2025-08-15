@@ -60,12 +60,37 @@ const anime: AnimeData = {
   status: "Completed"
 };
 
-const comments = [
-  { user: "momie", avatar: "M", ago: "25 days ago", content: "to fast re again reely", likes: 12 },
-  { user: "Amazing", avatar: "A", ago: "3 months ago", content: "BOI THAT shot", likes: 45, isPremium: true },
-  { user: "Chopper", avatar: "C", ago: "8 months ago", content: "i am stuck relooping scenes for him again", likes: 8 },
-  { user: "SakuraFan", avatar: "S", ago: "9 months ago", content: "The animation in this episode was top-notch! Can't wait for more!", likes: 23 }
-];
+// Episode-specific comments data
+const episodeComments = {
+  0: [
+    { user: "AnimeExplorer", avatar: "A", ago: "2 hours ago", content: "What an incredible start to the series! The animation quality is outstanding.", likes: 45, isPremium: true },
+    { user: "MangaReader", avatar: "M", ago: "5 hours ago", content: "They adapted this episode perfectly from the manga. So faithful!", likes: 23 },
+    { user: "FirstTimer", avatar: "F", ago: "1 day ago", content: "Never watched this series before, but this episode got me hooked!", likes: 67 }
+  ],
+  1: [
+    { user: "ActionFan", avatar: "A", ago: "3 hours ago", content: "The desperate situation was portrayed so well. My heart was racing!", likes: 78 },
+    { user: "EmotionalViewer", avatar: "E", ago: "6 hours ago", content: "This episode hit me right in the feels. Such great character development.", likes: 34 }
+  ],
+  2: [
+    { user: "SportsAnime", avatar: "S", ago: "1 hour ago", content: "Best penalty scene I've ever seen in anime! The tension was incredible.", likes: 92 },
+    { user: "TacticsGuru", avatar: "T", ago: "4 hours ago", content: "The strategy behind this win was brilliant. Love how they explained it.", likes: 56 }
+  ],
+  3: [
+    { user: "BattleFan", avatar: "B", ago: "30 minutes ago", content: "Fierce battle indeed! The resolve shown by the characters was amazing.", likes: 43 },
+    { user: "CharacterLover", avatar: "C", ago: "2 hours ago", content: "The character growth in this episode was phenomenal!", likes: 29 }
+  ],
+  4: [
+    { user: "momie", avatar: "M", ago: "25 days ago", content: "to fast re again reely", likes: 12 },
+    { user: "Amazing", avatar: "A", ago: "3 months ago", content: "BOI THAT shot", likes: 45, isPremium: true },
+    { user: "Chopper", avatar: "C", ago: "8 months ago", content: "i am stuck relooping scenes for him again", likes: 8 },
+    { user: "SakuraFan", avatar: "S", ago: "9 months ago", content: "The animation in this episode was top-notch! Can't wait for more!", likes: 23 }
+  ]
+};
+
+// Get comments for current episode or default to episode 5 comments
+const getCurrentComments = (episodeIndex: number) => {
+  return episodeComments[episodeIndex as keyof typeof episodeComments] || episodeComments[4];
+};
 
 // Dummy popular anime
 const popularAnime = [
@@ -94,6 +119,7 @@ export default function AnimeWatch() {
   const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(1247);
   const [views, setViews] = useState(125634);
+  const [activeEpisode, setActiveEpisode] = useState(episodeNumber - 1);
 
   // Record watch history and load user preferences when component mounts
   useEffect(() => {
@@ -125,6 +151,9 @@ export default function AnimeWatch() {
 
     // Increment view count
     setViews(prev => prev + 1);
+    
+    // Update active episode when URL changes
+    setActiveEpisode(episodeNumber - 1);
   }, [animeId, updateWatchHistory, navigate, currentUser, episodeNumber]);
 
   const handleLike = () => {
@@ -193,6 +222,24 @@ export default function AnimeWatch() {
     });
   };
 
+  const handleEpisodeSelect = (episodeIndex: number) => {
+    setActiveEpisode(episodeIndex);
+    const newEpisodeNumber = episodeIndex + 1;
+    
+    // Update URL with new episode parameters - you would get these from your API
+    const newVideoUrl = `http://localhost:8081/uploads/demon_slayer/season_1/episode_${newEpisodeNumber}/master.m3u8`;
+    const newThumbnailUrl = `http://localhost:8081/uploads/demon_slayer/episode_${newEpisodeNumber}_thumb.jpg`;
+    
+    // Navigate to new episode URL
+    navigate(`/anime/${animeId}/watch?episode=${newEpisodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
+    
+    toast({
+      id: String(Date.now()),
+      title: "Episode Changed",
+      description: `Now playing Episode ${newEpisodeNumber}: ${episodes[episodeIndex]}`
+    });
+  };
+
   const handleShare = async () => {
     const shareData = {
       title: `${anime.title} - Episode ${episodeNumber}`,
@@ -232,7 +279,11 @@ export default function AnimeWatch() {
             {showPlaylist && (
               <div className="lg:col-span-3 order-3 lg:order-1">
                 <div className="sticky top-24">
-                  <EpisodeList episodes={episodes} active={4} />
+                  <EpisodeList 
+                    episodes={episodes} 
+                    active={activeEpisode} 
+                    onSelectEpisode={handleEpisodeSelect}
+                  />
                 </div>
               </div>
             )}
@@ -249,7 +300,7 @@ export default function AnimeWatch() {
                   <div className="flex-1">
                     <h1 className="text-xl font-bold text-foreground">{anime.title}</h1>
                     <p className="text-sm text-muted-foreground mb-2">
-                      Episode {episodeNumber}: {episodes[episodeNumber - 1]}
+                      Episode {episodeNumber}: {episodes[activeEpisode] || episodes[episodeNumber - 1]}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -333,7 +384,7 @@ export default function AnimeWatch() {
 
                 {/* Comments Section */}
                 <div className="mt-8">
-                  <CommentsSection comments={comments} />
+                  <CommentsSection comments={getCurrentComments(activeEpisode)} />
                 </div>
               </div>
             </div>
