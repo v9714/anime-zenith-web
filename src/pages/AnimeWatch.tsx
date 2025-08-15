@@ -231,7 +231,7 @@ export default function AnimeWatch() {
     const newThumbnailUrl = `http://localhost:8081/uploads/demon_slayer/episode_${newEpisodeNumber}_thumb.jpg`;
     
     // Navigate to new episode URL
-    navigate(`/anime/${animeId}/watch?episode=${newEpisodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
+    navigate(`/watch/${animeId}?episode=${newEpisodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
     
     toast({
       id: String(Date.now()),
