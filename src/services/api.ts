@@ -117,6 +117,7 @@ export interface Episode {
   episodeNumber: number;
   thumbnail?: string;
   videoUrl?: string;
+  masterUrl?: string;
   duration?: number;
   description?: string;
   airDate?: string;
