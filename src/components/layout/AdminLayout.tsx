@@ -45,45 +45,45 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <Link to="/admin">
-                    <SidebarMenuButton 
+                     <SidebarMenuButton 
                       isActive={currentPath === "/admin"}
-                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
-                      <LayoutDashboard className={`h-5 w-5 ${currentPath === "/admin" ? "text-primary" : ""}`} />
-                      <span className={currentPath === "/admin" ? "text-white font-medium" : ""}>Dashboard</span>
+                      <LayoutDashboard className={`h-5 w-5 transition-colors ${currentPath === "/admin" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Dashboard</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/anime">
-                    <SidebarMenuButton 
+                     <SidebarMenuButton 
                       isActive={currentPath === "/admin/anime"}
-                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin/anime" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/anime" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
-                      <Film className={`h-5 w-5 ${currentPath === "/admin/anime" ? "text-primary" : ""}`} />
-                      <span className={currentPath === "/admin/anime" ? "text-white font-medium" : ""}>Anime Management</span>
+                      <Film className={`h-5 w-5 transition-colors ${currentPath === "/admin/anime" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin/anime" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Anime Management</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/episodes">
-                    <SidebarMenuButton 
+                     <SidebarMenuButton 
                       isActive={currentPath === "/admin/episodes"}
-                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin/episodes" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/episodes" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
-                      <ListChecks className={`h-5 w-5 ${currentPath === "/admin/episodes" ? "text-primary" : ""}`} />
-                      <span className={currentPath === "/admin/episodes" ? "text-white font-medium" : ""}>Episodes</span>
+                      <ListChecks className={`h-5 w-5 transition-colors ${currentPath === "/admin/episodes" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin/episodes" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Episodes</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/users">
-                    <SidebarMenuButton 
+                     <SidebarMenuButton 
                       isActive={currentPath === "/admin/users"}
-                      className={`hover:bg-sidebar-accent/40 ${currentPath === "/admin/users" ? "bg-sidebar-accent/40 border-l-4 border-primary" : ""}`}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/users" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
-                      <Users className={`h-5 w-5 ${currentPath === "/admin/users" ? "text-primary" : ""}`} />
-                      <span className={currentPath === "/admin/users" ? "text-white font-medium" : ""}>Users</span>
+                      <Users className={`h-5 w-5 transition-colors ${currentPath === "/admin/users" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin/users" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Users</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>

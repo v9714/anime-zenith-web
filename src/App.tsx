@@ -20,7 +20,7 @@ import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 import AnimeWatch from "./pages/AnimeWatch";
 
-// Import admin pages
+// Import admin pages  
 import AdminDashboard from "./pages/Admin";
 import AdminAnime from "./pages/AdminAnime";
 import AdminEpisodes from "./pages/AdminEpisodes";
