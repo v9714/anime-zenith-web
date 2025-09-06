@@ -15,14 +15,22 @@ import {
 import { EpisodeForm } from "@/components/admin/EpisodeForm";
 
 interface Episode {
-  id: number;
+  id?: number;
   animeId: number;
   animeTitle: string;
   episodeNumber: number;
   title: string;
-  thumbnailUrl: string;
+  thumbnailType: "url" | "upload";
+  thumbnailUrl?: string;
+  thumbnailFile?: File;
+  masterUrl: string;
   duration: number;
-  airedDate: string;
+  description: string;
+  airDate: Date;
+  isDeleted: boolean;
+  commentsEnabled: boolean;
+  loginRequired: boolean;
+  sourceFile?: File;
 }
 
 const AdminEpisodes = () => {
@@ -37,9 +45,15 @@ const AdminEpisodes = () => {
       animeTitle: "Fullmetal Alchemist: Brotherhood",
       episodeNumber: 1,
       title: "Fullmetal Alchemist",
+      thumbnailType: "url" as const,
       thumbnailUrl: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
+      masterUrl: "https://example.com/video1.mp4",
       duration: 24,
-      airedDate: "2009-04-05"
+      description: "The beginning of the journey",
+      airDate: new Date("2009-04-05"),
+      isDeleted: false,
+      commentsEnabled: true,
+      loginRequired: false
     },
     {
       id: 2,
@@ -47,9 +61,15 @@ const AdminEpisodes = () => {
       animeTitle: "Fullmetal Alchemist: Brotherhood",
       episodeNumber: 2,
       title: "The First Day",
+      thumbnailType: "url" as const,
       thumbnailUrl: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
+      masterUrl: "https://example.com/video2.mp4",
       duration: 24,
-      airedDate: "2009-04-12"
+      description: "The adventure continues",
+      airDate: new Date("2009-04-12"),
+      isDeleted: false,
+      commentsEnabled: true,
+      loginRequired: false
     }
   ]);
 
@@ -59,7 +79,11 @@ const AdminEpisodes = () => {
   );
 
   const handleAddEpisode = (episode: Episode) => {
-    setEpisodes([...episodes, episode]);
+    const newEpisode = {
+      ...episode,
+      id: episode.id || Date.now(), // Generate ID if not provided
+    };
+    setEpisodes([...episodes, newEpisode]);
     setDialogOpen(false);
   };
 
@@ -129,7 +153,7 @@ const AdminEpisodes = () => {
                     <td className="p-2 sm:p-4 align-middle text-sm">{episode.episodeNumber}</td>
                     <td className="p-2 sm:p-4 align-middle text-sm">{episode.title}</td>
                     <td className="p-2 sm:p-4 align-middle text-sm">{episode.duration} min</td>
-                    <td className="p-2 sm:p-4 align-middle text-sm">{episode.airedDate}</td>
+                    <td className="p-2 sm:p-4 align-middle text-sm">{episode.airDate.toLocaleDateString()}</td>
                     <td className="p-2 sm:p-4 align-middle">
                       <div className="flex items-center gap-1">
                         <Button size="sm" variant="ghost">
