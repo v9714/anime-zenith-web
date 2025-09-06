@@ -1,30 +1,56 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { X, Upload } from "lucide-react";
 import { Anime } from "@/services/api";
-import { format } from "date-fns";
+import dropdownOptions from "@/data/dropdown-options.json";
 
 const animeFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  alternativeTitles: z.array(z.string()).default([]),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  cover_image_url: z.string().url("Must be a valid URL"),
-  banner_image_url: z.string().url("Must be a valid URL").optional(),
-  type: z.enum(["TV", "Movie", "OVA", "Special"]),
-  genres: z.string().min(1, "At least one genre is required"),
-  status: z.enum(["Completed", "Airing", "Not Yet Aired"]),
-  release_date: z.string(),
+  coverImageType: z.enum(["url", "upload"]).default("url"),
+  coverImageUrl: z.string().optional(),
+  coverImageFile: z.any().optional(),
+  bannerImageType: z.enum(["url", "upload"]).default("url"),
+  bannerImageUrl: z.string().optional(),
+  bannerImageFile: z.any().optional(),
   year: z.coerce.number().min(1900).max(new Date().getFullYear() + 5),
-  season: z.enum(["Winter", "Spring", "Summer", "Fall"]).optional(),
+  season: z.enum(["FALL", "SPRING", "SUMMER", "WINTER"]),
+  seasonNumber: z.coerce.number().min(1),
+  status: z.enum(["ONGOING", "COMPLETED", "UPCOMING"]),
+  type: z.enum(["TV", "MOVIE", "OVA", "SPECIAL"]),
+  rating: z.coerce.number().min(0).max(10).optional(),
+  votesCount: z.coerce.number().default(0),
   studio: z.string().optional(),
-  rating: z.string().optional(),
+  episodeDuration: z.string().optional(),
+  isDeleted: z.boolean().default(false),
+}).refine((data) => {
+  if (data.coverImageType === "url" && !data.coverImageUrl) {
+    return false;
+  }
+  if (data.coverImageType === "upload" && !data.coverImageFile) {
+    return false;
+  }
+  if (data.bannerImageType === "url" && !data.bannerImageUrl) {
+    return false;
+  }
+  if (data.bannerImageType === "upload" && !data.bannerImageFile) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Cover image and banner image are required",
 });
 
 type AnimeFormValues = z.infer<typeof animeFormSchema>;
@@ -43,68 +69,121 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(
     anime?.bannerImage || null
   );
+  const [alternativeTitleInput, setAlternativeTitleInput] = useState("");
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<AnimeFormValues>({
     resolver: zodResolver(animeFormSchema),
-    defaultValues: anime ? {
-      title: anime.title,
-      description: anime.description || "",
-      cover_image_url: anime.coverImage || "",
-      banner_image_url: anime.bannerImage || "",
-      type: anime.type as "TV" | "Movie" | "OVA" | "Special" || "TV",
-      genres: anime.genres?.map(g => g.name).join(", ") || "",
-      status: anime.status as "Completed" | "Airing" | "Not Yet Aired" || "Completed",
-      release_date: anime.year ? `${anime.year}-01-01` : format(new Date(), 'yyyy-MM-dd'),
-      year: anime.year || new Date().getFullYear(),
-      season: anime.season as "Winter" | "Spring" | "Summer" | "Fall" || "Winter",
-      studio: anime.studio || "",
-      rating: anime.rating || "",
-    } : {
-      title: "",
-      description: "",
-      cover_image_url: "",
-      banner_image_url: "",
+    defaultValues: {
+      title: anime?.title || "",
+      alternativeTitles: anime?.alternativeTitles || [],
+      description: anime?.description || "",
+      coverImageType: "url",
+      coverImageUrl: anime?.coverImage || "",
+      bannerImageType: "url", 
+      bannerImageUrl: anime?.bannerImage || "",
+      year: anime?.year || new Date().getFullYear(),
+      season: "SPRING",
+      seasonNumber: 1,
+      status: "ONGOING",
       type: "TV",
-      genres: "",
-      status: "Completed",
-      release_date: format(new Date(), 'yyyy-MM-dd'),
-      year: new Date().getFullYear(),
-      season: "Winter",
-      studio: "",
-      rating: "",
+      rating: anime?.rating ? parseFloat(anime.rating) : undefined,
+      votesCount: anime?.votesCount || 0,
+      studio: anime?.studio || "",
+      episodeDuration: anime?.episodeDuration || "",
+      isDeleted: false,
     }
   });
 
-  const handleSubmit = (data: AnimeFormValues) => {
-    const genresList = data.genres.split(",").map(g => g.trim()).filter(g => g.length > 0);
+  const handleSubmit = async (data: AnimeFormValues) => {
+    const formData = new FormData();
     
-    const newAnime: Anime = {
+    // Basic fields
+    formData.append('title', data.title);
+    formData.append('alternativeTitles', JSON.stringify(data.alternativeTitles));
+    formData.append('description', data.description);
+    formData.append('year', data.year.toString());
+    formData.append('season', data.season);
+    formData.append('seasonNumber', data.seasonNumber.toString());
+    formData.append('status', data.status);
+    formData.append('type', data.type);
+    formData.append('votesCount', data.votesCount.toString());
+    formData.append('isDeleted', data.isDeleted.toString());
+    
+    if (data.rating) formData.append('rating', data.rating.toString());
+    if (data.studio) formData.append('studio', data.studio);
+    if (data.episodeDuration) formData.append('episodeDuration', data.episodeDuration);
+    
+    // Handle images
+    if (data.coverImageType === 'upload' && data.coverImageFile) {
+      formData.append('coverImage', data.coverImageFile);
+    } else if (data.coverImageUrl) {
+      formData.append('coverImageUrl', data.coverImageUrl);
+    }
+    
+    if (data.bannerImageType === 'upload' && data.bannerImageFile) {
+      formData.append('bannerImage', data.bannerImageFile);
+    } else if (data.bannerImageUrl) {
+      formData.append('bannerImageUrl', data.bannerImageUrl);
+    }
+
+    // For now, create a simple anime object for the parent component
+    const animeData: Anime = {
       id: anime?.id || `anime_${Date.now()}`,
       title: data.title,
-      alternativeTitles: [data.title],
+      alternativeTitles: data.alternativeTitles,
       description: data.description,
-      coverImage: data.cover_image_url,
-      bannerImage: data.banner_image_url || data.cover_image_url,
+      coverImage: data.coverImageUrl || "",
+      bannerImage: data.bannerImageUrl || "",
       year: data.year,
-      season: data.season || "Winter",
+      season: data.season,
       status: data.status,
       type: data.type,
-      rating: data.rating || "0",
+      rating: data.rating?.toString() || "0",
+      votesCount: data.votesCount,
       studio: data.studio || "",
-      genres: genresList.map((name, index) => ({ mal_id: index + 1, name })),
+      episodeDuration: data.episodeDuration || "",
+      genres: []
     };
 
-    onSubmit(newAnime);
+    onSubmit(animeData);
   };
 
-  const handleCoverImageChange = (url: string) => {
-    setCoverImagePreview(url);
-    form.setValue('cover_image_url', url);
+  const handleFileUpload = (file: File, type: 'cover' | 'banner') => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      if (type === 'cover') {
+        setCoverImagePreview(url);
+        form.setValue('coverImageFile', file);
+      } else {
+        setBannerImagePreview(url);
+        form.setValue('bannerImageFile', file);
+      }
+    }
   };
 
-  const handleBannerImageChange = (url: string) => {
-    setBannerImagePreview(url);
-    form.setValue('banner_image_url', url);
+  const handleUrlChange = (url: string, type: 'cover' | 'banner') => {
+    if (type === 'cover') {
+      setCoverImagePreview(url);
+      form.setValue('coverImageUrl', url);
+    } else {
+      setBannerImagePreview(url);
+      form.setValue('bannerImageUrl', url);
+    }
+  };
+
+  const addAlternativeTitle = () => {
+    if (alternativeTitleInput.trim()) {
+      const current = form.getValues('alternativeTitles');
+      form.setValue('alternativeTitles', [...current, alternativeTitleInput.trim()]);
+      setAlternativeTitleInput("");
+    }
+  };
+
+  const removeAlternativeTitle = (index: number) => {
+    const current = form.getValues('alternativeTitles');
+    form.setValue('alternativeTitles', current.filter((_, i) => i !== index));
   };
 
   return (
@@ -125,7 +204,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>Title *</FormLabel>
                     <FormControl>
                       <Input placeholder="Anime title" {...field} />
                     </FormControl>
@@ -139,18 +218,19 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Type *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="TV">TV</SelectItem>
-                        <SelectItem value="Movie">Movie</SelectItem>
-                        <SelectItem value="OVA">OVA</SelectItem>
-                        <SelectItem value="Special">Special</SelectItem>
+                        {dropdownOptions.types.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -159,13 +239,49 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
               />
             </div>
 
+            {/* Alternative Titles */}
+            <FormField
+              control={form.control}
+              name="alternativeTitles"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alternative Titles</FormLabel>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add alternative title"
+                        value={alternativeTitleInput}
+                        onChange={(e) => setAlternativeTitleInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAlternativeTitle())}
+                      />
+                      <Button type="button" onClick={addAlternativeTitle} variant="outline">
+                        Add
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {field.value.map((title, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          {title}
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => removeAlternativeTitle(index)}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Description */}
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Description *</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Anime description/synopsis" 
@@ -180,27 +296,71 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
 
             {/* Images */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Cover Image */}
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="cover_image_url"
+                  name="coverImageType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cover Image URL</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://example.com/cover.jpg"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            handleCoverImageChange(e.target.value);
-                          }}
+                      <FormLabel>Cover Image *</FormLabel>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={field.value === "upload"}
+                          onCheckedChange={(checked) => field.onChange(checked ? "upload" : "url")}
                         />
-                      </FormControl>
-                      <FormMessage />
+                        <span className="text-sm">
+                          {field.value === "upload" ? "Upload File" : "Use URL"}
+                        </span>
+                      </div>
                     </FormItem>
                   )}
                 />
+
+                {form.watch("coverImageType") === "url" ? (
+                  <FormField
+                    control={form.control}
+                    name="coverImageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            placeholder="https://example.com/cover.jpg"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              handleUrlChange(e.target.value, 'cover');
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      ref={coverFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'cover');
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => coverFileInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose Cover Image
+                    </Button>
+                  </div>
+                )}
+
                 {coverImagePreview && (
                   <div className="mt-2">
                     <img 
@@ -212,27 +372,71 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 )}
               </div>
 
+              {/* Banner Image */}
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="banner_image_url"
+                  name="bannerImageType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Banner Image URL (Optional)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://example.com/banner.jpg"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            handleBannerImageChange(e.target.value);
-                          }}
+                      <FormLabel>Banner Image *</FormLabel>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={field.value === "upload"}
+                          onCheckedChange={(checked) => field.onChange(checked ? "upload" : "url")}
                         />
-                      </FormControl>
-                      <FormMessage />
+                        <span className="text-sm">
+                          {field.value === "upload" ? "Upload File" : "Use URL"}
+                        </span>
+                      </div>
                     </FormItem>
                   )}
                 />
+
+                {form.watch("bannerImageType") === "url" ? (
+                  <FormField
+                    control={form.control}
+                    name="bannerImageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            placeholder="https://example.com/banner.jpg"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              handleUrlChange(e.target.value, 'banner');
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      ref={bannerFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'banner');
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose Banner Image
+                    </Button>
+                  </div>
+                )}
+
                 {bannerImagePreview && (
                   <div className="mt-2">
                     <img 
@@ -252,9 +456,9 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 name="year"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Year</FormLabel>
+                    <FormLabel>Year *</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" placeholder="YYYY" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -266,20 +470,35 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 name="season"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Season</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Season *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select season" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Winter">Winter</SelectItem>
-                        <SelectItem value="Spring">Spring</SelectItem>
-                        <SelectItem value="Summer">Summer</SelectItem>
-                        <SelectItem value="Fall">Fall</SelectItem>
+                        {dropdownOptions.seasons.map((season) => (
+                          <SelectItem key={season.value} value={season.value}>
+                            {season.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="seasonNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Season Number *</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="1" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -290,24 +509,28 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Status *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                        <SelectItem value="Airing">Airing</SelectItem>
-                        <SelectItem value="Not Yet Aired">Not Yet Aired</SelectItem>
+                        {dropdownOptions.statuses.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="rating"
@@ -315,15 +538,22 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                   <FormItem>
                     <FormLabel>Rating</FormLabel>
                     <FormControl>
-                      <Input placeholder="0-10" {...field} />
+                      <Input 
+                        type="number" 
+                        step="0.1"
+                        min="0"
+                        max="10"
+                        placeholder="8.5" 
+                        {...field} 
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      />
                     </FormControl>
+                    <FormDescription>Scale: 0.0 - 10.0</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="studio"
@@ -340,16 +570,39 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
 
               <FormField
                 control={form.control}
-                name="genres"
+                name="episodeDuration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Genres</FormLabel>
+                    <FormLabel>Episode Duration</FormLabel>
                     <FormControl>
-                      <Input placeholder="Action, Adventure, Drama (comma separated)" {...field} />
+                      <Input placeholder="24 min per ep" {...field} />
                     </FormControl>
-                    <FormDescription>
-                      Separate multiple genres with commas
-                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Admin Settings */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Admin Settings</h3>
+              <FormField
+                control={form.control}
+                name="isDeleted"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Hide from users</FormLabel>
+                      <FormDescription>
+                        If checked, this anime will be hidden from users but visible to admins
+                      </FormDescription>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

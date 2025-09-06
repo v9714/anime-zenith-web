@@ -1,0 +1,25 @@
+{
+  "seasons": [
+    { "value": "FALL", "label": "Fall" },
+    { "value": "SPRING", "label": "Spring" },
+    { "value": "SUMMER", "label": "Summer" },
+    { "value": "WINTER", "label": "Winter" }
+  ],
+  "statuses": [
+    { "value": "ONGOING", "label": "Ongoing" },
+    { "value": "COMPLETED", "label": "Completed" },
+    { "value": "UPCOMING", "label": "Upcoming" }
+  ],
+  "types": [
+    { "value": "TV", "label": "TV" },
+    { "value": "MOVIE", "label": "Movie" },
+    { "value": "OVA", "label": "OVA" },
+    { "value": "SPECIAL", "label": "Special" }
+  ],
+  "alternativeTitleOptions": [
+    { "value": "english", "label": "English Name" },
+    { "value": "japanese", "label": "Japanese Name" },
+    { "value": "romaji", "label": "Romaji" },
+    { "value": "synonym", "label": "Synonym" }
+  ]
+}
