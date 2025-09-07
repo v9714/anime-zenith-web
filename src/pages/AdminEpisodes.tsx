@@ -79,11 +79,17 @@ const AdminEpisodes = () => {
   );
 
   const handleAddEpisode = (episode: Episode) => {
-    const newEpisode = {
-      ...episode,
-      id: episode.id || Date.now(), // Generate ID if not provided
-    };
-    setEpisodes([...episodes, newEpisode]);
+    if (episode.id) {
+      // Update existing episode
+      setEpisodes(episodes.map(ep => ep.id === episode.id ? episode : ep));
+    } else {
+      // Add new episode
+      const newEpisode = {
+        ...episode,
+        id: Date.now(), // Generate ID for new episode
+      };
+      setEpisodes([...episodes, newEpisode]);
+    }
     setDialogOpen(false);
   };
 

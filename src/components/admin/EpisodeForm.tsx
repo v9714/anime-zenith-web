@@ -171,27 +171,78 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   };
 
   const handleSubmit = async (data: EpisodeFormValues) => {
-    // Transform the form data into the Episode format
-    const newEpisode: Episode = {
-      id: episode?.id,
-      animeId: data.animeId,
-      animeTitle: data.animeTitle,
-      episodeNumber: data.episodeNumber,
-      title: data.title,
-      thumbnailType: data.thumbnailType,
-      thumbnailUrl: data.thumbnailUrl,
-      thumbnailFile: data.thumbnailFile,
-      masterUrl: data.masterUrl,
-      duration: data.duration,
-      description: data.description,
-      airDate: data.airDate,
-      isDeleted: data.isDeleted,
-      commentsEnabled: data.commentsEnabled,
-      loginRequired: data.loginRequired,
-      sourceFile: data.sourceFile,
-    };
+    try {
+      // Create FormData for file uploads
+      const formData = new FormData();
+      
+      // Add all form fields
+      formData.append('animeId', data.animeId.toString());
+      formData.append('animeTitle', data.animeTitle);
+      formData.append('episodeNumber', data.episodeNumber.toString());
+      formData.append('title', data.title);
+      formData.append('thumbnailType', data.thumbnailType);
+      formData.append('masterUrl', data.masterUrl);
+      formData.append('duration', data.duration.toString());
+      formData.append('description', data.description);
+      formData.append('airDate', data.airDate.toISOString());
+      formData.append('isDeleted', data.isDeleted.toString());
+      formData.append('commentsEnabled', data.commentsEnabled.toString());
+      formData.append('loginRequired', data.loginRequired.toString());
 
-    onSubmit(newEpisode);
+      // Add files if they exist
+      if (data.thumbnailType === 'upload' && data.thumbnailFile) {
+        formData.append('thumbnailFile', data.thumbnailFile);
+      } else if (data.thumbnailType === 'url' && data.thumbnailUrl) {
+        formData.append('thumbnailUrl', data.thumbnailUrl);
+      }
+
+      if (data.sourceFile) {
+        formData.append('sourceFile', data.sourceFile);
+      }
+
+      // API call
+      const url = episode?.id 
+        ? `http://localhost:8081/api/episode/${episode.id}`
+        : 'http://localhost:8081/api/episode';
+      
+      const method = episode?.id ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${episode?.id ? 'update' : 'add'} episode`);
+      }
+
+      const result = await response.json();
+      
+      // Transform response back to Episode format for UI update
+      const episodeResult: Episode = {
+        id: result.id || episode?.id,
+        animeId: result.animeId,
+        animeTitle: result.animeTitle,
+        episodeNumber: result.episodeNumber,
+        title: result.title,
+        thumbnailType: result.thumbnailType,
+        thumbnailUrl: result.thumbnailUrl,
+        thumbnailFile: data.thumbnailFile,
+        masterUrl: result.masterUrl,
+        duration: result.duration,
+        description: result.description,
+        airDate: new Date(result.airDate),
+        isDeleted: result.isDeleted,
+        commentsEnabled: result.commentsEnabled,
+        loginRequired: result.loginRequired,
+        sourceFile: data.sourceFile,
+      };
+
+      onSubmit(episodeResult);
+    } catch (error) {
+      console.error('Error submitting episode:', error);
+      // You might want to show a toast notification here
+    }
   };
 
   return (
@@ -402,8 +453,9 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="Video stream URL"
+                    placeholder={sourceFile ? "Pending, not uploaded" : "Video stream URL"}
                     disabled={!!sourceFile}
+                    value={sourceFile ? "Pending, not uploaded" : field.value}
                   />
                 </FormControl>
                 <FormDescription>
@@ -421,8 +473,17 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
               <FormItem>
                 <FormLabel>Duration (minutes)</FormLabel>
                 <FormControl>
-                  <Input type="number" min="1" {...field} />
+                  <Input 
+                    type="number" 
+                    min="1" 
+                    step="0.1"
+                    placeholder="24"
+                    {...field} 
+                  />
                 </FormControl>
+                <FormDescription>
+                  Duration in minutes (e.g., 24 or 23.5)
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
