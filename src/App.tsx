@@ -24,6 +24,7 @@ import AnimeWatch from "./pages/AnimeWatch";
 import AdminDashboard from "./pages/Admin";
 import AdminAnime from "./pages/AdminAnime";
 import AdminEpisodes from "./pages/AdminEpisodes";
+import AdminUsers from "./pages/AdminUsers";
 
 // Create Query Client for API requests
 const queryClient = new QueryClient({
@@ -63,6 +64,7 @@ const App = () => {
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/anime" element={<AdminAnime />} />
                   <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
                   
                   {/* Catch-all Route */}
                   <Route path="*" element={<NotFound />} />
