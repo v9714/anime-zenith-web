@@ -50,10 +50,10 @@ export default function AdminUsers() {
       const response = await userService.updateUser(userId, {
         isBlocked: !currentStatus
       });
-      
+
       if (response.success) {
-        setUsers(users.map(user => 
-          user.id === userId 
+        setUsers(users.map(user =>
+          user.id === userId
             ? { ...user, isBlocked: !currentStatus }
             : user
         ));
@@ -86,10 +86,10 @@ export default function AdminUsers() {
       const response = await userService.updateUser(userId, {
         canComment: !currentCanComment
       });
-      
+
       if (response.success) {
-        setUsers(users.map(user => 
-          user.id === userId 
+        setUsers(users.map(user =>
+          user.id === userId
             ? { ...user, canComment: !currentCanComment }
             : user
         ));
@@ -209,9 +209,9 @@ export default function AdminUsers() {
                     {users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-mono text-sm">
-                          {user.id.slice(0, 8)}...
+                          {user.id}
                         </TableCell>
-                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="font-medium">{user.displayName}</TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           <Badge variant={user.isBlocked ? "destructive" : "default"}>
@@ -259,13 +259,13 @@ export default function AdminUsers() {
                     <CardContent className="p-4">
                       <div className="space-y-3">
                         <div>
-                          <div className="font-medium">{user.name}</div>
+                          <div className="font-medium">{user.displayName}</div>
                           <div className="text-sm text-muted-foreground">{user.email}</div>
                           <div className="text-xs text-muted-foreground font-mono">
-                            ID: {user.id.slice(0, 8)}...
+                            ID: {user.id}
                           </div>
                         </div>
-                        
+
                         <div className="flex gap-2">
                           <Badge variant={user.isBlocked ? "destructive" : "default"}>
                             {user.isBlocked ? "Blocked" : "Active"}

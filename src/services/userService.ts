@@ -19,7 +19,7 @@ export interface UserProfileResponse {
 
 export interface AdminUser {
   id: string;
-  name: string;
+  displayName: string;
   email: string;
   isBlocked: boolean;
   canComment: boolean;
@@ -52,12 +52,12 @@ export const userService = {
   },
 
   getAllUsers: async (): Promise<AdminUsersResponse> => {
-    const response = await backendAPI.get<AdminUsersResponse>('/api/users');
+    const response = await backendAPI.get<AdminUsersResponse>('/api/admin/users/');
     return response.data;
   },
 
   updateUser: async (userId: string, updates: UpdateUserRequest): Promise<UpdateUserResponse> => {
-    const response = await backendAPI.patch<UpdateUserResponse>(`/api/users/${userId}`, updates);
+    const response = await backendAPI.patch<UpdateUserResponse>(`/api/admin/users/${userId}`, updates);
     return response.data;
   }
 };
