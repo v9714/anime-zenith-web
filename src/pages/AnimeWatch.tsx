@@ -1,10 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, MessageCircle } from "lucide-react";
+import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getAnimeById, getAnimeEpisodesBySeason, Anime, Episode } from "@/services/api";
@@ -15,8 +14,6 @@ import { EpisodeList } from "@/components/anime/watch/EpisodeList";
 import { AnimeInfoCard } from "@/components/anime/watch/AnimeInfoCard";
 import { CommentsSection } from "@/components/anime/watch/CommentsSection";
 import { MostPopularSidebar } from "@/components/anime/watch/MostPopularSidebar";
-import { LikeButton } from "@/components/anime/watch/LikeButton";
-import { SaveButton } from "@/components/anime/watch/SaveButton";
 import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 
 // Dummy popular anime data
@@ -35,13 +32,13 @@ export default function AnimeWatch() {
   const { updateWatchHistory, currentUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // Get dynamic values from URL query parameters
   const videoUrl = searchParams.get('videoUrl') || "";
   const thumbnailUrl = searchParams.get('thumbnailUrl') || "";
   const episodeParam = searchParams.get('episode');
   const episodeNumber = parseInt(episodeParam || "1");
-  
+
   // State management
   const [anime, setAnime] = useState<Anime | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -62,23 +59,23 @@ export default function AnimeWatch() {
 
       try {
         setLoading(true);
-        
+
         // Fetch anime details
         const animeResponse = await getAnimeById(parseInt(id));
         setAnime(animeResponse.data);
-        
+
         // Fetch episodes for the current season
         const episodesResponse = await getAnimeEpisodesBySeason(id);
         if (episodesResponse?.success) {
           setEpisodes(episodesResponse.data || []);
-          
+
           // Set active episode based on URL param or find by episode number
           if (episodeParam) {
             const foundIndex = episodesResponse.data.findIndex((ep: Episode) => ep.episodeNumber === episodeNumber);
             setActiveEpisode(foundIndex >= 0 ? foundIndex : 0);
           }
         }
-        
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -164,21 +161,21 @@ export default function AnimeWatch() {
 
     setIsLiked(!isLiked);
     setLikes(prev => isLiked ? prev - 1 : prev + 1);
-    
+
     // Save to localStorage
     const userLikes = localStorage.getItem(`likes_${currentUser.id}`);
     const likesData = userLikes ? JSON.parse(userLikes) : [];
     const episodeKey = `${animeId}_${episodeNumber}`;
-    
+
     if (isLiked) {
       const index = likesData.indexOf(episodeKey);
       if (index > -1) likesData.splice(index, 1);
     } else {
       likesData.push(episodeKey);
     }
-    
+
     localStorage.setItem(`likes_${currentUser.id}`, JSON.stringify(likesData));
-    
+
     toast({
       id: String(Date.now()),
       title: isLiked ? "Removed Like" : "Liked Episode",
@@ -190,27 +187,27 @@ export default function AnimeWatch() {
     if (!currentUser) {
       toast({
         id: String(Date.now()),
-        title: "Login Required", 
+        title: "Login Required",
         description: "Please login to save anime"
       });
       return;
     }
 
     setIsSaved(!isSaved);
-    
+
     // Save to localStorage
     const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
     const savedData = userSaved ? JSON.parse(userSaved) : [];
-    
+
     if (isSaved) {
       const index = savedData.indexOf(animeId);
       if (index > -1) savedData.splice(index, 1);
     } else {
       savedData.push(animeId);
     }
-    
+
     localStorage.setItem(`saved_${currentUser.id}`, JSON.stringify(savedData));
-    
+
     toast({
       id: String(Date.now()),
       title: isSaved ? "Removed from List" : "Added to List",
@@ -220,20 +217,20 @@ export default function AnimeWatch() {
 
   const handleEpisodeSelect = useCallback((index: number) => {
     if (!episodes[index]) return;
-    
+
     setActiveEpisode(index);
     const episode = episodes[index];
-    
+
     // Generate new URLs based on episode data
     const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
     const newThumbnailUrl = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
-    
+
     // Navigate to new episode URL
     navigate(`/watch/${id}?episode=${episode.episodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
-    
+
     toast({
       id: String(Date.now()),
-      title: "Episode Changed", 
+      title: "Episode Changed",
       description: `Now playing: ${episode.title}`,
       duration: 2000,
       action: null
@@ -320,9 +317,9 @@ export default function AnimeWatch() {
             {showPlaylist && (
               <div className="lg:col-span-3 order-3 lg:order-1">
                 <div className="sticky top-24">
-                  <EpisodeList 
-                    episodes={episodeTitles} 
-                    active={activeEpisode} 
+                  <EpisodeList
+                    episodes={episodeTitles}
+                    active={activeEpisode}
                     onSelectEpisode={handleEpisodeSelect}
                   />
                 </div>
@@ -387,18 +384,18 @@ export default function AnimeWatch() {
                 {/* Interactive Video Controls */}
                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
                   <div className="flex items-center gap-3">
-                    <Button 
-                      size="sm" 
-                      variant={isLiked ? "default" : "outline"} 
+                    <Button
+                      size="sm"
+                      variant={isLiked ? "default" : "outline"}
                       className="gap-2"
                       onClick={handleLike}
                     >
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                       {isLiked ? 'Liked' : 'Like'} ({likes})
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant={isSaved ? "default" : "outline"} 
+                    <Button
+                      size="sm"
+                      variant={isSaved ? "default" : "outline"}
                       className="gap-2"
                       onClick={handleSave}
                     >
@@ -411,9 +408,9 @@ export default function AnimeWatch() {
                     </Button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       className="gap-2"
                       onClick={handlePreviousEpisode}
                       disabled={activeEpisode === 0}
@@ -421,9 +418,9 @@ export default function AnimeWatch() {
                       <SkipBack className="h-4 w-4" />
                       Prev
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       className="gap-2"
                       onClick={handleNextEpisode}
                       disabled={activeEpisode === episodes.length - 1}
@@ -435,9 +432,10 @@ export default function AnimeWatch() {
                 </div>
 
                 {/* Comments Section */}
-                <div className="mt-8">
+                {/* Tmp comment */}
+                {/* <div className="mt-8">
                   <CommentsSection comments={[]} />
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -445,7 +443,7 @@ export default function AnimeWatch() {
             {showSidebar && (
               <div className="lg:col-span-3 order-2 lg:order-3">
                 <div className="sticky top-24 space-y-6">
-                  <AnimeInfoCard 
+                  <AnimeInfoCard
                     anime={{
                       title: anime.title,
                       description: anime.description || "",
@@ -456,8 +454,8 @@ export default function AnimeWatch() {
                       studio: anime.studio,
                       duration: anime.episodeDuration,
                       status: anime.status
-                    }} 
-                    animeId={animeId} 
+                    }}
+                    animeId={animeId}
                   />
 
                   {/* Popular Anime Section */}
