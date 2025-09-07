@@ -57,7 +57,7 @@ type AnimeFormValues = z.infer<typeof animeFormSchema>;
 
 interface AnimeFormProps {
   anime?: Anime;
-  onSubmit: (anime: Anime) => void;
+  onSubmit: (data: AnimeFormValues, anime?: Anime) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -81,7 +81,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
       description: anime?.description || "",
       coverImageType: "url",
       coverImageUrl: anime?.coverImage || "",
-      bannerImageType: "url", 
+      bannerImageType: "url",
       bannerImageUrl: anime?.bannerImage || "",
       year: anime?.year || new Date().getFullYear(),
       season: "SPRING",
@@ -92,62 +92,12 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
       votesCount: anime?.votesCount || 0,
       studio: anime?.studio || "",
       episodeDuration: anime?.episodeDuration || "",
-      isDeleted: false,
+      isDeleted: anime?.isDeleted,
     }
   });
 
   const handleSubmit = async (data: AnimeFormValues) => {
-    const formData = new FormData();
-    
-    // Basic fields
-    formData.append('title', data.title);
-    formData.append('alternativeTitles', JSON.stringify(data.alternativeTitles));
-    formData.append('description', data.description);
-    formData.append('year', data.year.toString());
-    formData.append('season', data.season);
-    formData.append('seasonNumber', data.seasonNumber.toString());
-    formData.append('status', data.status);
-    formData.append('type', data.type);
-    formData.append('votesCount', data.votesCount.toString());
-    formData.append('isDeleted', data.isDeleted.toString());
-    
-    if (data.rating) formData.append('rating', data.rating.toString());
-    if (data.studio) formData.append('studio', data.studio);
-    if (data.episodeDuration) formData.append('episodeDuration', data.episodeDuration);
-    
-    // Handle images
-    if (data.coverImageType === 'upload' && data.coverImageFile) {
-      formData.append('coverImage', data.coverImageFile);
-    } else if (data.coverImageUrl) {
-      formData.append('coverImageUrl', data.coverImageUrl);
-    }
-    
-    if (data.bannerImageType === 'upload' && data.bannerImageFile) {
-      formData.append('bannerImage', data.bannerImageFile);
-    } else if (data.bannerImageUrl) {
-      formData.append('bannerImageUrl', data.bannerImageUrl);
-    }
-
-    // For now, create a simple anime object for the parent component
-    const animeData: Anime = {
-      id: anime?.id || `anime_${Date.now()}`,
-      title: data.title,
-      alternativeTitles: data.alternativeTitles,
-      description: data.description,
-      coverImage: data.coverImageUrl || "",
-      bannerImage: data.bannerImageUrl || "",
-      year: data.year,
-      season: data.season,
-      status: data.status,
-      type: data.type,
-      rating: data.rating?.toString() || "0",
-      votesCount: data.votesCount,
-      studio: data.studio || "",
-      episodeDuration: data.episodeDuration || "",
-      genres: []
-    };
-
-    onSubmit(animeData);
+    onSubmit(data, anime);
   };
 
   const handleFileUpload = (file: File, type: 'cover' | 'banner') => {
@@ -187,13 +137,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>{anime ? 'Edit Anime' : 'Add New Anime'}</CardTitle>
-        <CardDescription>
-          {anime ? 'Update anime information' : 'Fill in the details to add a new anime'}
-        </CardDescription>
-      </CardHeader>
+    <Card className="w-full max-w-4xl mx-auto pt-3">
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -262,8 +206,8 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                       {field.value.map((title, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center gap-1">
                           {title}
-                          <X 
-                            className="h-3 w-3 cursor-pointer" 
+                          <X
+                            className="h-3 w-3 cursor-pointer"
                             onClick={() => removeAlternativeTitle(index)}
                           />
                         </Badge>
@@ -283,10 +227,10 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 <FormItem>
                   <FormLabel>Description *</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Anime description/synopsis" 
+                    <Textarea
+                      placeholder="Anime description/synopsis"
                       className="min-h-[100px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -324,7 +268,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input 
+                          <Input
                             placeholder="https://example.com/cover.jpg"
                             {...field}
                             onChange={(e) => {
@@ -363,9 +307,9 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
 
                 {coverImagePreview && (
                   <div className="mt-2">
-                    <img 
-                      src={coverImagePreview} 
-                      alt="Cover preview" 
+                    <img
+                      src={coverImagePreview}
+                      alt="Cover preview"
                       className="w-32 h-48 object-cover rounded-md"
                     />
                   </div>
@@ -400,7 +344,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input 
+                          <Input
                             placeholder="https://example.com/banner.jpg"
                             {...field}
                             onChange={(e) => {
@@ -439,9 +383,9 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
 
                 {bannerImagePreview && (
                   <div className="mt-2">
-                    <img 
-                      src={bannerImagePreview} 
-                      alt="Banner preview" 
+                    <img
+                      src={bannerImagePreview}
+                      alt="Banner preview"
                       className="w-full h-24 object-cover rounded-md"
                     />
                   </div>
@@ -538,13 +482,13 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                   <FormItem>
                     <FormLabel>Rating</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         step="0.1"
                         min="0"
                         max="10"
-                        placeholder="8.5" 
-                        {...field} 
+                        placeholder="8.5"
+                        {...field}
                         onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                       />
                     </FormControl>

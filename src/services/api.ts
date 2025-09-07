@@ -10,6 +10,7 @@ export interface Anime {
   bannerImage?: string;
   year?: number;
   season?: string;
+  seasonNumber?: number;
   status?: string;
   type?: string;
   rating?: string;
@@ -17,6 +18,9 @@ export interface Anime {
   studio?: string;
   episodeDuration?: string;
   genres?: { mal_id: number; name: string }[];
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AnimeResponse {
