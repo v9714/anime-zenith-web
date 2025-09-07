@@ -57,7 +57,7 @@ type AnimeFormValues = z.infer<typeof animeFormSchema>;
 
 interface AnimeFormProps {
   anime?: Anime;
-  onSubmit: (data: AnimeFormValues, anime?: Anime) => void;
+  onSubmit: (data: FormData | AnimeFormValues, anime?: Anime) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -97,7 +97,45 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   });
 
   const handleSubmit = async (data: AnimeFormValues) => {
-    onSubmit(data, anime);
+    // Create FormData for file uploads
+    const formData = new FormData();
+
+    // Add basic fields
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('year', data.year.toString());
+    formData.append('season', data.season);
+    formData.append('seasonNumber', data.seasonNumber.toString());
+    formData.append('status', data.status);
+    formData.append('type', data.type);
+    formData.append('votesCount', data.votesCount.toString());
+    formData.append('isDeleted', data.isDeleted.toString());
+
+    // Add optional fields if they exist
+    if (data.rating) formData.append('rating', data.rating.toString());
+    if (data.studio) formData.append('studio', data.studio);
+    if (data.episodeDuration) formData.append('episodeDuration', data.episodeDuration);
+
+    // Add alternative titles as JSON string
+    if (data.alternativeTitles.length > 0) {
+      formData.append('alternativeTitles', JSON.stringify(data.alternativeTitles));
+    }
+
+    // Handle cover image
+    if (data.coverImageType === 'upload' && data.coverImageFile) {
+      formData.append('coverImage', data.coverImageFile);
+    } else if (data.coverImageType === 'url' && data.coverImageUrl) {
+      formData.append('coverImageUrl', data.coverImageUrl);
+    }
+
+    // Handle banner image
+    if (data.bannerImageType === 'upload' && data.bannerImageFile) {
+      formData.append('bannerImage', data.bannerImageFile);
+    } else if (data.bannerImageType === 'url' && data.bannerImageUrl) {
+      formData.append('bannerImageUrl', data.bannerImageUrl);
+    }
+
+    onSubmit(formData, anime);
   };
 
   const handleFileUpload = (file: File, type: 'cover' | 'banner') => {

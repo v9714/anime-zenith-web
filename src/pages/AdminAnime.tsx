@@ -37,7 +37,6 @@ import { AnimeForm } from "@/components/admin/AnimeForm";
 import { Anime } from "@/services/api";
 import { getImageUrl } from "@/utils/commanFunction";
 import { adminAnimeService, AnimeFilters } from "@/services/adminAnimeService";
-// import { toast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 
 const AdminAnime = () => {
@@ -88,28 +87,10 @@ const AdminAnime = () => {
   const handleSubmit = async (formData: any, anime?: Anime) => {
     setIsLoading(true);
     try {
-      const animeData = {
-        title: formData.title,
-        alternativeTitles: formData.alternativeTitles,
-        description: formData.description,
-        coverImage: formData.coverImageUrl,
-        bannerImage: formData.bannerImageUrl,
-        year: formData.year,
-        season: formData.season,
-        seasonNumber: formData.seasonNumber,
-        status: formData.status,
-        type: formData.type,
-        rating: formData.rating,
-        votesCount: formData.votesCount,
-        studio: formData.studio,
-        episodeDuration: formData.episodeDuration,
-        isDeleted: formData.isDeleted
-      };
-
       let response;
       if (anime?.id) {
         // Update existing anime
-        response = await adminAnimeService.updateAnime(anime.id, animeData);
+        response = await adminAnimeService.updateAnime(anime.id, formData);
         const updatedAnimes = animes.map(a =>
           a.id === anime.id ? { ...a, ...response.data } : a
         );
@@ -117,7 +98,7 @@ const AdminAnime = () => {
         toast.success(response.message || "Anime updated successfully");
       } else {
         // Create new anime
-        response = await adminAnimeService.createAnime(animeData);
+        response = await adminAnimeService.createAnime(formData);
         setAnimes([...animes, response.data]);
         toast.success(response.message || "Anime created successfully");
       }

@@ -57,13 +57,21 @@ export const adminAnimeService = {
 
     // Create new anime
     createAnime: async (animeData: Partial<Anime>) => {
-        const response = await backendAPI.post('/api/anime/', animeData);
+        const config = animeData instanceof FormData ? {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        } : {};
+
+        const response = await backendAPI.post('/api/anime/', animeData, config);
         return response.data;
     },
 
     // Update existing anime
     updateAnime: async (id: string | number, animeData: Partial<Anime>) => {
-        const response = await backendAPI.patch(`/api/anime/${id}`, animeData);
+        const config = animeData instanceof FormData ? {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        } : {};
+
+        const response = await backendAPI.patch(`/api/anime/${id}`, animeData, config);
         return response.data;
     }
 };

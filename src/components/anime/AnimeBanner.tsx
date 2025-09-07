@@ -57,10 +57,6 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
           </div>
 
           <h1 className="text-2xl md:text-4xl font-heading font-bold">{anime.title}</h1>
-          {/* {anime.alternativeTitles?.en && anime.alternativeTitles.en !== anime.title && (
-            <p className="text-lg text-muted-foreground mt-1">{anime.alternativeTitles.en}</p>
-          )} */}
-
           {anime.alternativeTitles
             ?.filter((title) => title !== anime.title)
             .map((title, index) => (
@@ -72,7 +68,6 @@ export function AnimeBanner({ anime }: AnimeBannerProps) {
                 {title}
               </p>
             ))}
-
 
           <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
             {anime.genres?.map(genre => (
