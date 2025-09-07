@@ -255,7 +255,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="animeId"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Select Anime</FormLabel>
+                <FormLabel>Select Anime <span className="text-red-500">*</span></FormLabel>
                 <Popover open={isAnimeOpen} onOpenChange={setIsAnimeOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -314,7 +314,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="animeTitle"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Anime Title</FormLabel>
+                <FormLabel>Anime Title <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input {...field} disabled placeholder="Auto-filled from selection" />
                 </FormControl>
@@ -331,7 +331,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="episodeNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Episode Number</FormLabel>
+                <FormLabel>Episode Number <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input type="number" min="1" {...field} />
                 </FormControl>
@@ -345,7 +345,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Episode Title</FormLabel>
+                <FormLabel>Episode Title <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="Episode 2: Second Mission" {...field} />
                 </FormControl>
@@ -391,7 +391,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="thumbnailUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Thumbnail URL</FormLabel>
+                <FormLabel>Thumbnail URL <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
                 </FormControl>
@@ -405,7 +405,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="thumbnailFile"
             render={({ field: { onChange, ...field } }) => (
               <FormItem>
-                <FormLabel>Thumbnail File</FormLabel>
+                <FormLabel>Thumbnail File <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
                     <Button
@@ -449,7 +449,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="masterUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Master URL</FormLabel>
+                <FormLabel>Master URL <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -471,7 +471,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Duration (minutes)</FormLabel>
+                <FormLabel>Duration (minutes) <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -496,7 +496,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Description <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="This is the second episode of the anime..."
@@ -515,7 +515,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           name="airDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Air Date</FormLabel>
+              <FormLabel>Air Date <span className="text-red-500">*</span></FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>

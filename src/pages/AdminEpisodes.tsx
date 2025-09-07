@@ -106,14 +106,16 @@ const AdminEpisodes = () => {
                 Add New Episode
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Episode</DialogTitle>
                 <DialogDescription>
                   Fill in the details to add a new episode to the database.
                 </DialogDescription>
               </DialogHeader>
-              <EpisodeForm onSubmit={handleAddEpisode} />
+              <div className="max-h-[calc(85vh-80px)] overflow-y-auto pr-2">
+                <EpisodeForm onSubmit={handleAddEpisode} />
+              </div>
             </DialogContent>
           </Dialog>
         </div>
