@@ -113,9 +113,7 @@ const AdminEpisodes = () => {
                   Fill in the details to add a new episode to the database.
                 </DialogDescription>
               </DialogHeader>
-              <div className="max-h-[calc(85vh-80px)] overflow-y-auto pr-2">
-                <EpisodeForm onSubmit={handleAddEpisode} />
-              </div>
+              <EpisodeForm onSubmit={handleAddEpisode} />
             </DialogContent>
           </Dialog>
         </div>
