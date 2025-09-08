@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Search, Edit, Trash2, Filter } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,26 +15,21 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AnimeForm } from "@/components/admin/AnimeForm";
+import { AnimeTable } from "@/components/admin/AnimeTable";
+import { AnimePagination } from "@/components/admin/AnimePagination";
+import { AnimeFilters } from "@/components/admin/AnimeFilters";
 import { Anime } from "@/services/api";
-import { getImageUrl } from "@/utils/commanFunction";
-import { adminAnimeService, AnimeFilters } from "@/services/adminAnimeService";
+import { adminAnimeService, AnimeFilters as AnimeFiltersType } from "@/services/adminAnimeService";
 import { toast } from "sonner";
 
 const AdminAnime = () => {
@@ -47,9 +40,10 @@ const AdminAnime = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [filters, setFilters] = useState<AnimeFilters>({});
+  const [filters, setFilters] = useState<AnimeFiltersType>({});
   const [editingAnime, setEditingAnime] = useState<Anime | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteAnimeId, setDeleteAnimeId] = useState<string | number | null>(null);
 
   const itemsPerPage = 20;
 
@@ -72,9 +66,9 @@ const AdminAnime = () => {
       } else {
         toast.error("Failed to fetch anime data");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching animes:", error);
-      toast.error(error.response?.message || "Failed to fetch anime data");
+      toast.error(error.response?.data?.message || "Failed to fetch anime data");
     } finally {
       setLoading(false);
     }
@@ -122,7 +116,7 @@ const AdminAnime = () => {
     setDialogOpen(true);
   };
 
-  const handleFilterChange = (key: keyof AnimeFilters, value: string | number | undefined) => {
+  const handleFilterChange = (key: keyof AnimeFiltersType, value: string | number | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value
@@ -135,33 +129,18 @@ const AdminAnime = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  const generatePageNumbers = () => {
-    const pages: (number | string)[] = [];
-    const showEllipsis = totalPages > 7;
-
-    if (!showEllipsis) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 4) {
-        for (let i = 1; i <= 5; i++) pages.push(i);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 3) {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      }
+  const handleDelete = async (id: string | number) => {
+    try {
+      setIsLoading(true);
+      const response = await adminAnimeService.deleteAnime(id);
+      setAnimes(animes.filter(anime => anime.id !== id));
+      toast.success(response.message || "Anime deleted successfully");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete anime");
+    } finally {
+      setIsLoading(false);
+      setDeleteAnimeId(null);
     }
-
-    return pages;
   };
 
   return (
@@ -204,61 +183,12 @@ const AdminAnime = () => {
           </Dialog>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Filters & Search
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search anime..."
-                  className="w-full pl-8"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-
-              <Select value={filters?.status || "All"} onValueChange={(value) => handleFilterChange('status', value || undefined)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All Status</SelectItem>
-                  <SelectItem value="Airing">Airing</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Upcoming">Upcoming</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filters.type || "All"} onValueChange={(value) => handleFilterChange('type', value || undefined)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All Types</SelectItem>
-                  <SelectItem value="TV">TV</SelectItem>
-                  <SelectItem value="Movie">Movie</SelectItem>
-                  <SelectItem value="OVA">OVA</SelectItem>
-                  <SelectItem value="ONA">ONA</SelectItem>
-                  <SelectItem value="Special">Special</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Input
-                type="number"
-                placeholder="Filter by year"
-                value={filters.year || ""}
-                onChange={(e) => handleFilterChange('year', e.target.value ? parseInt(e.target.value) : undefined)}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <AnimeFilters
+          searchQuery={searchQuery}
+          filters={filters}
+          onSearchChange={handleSearch}
+          onFilterChange={handleFilterChange}
+        />
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -268,169 +198,40 @@ const AdminAnime = () => {
             {loading && <Badge variant="outline">Loading...</Badge>}
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Year</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Genres</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 bg-muted rounded-md animate-pulse" />
-                            <div className="space-y-2">
-                              <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                              <div className="h-3 w-24 bg-muted rounded animate-pulse" />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell><div className="h-4 w-16 bg-muted rounded animate-pulse" /></TableCell>
-                        <TableCell><div className="h-4 w-16 bg-muted rounded animate-pulse" /></TableCell>
-                        <TableCell><div className="h-6 w-20 bg-muted rounded-full animate-pulse" /></TableCell>
-                        <TableCell><div className="h-4 w-32 bg-muted rounded animate-pulse" /></TableCell>
-                        <TableCell><div className="h-8 w-16 bg-muted rounded animate-pulse" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : animes.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No anime found matching your criteria.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    animes.map((anime) => (
-                      <TableRow key={anime.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={getImageUrl(anime.coverImage)}
-                              alt={anime.title}
-                              className="h-12 w-12 rounded-md object-cover shadow-sm"
-                            />
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium truncate">{anime.title}</p>
-                              {anime.alternativeTitles
-                                ?.filter((title) => title !== anime.title)
-                                .slice(0, 1)
-                                .map((title, index) => (
-                                  <p key={index} className="text-sm text-muted-foreground truncate">
-                                    {title}
-                                  </p>
-                                ))}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{anime.type}</Badge>
-                        </TableCell>
-                        <TableCell>{anime.year}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={anime.status === "Airing" ? "default" : "secondary"}
-                            className={anime.status === "Airing"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                              : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                            }
-                          >
-                            {anime.status || "Completed"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1 max-w-[200px]">
-                            {anime.genres?.slice(0, 2).map((genreItem) => (
-                              <Badge key={genreItem.mal_id} variant="outline" className="text-xs">
-                                {genreItem.name}
-                              </Badge>
-                            ))}
-                            {anime.genres && anime.genres.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{anime.genres.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="hover:bg-primary/10 hover:text-primary"
-                              onClick={() => handleEdit(anime)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost" className="hover:bg-destructive/10 hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <AnimeTable
+              animes={animes}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={(id) => setDeleteAnimeId(id)}
+            />
 
-            {totalPages > 1 && (
-              <div className="mt-6">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage > 1) setCurrentPage(currentPage - 1);
-                        }}
-                        className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-
-                    {generatePageNumbers().map((page, index) => (
-                      <PaginationItem key={index}>
-                        {page === 'ellipsis' ? (
-                          <PaginationEllipsis />
-                        ) : (
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(page as number);
-                            }}
-                            isActive={currentPage === page}
-                            className="cursor-pointer"
-                          >
-                            {page}
-                          </PaginationLink>
-                        )}
-                      </PaginationItem>
-                    ))}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                        }}
-                        className={currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
+            <AnimePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
+
+        <AlertDialog open={!!deleteAnimeId} onOpenChange={() => setDeleteAnimeId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Anime</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this anime? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteAnimeId && handleDelete(deleteAnimeId)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );

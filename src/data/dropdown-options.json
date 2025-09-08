@@ -6,9 +6,9 @@
     { "value": "WINTER", "label": "Winter" }
   ],
   "statuses": [
-    { "value": "ONGOING", "label": "Ongoing" },
-    { "value": "COMPLETED", "label": "Completed" },
-    { "value": "UPCOMING", "label": "Upcoming" }
+    { "value": "Airing", "label": "Airing" },
+    { "value": "Completed", "label": "Completed" },
+    { "value": "Upcoming", "label": "Upcoming" }
   ],
   "types": [
     { "value": "TV", "label": "TV" },

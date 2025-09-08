@@ -73,5 +73,11 @@ export const adminAnimeService = {
 
         const response = await backendAPI.patch(`/api/anime/${id}`, animeData, config);
         return response.data;
+    },
+
+    // Delete anime
+    deleteAnime: async (id: string | number) => {
+        const response = await backendAPI.delete(`/api/anime/${id}`);
+        return response.data;
     }
 };
