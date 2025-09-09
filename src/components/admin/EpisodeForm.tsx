@@ -9,11 +9,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { format } from "date-fns";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { episodeService, type Episode } from "@/services/episodeService";
+import { AnimeSearchInput } from "./AnimeSearchInput";
+import { type Episode } from "@/services/episodeService";
 
 // Schema for form validation
 const episodeFormSchema = z.object({
@@ -56,11 +56,6 @@ interface EpisodeFormProps {
 }
 
 export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
-  // State for anime options and loading
-  const [animeOptions, setAnimeOptions] = useState<AnimeOption[]>([]);
-  const [animeDropdownOpen, setAnimeDropdownOpen] = useState(false);
-  const [isLoadingAnime, setIsLoadingAnime] = useState(false);
-  const [animeSearchQuery, setAnimeSearchQuery] = useState("");
 
   // Form setup with react-hook-form
   const form = useForm<EpisodeFormData>({
@@ -82,31 +77,6 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
     },
   });
 
-  // Search anime with debouncing
-  useEffect(() => {
-    const searchAnime = async () => {
-      if (animeSearchQuery.trim().length < 2) {
-        setAnimeOptions([]);
-        return;
-      }
-
-      setIsLoadingAnime(true);
-      try {
-        const response = await episodeService.searchAnime(animeSearchQuery);
-        if (response.success) {
-          setAnimeOptions(response.data);
-        }
-      } catch (error) {
-        console.error('Failed to search anime:', error);
-        setAnimeOptions([]);
-      } finally {
-        setIsLoadingAnime(false);
-      }
-    };
-
-    const debounceTimeout = setTimeout(searchAnime, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [animeSearchQuery]);
 
   // Update masterUrl when sourceFile is selected
   useEffect(() => {
@@ -121,8 +91,6 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   const handleAnimeSelect = (anime: AnimeOption) => {
     form.setValue("animeId", anime.id);
     form.setValue("animeTitle", anime.title);
-    setAnimeDropdownOpen(false);
-    setAnimeSearchQuery(""); // Clear search when selected
   };
 
   const handleSubmit = async (data: EpisodeFormData) => {
@@ -143,58 +111,14 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Anime</FormLabel>
-              <Popover open={animeDropdownOpen} onOpenChange={setAnimeDropdownOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={animeDropdownOpen}
-                      className={cn(
-                        "w-full justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value && form.getValues("animeTitle") 
-                        ? form.getValues("animeTitle")
-                        : "Search and select anime..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search anime..."
-                      className="h-9"
-                      value={animeSearchQuery}
-                      onValueChange={setAnimeSearchQuery}
-                    />
-                    <CommandEmpty>
-                      {isLoadingAnime ? "Searching..." : "No anime found."}
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {animeOptions.map((anime) => (
-                        <CommandItem
-                          value={anime.title}
-                          key={anime.id}
-                          onSelect={() => handleAnimeSelect(anime)}
-                        >
-                          {anime.title}
-                          <Check
-                            className={cn(
-                              "ml-auto h-4 w-4",
-                              field.value === anime.id
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <FormControl>
+                <AnimeSearchInput
+                  value={field.value}
+                  selectedTitle={form.getValues("animeTitle")}
+                  onSelect={handleAnimeSelect}
+                  placeholder="Search and select anime..."
+                />
+              </FormControl>
               <FormDescription>
                 Search and select the anime this episode belongs to.
               </FormDescription>
