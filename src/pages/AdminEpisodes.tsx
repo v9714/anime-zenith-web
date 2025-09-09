@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
   DialogTitle,
-  DialogTrigger 
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { EpisodeForm } from "@/components/admin/EpisodeForm";
 import { EpisodeTable } from "@/components/admin/EpisodeTable";
@@ -19,7 +20,7 @@ import { toast } from "@/components/ui/use-toast";
 
 const AdminEpisodes = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState<Episode | undefined>();
+  const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>();
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,7 +67,7 @@ const AdminEpisodes = () => {
   const handleAddEpisode = async (episodeData: any) => {
     try {
       const formData = new FormData();
-      
+
       Object.keys(episodeData).forEach(key => {
         if (episodeData[key] !== undefined && episodeData[key] !== null) {
           if (key === 'thumbnailFile' || key === 'sourceFile') {
@@ -96,7 +97,7 @@ const AdminEpisodes = () => {
           id: Date.now().toString(),
         });
       }
-      
+
       setDialogOpen(false);
       setSelectedEpisode(undefined);
       fetchEpisodes();
@@ -134,9 +135,11 @@ const AdminEpisodes = () => {
     }
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedEpisode(undefined);
+  const handleDialogChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setSelectedEpisode(null);
+    }
   };
 
   return (
@@ -144,8 +147,7 @@ const AdminEpisodes = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Episode Management</h1>
-          
-          <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
+          <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
             <DialogTrigger asChild>
               <Button>
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -158,34 +160,34 @@ const AdminEpisodes = () => {
                   {selectedEpisode ? "Edit Episode" : "Add New Episode"}
                 </DialogTitle>
                 <DialogDescription>
-                  {selectedEpisode 
+                  {selectedEpisode
                     ? "Update the episode details below."
                     : "Fill in the details to add a new episode to the database."
                   }
                 </DialogDescription>
               </DialogHeader>
-              <EpisodeForm 
-                episode={selectedEpisode} 
-                onSubmit={handleAddEpisode} 
+              <EpisodeForm
+                episode={selectedEpisode}
+                onSubmit={handleAddEpisode}
               />
             </DialogContent>
           </Dialog>
         </div>
 
-        <EpisodeFilters 
-          filters={filters} 
+        <EpisodeFilters
+          filters={filters}
           onFiltersChange={handleFiltersChange}
           loading={loading}
         />
 
-        <EpisodeTable 
+        <EpisodeTable
           episodes={episodes}
           loading={loading}
           onEdit={handleEditEpisode}
           onDelete={handleDeleteEpisode}
         />
 
-        <EpisodePagination 
+        <EpisodePagination
           currentPage={currentPage}
           totalPages={totalPages}
           totalEpisodes={totalEpisodes}
