@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
@@ -10,8 +12,24 @@ interface EpisodeFiltersProps {
 }
 
 export function EpisodeFilters({ filters, onFiltersChange, loading }: EpisodeFiltersProps) {
+  const [searchInput, setSearchInput] = useState(filters.search || "");
+
+  // Debounce search to prevent cursor issues and reduce API calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      onFiltersChange({ ...filters, search: searchInput || undefined });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
+
+  // Update local search input when filters change externally
+  useEffect(() => {
+    setSearchInput(filters.search || "");
+  }, [filters.search]);
+
   const handleSearchChange = (value: string) => {
-    onFiltersChange({ ...filters, search: value || undefined });
+    setSearchInput(value);
   };
 
   const handleStatusChange = (value: string) => {
@@ -31,14 +49,14 @@ export function EpisodeFilters({ filters, onFiltersChange, loading }: EpisodeFil
           type="search"
           placeholder="Search episodes..."
           className="pl-8"
-          value={filters.search || ""}
+          value={searchInput}
           onChange={(e) => handleSearchChange(e.target.value)}
           disabled={loading}
         />
       </div>
-      
-      <Select 
-        value={filters.status || "all"} 
+
+      <Select
+        value={filters.status || "all"}
         onValueChange={handleStatusChange}
         disabled={loading}
       >

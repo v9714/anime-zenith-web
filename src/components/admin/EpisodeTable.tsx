@@ -4,6 +4,12 @@ import { Edit, Trash2, Film, Clock, Eye } from "lucide-react";
 import { Episode } from "@/services/episodeService";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -55,113 +61,131 @@ export function EpisodeTable({ episodes, loading, onEdit, onDelete }: EpisodeTab
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Episode ID</TableHead>
-            <TableHead>Anime ID</TableHead>
-            <TableHead>Anime</TableHead>
-            <TableHead>Episode</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Views</TableHead>
-            <TableHead>Aired Date</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {episodes.length === 0 ? (
+    <TooltipProvider>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
-                No episodes found
-              </TableCell>
+              <TableHead>Episode ID</TableHead>
+              <TableHead>Anime ID</TableHead>
+              <TableHead>Anime</TableHead>
+              <TableHead>Episode</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Views</TableHead>
+              <TableHead>Aired Date</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ) : (
-            episodes.map((episode) => (
-              <TableRow key={episode.id}>
-                <TableCell className="font-medium text-muted-foreground">
-                  #{episode.id}
-                </TableCell>
-                <TableCell className="font-medium text-muted-foreground">
-                  #{episode.animeId}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2 max-w-[200px]">
-                    <Film className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm truncate">{episode.animeTitle}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">#{episode.episodeNumber}</TableCell>
-                <TableCell>
-                  <div className="max-w-[200px] truncate">{episode.title}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm">{formatDuration(episode.duration)}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="secondary" 
-                    className={getProcessingStatusBadge(episode.processingStatus)}
-                  >
-                    {episode.processingStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Eye className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm">{episode.views || 0}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {new Date(episode.airDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      size="sm" 
-                      variant="ghost"
-                      onClick={() => onEdit(episode)}
-                    >
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="ghost">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Episode</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{episode.title}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => episode.id && onDelete(episode.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+          </TableHeader>
+          <TableBody>
+            {episodes.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                  No episodes found
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            ) : (
+              episodes.map((episode) => (
+                <TableRow key={episode.id}>
+                  <TableCell className="font-medium text-muted-foreground">
+                    #{episode.id}
+                  </TableCell>
+                  <TableCell className="font-medium text-muted-foreground">
+                    #{episode.animeId}
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-2 max-w-[200px] cursor-help">
+                          <Film className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-sm truncate">{episode.animeTitle}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <div className="space-y-2">
+                          <div className="font-semibold">{episode.title}</div>
+                          <div className="text-xs space-y-1">
+                            <div>Episode #{episode.episodeNumber}</div>
+                            <div>Duration: {formatDuration(episode.duration)}</div>
+                            <div>Air Date: {new Date(episode.airDate).toLocaleDateString()}</div>
+                            <div>Views: {episode.views || 0}</div>
+                            <div>Status: {episode.processingStatus}</div>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell className="font-medium">#{episode.episodeNumber}</TableCell>
+                  <TableCell>
+                    <div className="max-w-[200px] truncate">{episode.title}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm">{formatDuration(episode.duration)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className={getProcessingStatusBadge(episode.processingStatus)}
+                    >
+                      {episode.processingStatus}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm">{episode.views || 0}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(episode.airDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onEdit(episode)}
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="ghost">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Episode</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{episode.title}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => episode.id && onDelete(episode.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </TooltipProvider>
   );
 }
