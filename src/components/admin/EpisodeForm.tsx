@@ -104,7 +104,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   };
 
   return (
-    <div className="max-h-[90vh] overflow-y-auto">
+    <div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-1">
           {/* Anime Selection */}
