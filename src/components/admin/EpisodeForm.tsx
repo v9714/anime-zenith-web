@@ -56,6 +56,8 @@ interface EpisodeFormProps {
 }
 
 export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
+  const [masterUrlType, setMasterUrlType] = useState<"url" | "upload">("url");
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(episode?.thumbnail || null);
 
   // Form setup with react-hook-form
   const form = useForm<EpisodeFormData>({
@@ -177,36 +179,23 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           name="thumbnailType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Thumbnail</FormLabel>
-              <FormControl>
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      value="url"
-                      checked={field.value === "url"}
-                      onChange={() => field.onChange("url")}
-                    />
-                    <span>URL</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      value="upload"
-                      checked={field.value === "upload"}
-                      onChange={() => field.onChange("upload")}
-                    />
-                    <span>Upload File</span>
-                  </label>
-                </div>
-              </FormControl>
+              <FormLabel>Thumbnail *</FormLabel>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={field.value === "upload"}
+                  onCheckedChange={(checked) => field.onChange(checked ? "upload" : "url")}
+                />
+                <span className="text-sm">
+                  {field.value === "upload" ? "Upload File" : "Use URL"}
+                </span>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Thumbnail URL (when URL is selected) */}
-        {form.watch("thumbnailType") === "url" && (
+        {/* Thumbnail URL or File Upload */}
+        {form.watch("thumbnailType") === "url" ? (
           <FormField
             control={form.control}
             name="thumbnailUrl"
@@ -214,16 +203,20 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
               <FormItem>
                 <FormLabel>Thumbnail URL</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
+                  <Input 
+                    placeholder="https://example.com/thumbnail.jpg" 
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setThumbnailPreview(e.target.value);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        )}
-
-        {/* Thumbnail File Upload (when Upload is selected) */}
-        {form.watch("thumbnailType") === "upload" && (
+        ) : (
           <FormField
             control={form.control}
             name="thumbnailFile"
@@ -237,6 +230,10 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       onChange(file);
+                      if (file) {
+                        const url = URL.createObjectURL(file);
+                        setThumbnailPreview(url);
+                      }
                     }}
                     {...field}
                   />
@@ -247,38 +244,74 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           />
         )}
 
-        {/* Master URL and Duration */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="masterUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Master URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://example.com/video.mp4" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Video URL (will be "Pending" if source file is uploaded)
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {/* Thumbnail Preview */}
+        {thumbnailPreview && (
+          <div className="mt-2">
+            <img
+              src={thumbnailPreview}
+              alt="Thumbnail preview"
+              className="w-32 h-20 object-cover rounded-md"
+            />
+          </div>
+        )}
 
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration (seconds)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="1400" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+        {/* Master URL Type Switch */}
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Video Source *</label>
+            <div className="flex items-center space-x-2 mt-2">
+              <Switch
+                checked={masterUrlType === "upload"}
+                onCheckedChange={(checked) => {
+                  setMasterUrlType(checked ? "upload" : "url");
+                  if (checked) {
+                    form.setValue("masterUrl", "Pending, not uploaded");
+                  } else {
+                    form.setValue("masterUrl", "");
+                  }
+                }}
+              />
+              <span className="text-sm">
+                {masterUrlType === "upload" ? "Upload Source File" : "Use Master URL"}
+              </span>
+            </div>
+          </div>
+
+          {/* Master URL or Duration - shown side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {masterUrlType === "url" && (
+              <FormField
+                control={form.control}
+                name="masterUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Master URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/video.mp4" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Direct video URL for streaming
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
+
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duration (seconds)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="1400" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         {/* Description */}
@@ -344,31 +377,33 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           )}
         />
 
-        {/* Source File Upload (Optional) */}
-        <FormField
-          control={form.control}
-          name="sourceFile"
-          render={({ field: { onChange, value, ...field } }) => (
-            <FormItem>
-              <FormLabel>Source File (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    onChange(file);
-                  }}
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Upload the original video file (will set Master URL to "Pending")
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Source File Upload (Only shown when upload is selected) */}
+        {masterUrlType === "upload" && (
+          <FormField
+            control={form.control}
+            name="sourceFile"
+            render={({ field: { onChange, value, ...field } }) => (
+              <FormItem>
+                <FormLabel>Source File</FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      onChange(file);
+                    }}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Upload the original video file for processing
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Checkboxes */}
         <div className="space-y-4">

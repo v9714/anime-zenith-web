@@ -59,6 +59,8 @@ export function EpisodeTable({ episodes, loading, onEdit, onDelete }: EpisodeTab
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Episode ID</TableHead>
+            <TableHead>Anime ID</TableHead>
             <TableHead>Anime</TableHead>
             <TableHead>Episode</TableHead>
             <TableHead>Title</TableHead>
@@ -72,13 +74,19 @@ export function EpisodeTable({ episodes, loading, onEdit, onDelete }: EpisodeTab
         <TableBody>
           {episodes.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                 No episodes found
               </TableCell>
             </TableRow>
           ) : (
             episodes.map((episode) => (
               <TableRow key={episode.id}>
+                <TableCell className="font-medium text-muted-foreground">
+                  #{episode.id}
+                </TableCell>
+                <TableCell className="font-medium text-muted-foreground">
+                  #{episode.animeId}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2 max-w-[200px]">
                     <Film className="h-4 w-4 text-muted-foreground flex-shrink-0" />
