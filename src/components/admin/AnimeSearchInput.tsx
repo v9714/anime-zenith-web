@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { episodeService } from "@/services/episodeService";
 
@@ -14,6 +14,7 @@ interface AnimeSearchInputProps {
     value?: number;
     selectedTitle?: string;
     onSelect: (anime: AnimeOption) => void;
+    onClear?: () => void;
     placeholder?: string;
     className?: string;
 }
@@ -22,6 +23,7 @@ export function AnimeSearchInput({
     value,
     selectedTitle,
     onSelect,
+    onClear,
     placeholder = "Search anime...",
     className
 }: AnimeSearchInputProps) {
@@ -94,18 +96,34 @@ export function AnimeSearchInput({
         <div className={cn("relative", className)} ref={dropdownRef}>
             {/* Selected anime display or search input */}
             {value && selectedTitle ? (
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-between"
-                    onClick={() => {
-                        setIsOpen(!isOpen);
-                        inputRef.current?.focus();
-                    }}
-                >
-                    <span className="truncate">{selectedTitle}</span>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
+                <div className="flex items-center gap-1">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1 justify-between"
+                        onClick={() => {
+                            setIsOpen(!isOpen);
+                            inputRef.current?.focus();
+                        }}
+                    >
+                        <span className="truncate">{selectedTitle}</span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                    {onClear && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 shrink-0"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onClear();
+                            }}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
             ) : (
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

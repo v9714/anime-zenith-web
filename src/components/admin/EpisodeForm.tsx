@@ -95,6 +95,11 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
     form.setValue("animeTitle", anime.title);
   };
 
+  const handleAnimeClear = () => {
+    form.setValue("animeId", 0);
+    form.setValue("animeTitle", "");
+  };
+
   const handleSubmit = async (data: EpisodeFormData) => {
     try {
       onSubmit(data);
@@ -121,6 +126,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
                     value={field.value}
                     selectedTitle={form.getValues("animeTitle")}
                     onSelect={handleAnimeSelect}
+                    onClear={handleAnimeClear}
                     placeholder="Search and select anime..."
                   />
                 </FormControl>
