@@ -63,8 +63,8 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   const form = useForm<EpisodeFormData>({
     resolver: zodResolver(episodeFormSchema),
     defaultValues: {
-      animeId: episode?.animeId || 0,
-      animeTitle: episode?.animeTitle || "",
+      animeId: episode?.anime?.id || episode?.animeId || 0,
+      animeTitle: episode?.anime?.title || episode?.animeTitle || "",
       episodeNumber: episode?.episodeNumber || 1,
       title: episode?.title || "",
       thumbnailType: "url",
@@ -132,18 +132,18 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             )}
           />
 
-        {/* Anime Title (Hidden/Disabled) */}
-        <FormField
-          control={form.control}
-          name="animeTitle"
-          render={({ field }) => (
-            <FormItem className="hidden">
-              <FormControl>
-                <Input {...field} disabled />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+          {/* Anime Title (Hidden/Disabled) */}
+          <FormField
+            control={form.control}
+            name="animeTitle"
+            render={({ field }) => (
+              <FormItem className="hidden">
+                <FormControl>
+                  <Input {...field} disabled />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
           {/* Episode Number and Title */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -212,8 +212,8 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
                 <FormItem>
                   <FormLabel className="text-sm font-medium">Thumbnail URL</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="https://example.com/thumbnail.jpg" 
+                    <Input
+                      placeholder="https://example.com/thumbnail.jpg"
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
@@ -425,7 +425,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           {/* Settings */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-foreground">Episode Settings</h3>
-            
+
             <FormField
               control={form.control}
               name="commentsEnabled"

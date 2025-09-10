@@ -4,6 +4,10 @@ export interface Episode {
   id?: number;
   animeId: number;
   animeTitle: string;
+  anime?: {
+    id: number;
+    title: string;
+  };
   title: string;
   episodeNumber: number;
   thumbnail: string;
