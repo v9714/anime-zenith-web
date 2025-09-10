@@ -24,13 +24,13 @@ const episodeFormSchema = z.object({
   thumbnailType: z.enum(["url", "upload"]),
   thumbnailUrl: z.string().optional(),
   thumbnailFile: z.any().optional(),
-  masterUrl: z.string().min(1, "Master URL is required"),
+  masterUrl: z.string().min(1, "Master URL or source file is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 second"),
   description: z.string().min(1, "Description is required"),
-  airDate: z.date(),
-  isDeleted: z.boolean().default(false),
-  commentsEnabled: z.boolean().default(true),
-  loginRequired: z.boolean().default(false),
+  airDate: z.date({ required_error: "Air date is required" }),
+  isDeleted: z.boolean(),
+  commentsEnabled: z.boolean(),
+  loginRequired: z.boolean(),
   sourceFile: z.any().optional(),
 }).refine((data) => {
   if (data.thumbnailType === "url") {
@@ -104,30 +104,33 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Anime Selection */}
-        <FormField
-          control={form.control}
-          name="animeId"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Anime</FormLabel>
-              <FormControl>
-                <AnimeSearchInput
-                  value={field.value}
-                  selectedTitle={form.getValues("animeTitle")}
-                  onSelect={handleAnimeSelect}
-                  placeholder="Search and select anime..."
-                />
-              </FormControl>
-              <FormDescription>
-                Search and select the anime this episode belongs to.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <div className="max-h-[90vh] overflow-y-auto">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-1">
+          {/* Anime Selection */}
+          <FormField
+            control={form.control}
+            name="animeId"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-sm font-medium">
+                  Anime <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <AnimeSearchInput
+                    value={field.value}
+                    selectedTitle={form.getValues("animeTitle")}
+                    onSelect={handleAnimeSelect}
+                    placeholder="Search and select anime..."
+                  />
+                </FormControl>
+                <FormDescription className="text-xs text-muted-foreground">
+                  Search and select the anime this episode belongs to.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
         {/* Anime Title (Hidden/Disabled) */}
         <FormField
@@ -142,339 +145,362 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           )}
         />
 
-        {/* Episode Number and Title */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="episodeNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Episode Number</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="1" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Episode Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Episode 1: First Mission" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Thumbnail Settings */}
-        <FormField
-          control={form.control}
-          name="thumbnailType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Thumbnail *</FormLabel>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={field.value === "upload"}
-                  onCheckedChange={(checked) => field.onChange(checked ? "upload" : "url")}
-                />
-                <span className="text-sm">
-                  {field.value === "upload" ? "Upload File" : "Use URL"}
-                </span>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Thumbnail URL or File Upload */}
-        {form.watch("thumbnailType") === "url" ? (
-          <FormField
-            control={form.control}
-            name="thumbnailUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Thumbnail URL</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="https://example.com/thumbnail.jpg" 
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setThumbnailPreview(e.target.value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        ) : (
-          <FormField
-            control={form.control}
-            name="thumbnailFile"
-            render={({ field: { onChange, value, ...field } }) => (
-              <FormItem>
-                <FormLabel>Thumbnail File</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      onChange(file);
-                      if (file) {
-                        const url = URL.createObjectURL(file);
-                        setThumbnailPreview(url);
-                      }
-                    }}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        {/* Thumbnail Preview */}
-        {thumbnailPreview && (
-          <div className="mt-2">
-            <img
-              src={thumbnailPreview}
-              alt="Thumbnail preview"
-              className="w-32 h-20 object-cover rounded-md"
-            />
-          </div>
-        )}
-
-        {/* Master URL Type Switch */}
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">Video Source *</label>
-            <div className="flex items-center space-x-2 mt-2">
-              <Switch
-                checked={masterUrlType === "upload"}
-                onCheckedChange={(checked) => {
-                  setMasterUrlType(checked ? "upload" : "url");
-                  if (checked) {
-                    form.setValue("masterUrl", "Pending, not uploaded");
-                  } else {
-                    form.setValue("masterUrl", "");
-                  }
-                }}
-              />
-              <span className="text-sm">
-                {masterUrlType === "upload" ? "Upload Source File" : "Use Master URL"}
-              </span>
-            </div>
-          </div>
-
-          {/* Master URL or Duration - shown side by side */}
+          {/* Episode Number and Title */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {masterUrlType === "url" && (
-              <FormField
-                control={form.control}
-                name="masterUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Master URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/video.mp4" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Direct video URL for streaming
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <FormField
+              control={form.control}
+              name="episodeNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Episode Number <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
-              name="duration"
+              name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Duration (seconds)</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Episode Title <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="1400" {...field} />
+                    <Input placeholder="Episode 1: First Mission" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-        </div>
 
-        {/* Description */}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Episode description..."
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Air Date */}
-        <FormField
-          control={form.control}
-          name="airDate"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Air Date</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Source File Upload (Only shown when upload is selected) */}
-        {masterUrlType === "upload" && (
+          {/* Thumbnail Settings */}
           <FormField
             control={form.control}
-            name="sourceFile"
-            render={({ field: { onChange, value, ...field } }) => (
+            name="thumbnailType"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel>Source File</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="video/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      onChange(file);
-                    }}
-                    {...field}
+                <FormLabel className="text-sm font-medium">
+                  Thumbnail <span className="text-red-500">*</span>
+                </FormLabel>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={field.value === "upload"}
+                    onCheckedChange={(checked) => field.onChange(checked ? "upload" : "url")}
                   />
-                </FormControl>
-                <FormDescription>
-                  Upload the original video file for processing
-                </FormDescription>
+                  <span className="text-sm">
+                    {field.value === "upload" ? "Upload File" : "Use URL"}
+                  </span>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
           />
-        )}
 
-        {/* Checkboxes */}
-        <div className="space-y-4">
+          {/* Thumbnail URL or File Upload */}
+          {form.watch("thumbnailType") === "url" ? (
+            <FormField
+              control={form.control}
+              name="thumbnailUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Thumbnail URL</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://example.com/thumbnail.jpg" 
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setThumbnailPreview(e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name="thumbnailFile"
+              render={({ field: { onChange, value, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Thumbnail File</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        onChange(file);
+                        if (file) {
+                          const url = URL.createObjectURL(file);
+                          setThumbnailPreview(url);
+                        }
+                      }}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* Thumbnail Preview */}
+          {thumbnailPreview && (
+            <div className="mt-2">
+              <img
+                src={thumbnailPreview}
+                alt="Thumbnail preview"
+                className="w-32 h-20 object-cover rounded-md border"
+              />
+            </div>
+          )}
+
+          {/* Master URL Type Switch */}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">
+                Video Source <span className="text-red-500">*</span>
+              </label>
+              <div className="flex items-center space-x-2 mt-2">
+                <Switch
+                  checked={masterUrlType === "upload"}
+                  onCheckedChange={(checked) => {
+                    setMasterUrlType(checked ? "upload" : "url");
+                    if (checked) {
+                      form.setValue("masterUrl", "Pending, not uploaded");
+                    } else {
+                      form.setValue("masterUrl", "");
+                    }
+                  }}
+                />
+                <span className="text-sm">
+                  {masterUrlType === "upload" ? "Upload Source File" : "Use Master URL"}
+                </span>
+              </div>
+            </div>
+
+            {/* Master URL or Duration - shown side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {masterUrlType === "url" && (
+                <FormField
+                  control={form.control}
+                  name="masterUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">Master URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/video.mp4" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Direct video URL for streaming
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">
+                      Duration (seconds) <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="1400" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Description */}
           <FormField
             control={form.control}
-            name="commentsEnabled"
+            name="description"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">Comments Enabled</FormLabel>
-                  <FormDescription>
-                    Allow users to comment on this episode
-                  </FormDescription>
-                </div>
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  Description <span className="text-red-500">*</span>
+                </FormLabel>
                 <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+                  <Textarea
+                    placeholder="Episode description..."
+                    className="min-h-[100px]"
+                    {...field}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
 
+          {/* Air Date */}
           <FormField
             control={form.control}
-            name="loginRequired"
+            name="airDate"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">Login Required</FormLabel>
-                  <FormDescription>
-                    Require users to be logged in to watch this episode
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-sm font-medium">
+                  Air Date <span className="text-red-500">*</span>
+                </FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="isDeleted"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-base">Soft Delete</FormLabel>
-                  <FormDescription>
-                    Mark this episode as deleted (only visible to admins)
+          {/* Source File Upload (Only shown when upload is selected) */}
+          {masterUrlType === "upload" && (
+            <FormField
+              control={form.control}
+              name="sourceFile"
+              render={({ field: { onChange, value, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Source File</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        onChange(file);
+                      }}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    Upload the original video file for processing
                   </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
-        <Button type="submit" className="w-full">
-          {episode ? "Update Episode" : "Create Episode"}
-        </Button>
-      </form>
-    </Form>
+          {/* Settings */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground">Episode Settings</h3>
+            
+            <FormField
+              control={form.control}
+              name="commentsEnabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-medium">
+                      Comments Enabled <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      Allow users to comment on this episode
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="loginRequired"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-medium">
+                      Login Required <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      Require users to be logged in to watch this episode
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isDeleted"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-medium">
+                      Soft Delete <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      Mark this episode as deleted (only visible to admins)
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <Button type="submit" className="w-full">
+            {episode ? "Update Episode" : "Create Episode"}
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 }
