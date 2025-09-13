@@ -11,9 +11,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { X, Upload } from "lucide-react";
 import { Anime } from "@/services/api";
 import dropdownOptions from "@/data/dropdown-options.json";
+import { useToast } from "@/hooks/use-toast";
+import backendAPI from "@/services/backendApi";
 
 const animeFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -63,6 +66,7 @@ interface AnimeFormProps {
 }
 
 export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: AnimeFormProps) {
+  const { toast } = useToast();
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
     anime?.coverImage || null
   );
@@ -70,6 +74,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
     anime?.bannerImage || null
   );
   const [alternativeTitleInput, setAlternativeTitleInput] = useState("");
+  const [deleteImageLoading, setDeleteImageLoading] = useState<string>("");
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -172,6 +177,50 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   const removeAlternativeTitle = (index: number) => {
     const current = form.getValues('alternativeTitles');
     form.setValue('alternativeTitles', current.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteImage = async (imageType: 'cover' | 'banner') => {
+    if (!anime?.id) return;
+    
+    setDeleteImageLoading(imageType);
+    
+    try {
+      const imagePath = imageType === 'cover' ? anime.coverImage : anime.bannerImage;
+      if (!imagePath) return;
+
+      const isDbImage = imagePath.startsWith('/uploads/');
+      
+      const response = await backendAPI.post(`/api/admin/anime/${anime.id}/delete-image`, {
+        imageType,
+        imagePath,
+        isDbImage
+      });
+
+      if (response.data.success) {
+        toast({
+          title: "Success",
+          description: `${imageType} image deleted successfully`,
+          id: Math.random().toString(),
+        });
+
+        // Clear the image preview and form value
+        if (imageType === 'cover') {
+          setCoverImagePreview("");
+          form.setValue("coverImageUrl", "");
+        } else {
+          setBannerImagePreview("");
+          form.setValue("bannerImageUrl", "");
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to delete ${imageType} image`,
+        id: Math.random().toString(),
+      });
+    } finally {
+      setDeleteImageLoading("");
+    }
   };
 
   return (
@@ -344,12 +393,44 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 )}
 
                 {coverImagePreview && (
-                  <div className="mt-2">
+                  <div className="mt-2 relative inline-block">
                     <img
                       src={coverImagePreview}
                       alt="Cover preview"
                       className="w-32 h-48 object-cover rounded-md"
                     />
+                    {anime?.id && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                            disabled={deleteImageLoading === 'cover'}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Cover Image</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this cover image? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteImage('cover')}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 )}
               </div>
@@ -420,12 +501,44 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 )}
 
                 {bannerImagePreview && (
-                  <div className="mt-2">
+                  <div className="mt-2 relative inline-block w-full">
                     <img
                       src={bannerImagePreview}
                       alt="Banner preview"
                       className="w-full h-24 object-cover rounded-md"
                     />
+                    {anime?.id && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                            disabled={deleteImageLoading === 'banner'}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Banner Image</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this banner image? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteImage('banner')}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 )}
               </div>
