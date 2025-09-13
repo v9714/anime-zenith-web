@@ -17,6 +17,7 @@ import { Anime } from "@/services/api";
 import dropdownOptions from "@/data/dropdown-options.json";
 import { useToast } from "@/hooks/use-toast";
 import backendAPI from "@/services/backendApi";
+import { getImageUrl } from "@/utils/commanFunction";
 
 const animeFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -68,10 +69,10 @@ interface AnimeFormProps {
 export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: AnimeFormProps) {
   const { toast } = useToast();
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
-    anime?.coverImage || null
+    anime?.coverImage ? getImageUrl(anime.coverImage) : null
   );
   const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(
-    anime?.bannerImage || null
+    anime?.bannerImage ? getImageUrl(anime.bannerImage) : null
   );
   const [alternativeTitleInput, setAlternativeTitleInput] = useState("");
   const [deleteImageLoading, setDeleteImageLoading] = useState<string>("");
@@ -86,7 +87,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
       description: anime?.description || "",
       coverImageType: "url",
       coverImageUrl: anime?.coverImage || "",
-      bannerImageType: "url",
+      bannerImageType: "url", 
       bannerImageUrl: anime?.bannerImage || "",
       year: anime?.year || new Date().getFullYear(),
       season: (anime?.season as "FALL" | "SPRING" | "SUMMER" | "WINTER") || "SPRING",
