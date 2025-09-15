@@ -8,12 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { AnimeSearchInput } from "./AnimeSearchInput";
 import { type Episode } from "@/services/episodeService";
+import { getImageUrl } from "@/utils/commanFunction";
+import { useToast } from "@/components/ui/use-toast";
+import backendAPI from "@/services/backendApi";
 
 // Schema for form validation
 const episodeFormSchema = z.object({
@@ -56,8 +60,12 @@ interface EpisodeFormProps {
 }
 
 export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
+  const { toast } = useToast();
   const [masterUrlType, setMasterUrlType] = useState<"url" | "upload">("url");
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(episode?.thumbnail || null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
+    episode?.thumbnail ? getImageUrl(episode.thumbnail) : null
+  );
+  const [deleteImageLoading, setDeleteImageLoading] = useState<boolean>(false);
 
   // Form setup with react-hook-form
   const form = useForm<EpisodeFormData>({
@@ -98,6 +106,38 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   const handleAnimeClear = () => {
     form.setValue("animeId", 0);
     form.setValue("animeTitle", "");
+  };
+
+  const handleDeleteImage = async () => {
+    if (!episode?.id || !episode?.thumbnail) return;
+
+    setDeleteImageLoading(true);
+    try {
+      const isDbImage = episode.thumbnail.includes("/uploads/");
+      
+      const response = await backendAPI.post(`/api/admin/episode/${episode.id}/delete-image`, {
+        imagePath: episode.thumbnail,
+        isDbImage: isDbImage
+      });
+
+      if (response.data.success) {
+        setThumbnailPreview(null);
+        form.setValue("thumbnailUrl", "");
+        toast({
+          id: Math.random().toString(),
+          title: "Success",
+          description: "Episode thumbnail deleted successfully",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        id: Math.random().toString(),
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete image",
+      });
+    } finally {
+      setDeleteImageLoading(false);
+    }
   };
 
   const handleSubmit = async (data: EpisodeFormData) => {
@@ -261,12 +301,41 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
 
           {/* Thumbnail Preview */}
           {thumbnailPreview && (
-            <div className="mt-2">
+            <div className="mt-2 relative inline-block">
               <img
                 src={thumbnailPreview}
                 alt="Thumbnail preview"
                 className="w-32 h-20 object-cover rounded-md border"
               />
+              {episode?.id && episode?.thumbnail && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      disabled={deleteImageLoading}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Thumbnail</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this thumbnail? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteImage} disabled={deleteImageLoading}>
+                        {deleteImageLoading ? "Deleting..." : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           )}
 
