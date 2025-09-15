@@ -28,7 +28,8 @@ const episodeFormSchema = z.object({
   thumbnailType: z.enum(["url", "upload"]),
   thumbnailUrl: z.string().optional(),
   thumbnailFile: z.any().optional(),
-  masterUrl: z.string().min(1, "Master URL or source file is required"),
+  videoSourceType: z.enum(["url", "upload"]),
+  masterUrl: z.string().optional(),
   duration: z.coerce.number().min(1, "Duration must be at least 1 second"),
   description: z.string().min(1, "Description is required"),
   airDate: z.date({ required_error: "Air date is required" }),
@@ -45,6 +46,15 @@ const episodeFormSchema = z.object({
 }, {
   message: "Please provide either a thumbnail URL or upload a thumbnail file",
   path: ["thumbnailUrl"],
+}).refine((data) => {
+  if (data.videoSourceType === "url") {
+    return data.masterUrl && data.masterUrl.length > 0;
+  } else {
+    return data.sourceFile;
+  }
+}, {
+  message: "Please provide either a master URL or upload a source file",
+  path: ["masterUrl"],
 });
 
 type EpisodeFormData = z.infer<typeof episodeFormSchema>;
@@ -61,7 +71,6 @@ interface EpisodeFormProps {
 
 export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   const { toast } = useToast();
-  const [masterUrlType, setMasterUrlType] = useState<"url" | "upload">("url");
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
     episode?.thumbnail ? getImageUrl(episode.thumbnail) : null
   );
@@ -75,8 +84,9 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
       animeTitle: episode?.anime?.title || episode?.animeTitle || "",
       episodeNumber: episode?.episodeNumber || 1,
       title: episode?.title || "",
-      thumbnailType: "url",
+      thumbnailType: episode?.thumbnail ? "url" : "upload",
       thumbnailUrl: episode?.thumbnail || "",
+      videoSourceType: episode?.masterUrl && !episode?.sourceFile ? "url" : "upload",
       masterUrl: episode?.masterUrl || "",
       duration: episode?.duration || 0,
       description: episode?.description || "",
@@ -88,15 +98,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
   });
 
 
-  // Update masterUrl when sourceFile is selected
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "sourceFile" && value.sourceFile) {
-        form.setValue("masterUrl", "Pending, not uploaded");
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
+  // ... keep existing code (state variables and initial setup)
 
   const handleAnimeSelect = (anime: AnimeOption) => {
     form.setValue("animeId", anime.id);
@@ -238,7 +240,17 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
                 <div className="flex items-center space-x-2">
                   <Switch
                     checked={field.value === "upload"}
-                    onCheckedChange={(checked) => field.onChange(checked ? "upload" : "url")}
+                    onCheckedChange={(checked) => {
+                      const newType = checked ? "upload" : "url";
+                      field.onChange(newType);
+                      // Clear opposite field when switching
+                      if (newType === "upload") {
+                        form.setValue("thumbnailUrl", "");
+                      } else {
+                        form.setValue("thumbnailFile", undefined);
+                        setThumbnailPreview(null);
+                      }
+                    }}
                   />
                   <span className="text-sm">
                     {field.value === "upload" ? "Upload File" : "Use URL"}
@@ -339,67 +351,74 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             </div>
           )}
 
-          {/* Master URL Type Switch */}
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">
-                Video Source <span className="text-red-500">*</span>
-              </label>
-              <div className="flex items-center space-x-2 mt-2">
-                <Switch
-                  checked={masterUrlType === "upload"}
-                  onCheckedChange={(checked) => {
-                    setMasterUrlType(checked ? "upload" : "url");
-                    if (checked) {
-                      form.setValue("masterUrl", "Pending, not uploaded");
-                    } else {
-                      form.setValue("masterUrl", "");
-                    }
-                  }}
-                />
-                <span className="text-sm">
-                  {masterUrlType === "upload" ? "Upload Source File" : "Use Master URL"}
-                </span>
-              </div>
-            </div>
+          {/* Video Source Type Switch */}
+          <FormField
+            control={form.control}
+            name="videoSourceType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  Video Source <span className="text-red-500">*</span>
+                </FormLabel>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={field.value === "upload"}
+                    onCheckedChange={(checked) => {
+                      const newType = checked ? "upload" : "url";
+                      field.onChange(newType);
+                      // Clear opposite field when switching
+                      if (newType === "upload") {
+                        form.setValue("masterUrl", "");
+                      } else {
+                        form.setValue("sourceFile", undefined);
+                      }
+                    }}
+                  />
+                  <span className="text-sm">
+                    {field.value === "upload" ? "Upload Source File" : "Use Master URL"}
+                  </span>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            {/* Master URL or Duration - shown side by side */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {masterUrlType === "url" && (
-                <FormField
-                  control={form.control}
-                  name="masterUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium">Master URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/video.mp4" {...field} />
-                      </FormControl>
-                      <FormDescription className="text-xs text-muted-foreground">
-                        Direct video URL for streaming
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
+          {/* Master URL or Duration - shown side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {form.watch("videoSourceType") === "url" && (
               <FormField
                 control={form.control}
-                name="duration"
+                name="masterUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Duration (seconds) <span className="text-red-500">*</span>
-                    </FormLabel>
+                    <FormLabel className="text-sm font-medium">Master URL</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="1400" {...field} />
+                      <Input placeholder="https://example.com/video.mp4" {...field} />
                     </FormControl>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      Direct video URL for streaming
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
+            )}
+
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Duration (seconds) <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="1400" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           {/* Description */}
@@ -470,7 +489,7 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
           />
 
           {/* Source File Upload (Only shown when upload is selected) */}
-          {masterUrlType === "upload" && (
+          {form.watch("videoSourceType") === "upload" && (
             <FormField
               control={form.control}
               name="sourceFile"

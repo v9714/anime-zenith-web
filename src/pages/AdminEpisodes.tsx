@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -76,7 +75,19 @@ const AdminEpisodes = () => {
             }
           } else if (key === 'airDate') {
             formData.append(key, episodeData[key].toISOString());
+          } else if (key === 'thumbnailType' || key === 'videoSourceType') {
+            // Skip these fields, they're just for UI control
+            return;
           } else {
+            // Handle conditional fields based on type
+            if (key === 'thumbnailUrl' && episodeData.thumbnailType === 'upload') {
+              // Don't include thumbnailUrl if using file upload
+              return;
+            }
+            if (key === 'masterUrl' && episodeData.videoSourceType === 'upload') {
+              // Don't include masterUrl if using file upload
+              return;
+            }
             formData.append(key, episodeData[key].toString());
           }
         }
