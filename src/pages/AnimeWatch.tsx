@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, Search, Eye } from "lucide-react";
@@ -47,7 +48,6 @@ export default function AnimeWatch() {
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
-  const [views, setViews] = useState(125634);
   const [activeEpisode, setActiveEpisode] = useState(0);
 
   // Fetch anime and episode data
@@ -138,8 +138,6 @@ export default function AnimeWatch() {
       }
     }
 
-    // Dynamic view count increment
-    setViews(prev => prev + Math.floor(Math.random() * 3) + 1);
   }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, videoUrl]);
 
 
@@ -317,15 +315,15 @@ export default function AnimeWatch() {
                     <p className="text-sm text-muted-foreground mb-2">
                       Episode {currentEpisode?.episodeNumber || episodeNumber}: {currentEpisode?.title || `Episode ${episodeNumber}`}
                     </p>
-                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                       <div className="flex items-center gap-1">
-                         <Eye className="h-3 w-3" />
-                         {views.toLocaleString()} views
-                       </div>
-                       <Badge variant="secondary" className="text-xs">
-                         {anime.status}
-                       </Badge>
-                     </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        {currentEpisode?.views?.toLocaleString()} views
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {anime.status}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -354,23 +352,23 @@ export default function AnimeWatch() {
                   thumbnailUrl={getThumbnailUrl()}
                 />
 
-                 {/* Interactive Video Controls */}
-                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
-                   <div className="flex items-center gap-3">
-                     <Button
-                       size="sm"
-                       variant={isSaved ? "default" : "outline"}
-                       className="gap-2"
-                       onClick={handleSave}
-                     >
-                       <BookmarkPlus className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-                       {isSaved ? 'Saved' : 'Save'}
-                     </Button>
-                     <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
-                       <Share className="h-4 w-4" />
-                       Share
-                     </Button>
-                   </div>
+                {/* Interactive Video Controls */}
+                <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      size="sm"
+                      variant={isSaved ? "default" : "outline"}
+                      className="gap-2"
+                      onClick={handleSave}
+                    >
+                      <BookmarkPlus className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                      {isSaved ? 'Saved' : 'Save'}
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
+                      <Share className="h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"

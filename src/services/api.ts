@@ -125,6 +125,7 @@ export interface Episode {
   duration?: number;
   description?: string;
   airDate?: string;
+  views: number;
 }
 
 export interface EpisodesBySeasonResponse {
