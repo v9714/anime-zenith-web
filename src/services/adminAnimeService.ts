@@ -61,7 +61,7 @@ export const adminAnimeService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         } : {};
 
-        const response = await backendAPI.post('/api/anime/', animeData, config);
+        const response = await backendAPI.post('/api/admin/anime/', animeData, config);
         return response.data;
     },
 
@@ -71,13 +71,13 @@ export const adminAnimeService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         } : {};
 
-        const response = await backendAPI.patch(`/api/anime/${id}`, animeData, config);
+        const response = await backendAPI.patch(`/api/admin/anime/${id}`, animeData, config);
         return response.data;
     },
 
     // Delete anime
     deleteAnime: async (id: string | number) => {
-        const response = await backendAPI.delete(`/api/anime/${id}`);
+        const response = await backendAPI.delete(`/api/admin/anime/${id}`);
         return response.data;
     }
 };

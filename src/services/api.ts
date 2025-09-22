@@ -109,7 +109,7 @@ export const getAnimeById = async (id: number | string) => {
 
 // Get anime episodes (paginated)
 export const getAnimeEpisodes = async (id: number, page = 1) => {
-  const response = await backendAPI.get(`/api/anime/${id}/episodes`, { params: { page } });
+  const response = await backendAPI.get(`/api/episode/${id}/episodes`, { params: { page } });
   return response.data;
 };
 
@@ -136,7 +136,7 @@ export interface EpisodesBySeasonResponse {
 }
 
 export const getAnimeEpisodesBySeason = async (id: number | string): Promise<EpisodesBySeasonResponse> => {
-  const response = await backendAPI.get(`/api/anime/${id}/episodes`);
+  const response = await backendAPI.get(`/api/episode/${id}/episodes`);
   return response.data;
 };
 
