@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '@/utils/commanFunction';
 
 interface EpisodesTabProps {
   animeId: number | string;
@@ -88,7 +89,7 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
           <Card key={ep.id} className="p-3 overflow-hidden hover-scale animate-fade-in">
             <div className="relative aspect-video rounded-md overflow-hidden mb-3">
               <img
-                src={`${BACKEND_API_Image_URL}/${ep.thumbnail}`}
+                src={getImageUrl(ep.thumbnail)}
                 alt={`Episode ${ep.episodeNumber} thumbnail`}
                 className="w-full h-full object-cover"
                 loading="lazy"

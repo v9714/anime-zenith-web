@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -117,7 +118,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
     setDeleteImageLoading(true);
     try {
       const isDbImage = episode.thumbnail.includes("/uploads/");
-      
+
       const response = await backendAPI.post(`/api/admin/episode/${episode.id}/delete-image`, {
         imagePath: episode.thumbnail,
         isDbImage: isDbImage
