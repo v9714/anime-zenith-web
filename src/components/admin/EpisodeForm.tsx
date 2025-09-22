@@ -67,9 +67,10 @@ interface AnimeOption {
 interface EpisodeFormProps {
   episode?: Episode;
   onSubmit: (data: EpisodeFormData) => void;
+  creating?: boolean;
 }
 
-export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
+export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeFormProps) {
   const { toast } = useToast();
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
     episode?.thumbnail ? getImageUrl(episode.thumbnail) : null
@@ -590,8 +591,8 @@ export function EpisodeForm({ episode, onSubmit }: EpisodeFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            {episode ? "Update Episode" : "Create Episode"}
+          <Button type="submit" disabled={creating} className="w-full">
+            {creating ? "Creating Episode..." : episode ? "Update Episode" : "Create Episode"}
           </Button>
         </form>
       </Form>

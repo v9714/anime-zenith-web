@@ -23,6 +23,9 @@ export const THEME_COLORS = {
   headerDark: "rgba(17, 12, 26, 0.95)" // Dark purple for header
 };
 
+// Contact Information
+export const CONTACT_EMAIL = "contact@otakutv.com";
+
 // Social Links
 export const SOCIAL_LINKS = {
   facebook: "#",

@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DevelopmentNotice } from "@/components/DevelopmentNotice";
 
 // Import pages
 import Home from "./pages/Home";
@@ -48,6 +49,7 @@ const App = () => {
                 {/* Toaster components */}
                 <Toaster />
                 <Sonner />
+                <DevelopmentNotice />
                 
                 <Routes>
                   {/* Main Routes */}

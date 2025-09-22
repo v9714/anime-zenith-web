@@ -22,6 +22,7 @@ const AdminEpisodes = () => {
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>();
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
@@ -65,6 +66,7 @@ const AdminEpisodes = () => {
 
   const handleAddEpisode = async (episodeData: any) => {
     try {
+      if (!selectedEpisode) setCreating(true);
       const formData = new FormData();
 
       Object.keys(episodeData).forEach(key => {
@@ -119,6 +121,8 @@ const AdminEpisodes = () => {
         description: "Failed to save episode. Please try again.",
         id: Date.now().toString(),
       });
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -160,9 +164,9 @@ const AdminEpisodes = () => {
           <h1 className="text-3xl font-bold tracking-tight">Episode Management</h1>
           <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={creating}>
                 <PlusCircle className="h-4 w-4 mr-2" />
-                Add New Episode
+                {creating ? "Creating..." : "Add New Episode"}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
@@ -177,10 +181,11 @@ const AdminEpisodes = () => {
                   }
                 </DialogDescription>
               </DialogHeader>
-              <EpisodeForm
-                episode={selectedEpisode}
-                onSubmit={handleAddEpisode}
-              />
+               <EpisodeForm
+                 episode={selectedEpisode}
+                 onSubmit={handleAddEpisode}
+                 creating={creating}
+               />
             </DialogContent>
           </Dialog>
         </div>

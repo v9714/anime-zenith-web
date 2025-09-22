@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus } from "lucide-react";
+import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, Search, Eye } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,9 +46,7 @@ export default function AnimeWatch() {
   const [currentSeason, setCurrentSeason] = useState<string>('spring');
   const [showPlaylist, setShowPlaylist] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [likes, setLikes] = useState(1247);
   const [views, setViews] = useState(125634);
   const [activeEpisode, setActiveEpisode] = useState(0);
 
@@ -133,55 +131,17 @@ export default function AnimeWatch() {
 
     // Load user preferences from localStorage
     if (currentUser) {
-      const userLikes = localStorage.getItem(`likes_${currentUser.id}`);
       const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
-      if (userLikes) {
-        const likesData = JSON.parse(userLikes);
-        setIsLiked(likesData.includes(`${animeId}_${episodeNumber}`));
-      }
       if (userSaved) {
         const savedData = JSON.parse(userSaved);
         setIsSaved(savedData.includes(animeId));
       }
     }
 
-    // Increment view count
-    setViews(prev => prev + 1);
+    // Dynamic view count increment
+    setViews(prev => prev + Math.floor(Math.random() * 3) + 1);
   }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, videoUrl]);
 
-  const handleLike = () => {
-    if (!currentUser) {
-      toast({
-        id: String(Date.now()),
-        title: "Login Required",
-        description: "Please login to like episodes"
-      });
-      return;
-    }
-
-    setIsLiked(!isLiked);
-    setLikes(prev => isLiked ? prev - 1 : prev + 1);
-
-    // Save to localStorage
-    const userLikes = localStorage.getItem(`likes_${currentUser.id}`);
-    const likesData = userLikes ? JSON.parse(userLikes) : [];
-    const episodeKey = `${animeId}_${episodeNumber}`;
-
-    if (isLiked) {
-      const index = likesData.indexOf(episodeKey);
-      if (index > -1) likesData.splice(index, 1);
-    } else {
-      likesData.push(episodeKey);
-    }
-
-    localStorage.setItem(`likes_${currentUser.id}`, JSON.stringify(likesData));
-
-    toast({
-      id: String(Date.now()),
-      title: isLiked ? "Removed Like" : "Liked Episode",
-      description: `Episode ${episodeNumber} has been ${isLiked ? 'unliked' : 'liked'}`
-    });
-  };
 
   const handleSave = () => {
     if (!currentUser) {
@@ -286,13 +246,30 @@ export default function AnimeWatch() {
     );
   }
 
-  if (!anime) {
+  if (!anime || !id || id === "undefined" || id === "") {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Anime Not Found</h1>
-            <p className="text-muted-foreground">The anime you're looking for couldn't be found.</p>
+            <h1 className="text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-anime-secondary to-anime-accent bg-clip-text text-transparent animate-pulse-slow">404</h1>
+            <h2 className="text-2xl font-heading font-bold mb-4">Anime Not Found</h2>
+            <p className="text-muted-foreground mb-8">
+              The anime or episode you're looking for doesn't exist or has been moved.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg">
+                <a href="/" className="flex items-center gap-2">
+                  <Play className="h-4 w-4" />
+                  Return Home
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <a href="/search" className="flex items-center gap-2">
+                  <Search className="h-4 w-4" />
+                  Search Anime
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
       </Layout>
@@ -340,19 +317,15 @@ export default function AnimeWatch() {
                     <p className="text-sm text-muted-foreground mb-2">
                       Episode {currentEpisode?.episodeNumber || episodeNumber}: {currentEpisode?.title || `Episode ${episodeNumber}`}
                     </p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="h-3 w-3" />
-                        {likes.toLocaleString()} likes
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Play className="h-3 w-3" />
-                        {views.toLocaleString()} views
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {anime.status}
-                      </Badge>
-                    </div>
+                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                       <div className="flex items-center gap-1">
+                         <Eye className="h-3 w-3" />
+                         {views.toLocaleString()} views
+                       </div>
+                       <Badge variant="secondary" className="text-xs">
+                         {anime.status}
+                       </Badge>
+                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -381,32 +354,23 @@ export default function AnimeWatch() {
                   thumbnailUrl={getThumbnailUrl()}
                 />
 
-                {/* Interactive Video Controls */}
-                <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      size="sm"
-                      variant={isLiked ? "default" : "outline"}
-                      className="gap-2"
-                      onClick={handleLike}
-                    >
-                      <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                      {isLiked ? 'Liked' : 'Like'} ({likes})
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={isSaved ? "default" : "outline"}
-                      className="gap-2"
-                      onClick={handleSave}
-                    >
-                      <BookmarkPlus className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-                      {isSaved ? 'Saved' : 'Save'}
-                    </Button>
-                    <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
-                      <Share className="h-4 w-4" />
-                      Share
-                    </Button>
-                  </div>
+                 {/* Interactive Video Controls */}
+                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
+                   <div className="flex items-center gap-3">
+                     <Button
+                       size="sm"
+                       variant={isSaved ? "default" : "outline"}
+                       className="gap-2"
+                       onClick={handleSave}
+                     >
+                       <BookmarkPlus className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                       {isSaved ? 'Saved' : 'Save'}
+                     </Button>
+                     <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
+                       <Share className="h-4 w-4" />
+                       Share
+                     </Button>
+                   </div>
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
