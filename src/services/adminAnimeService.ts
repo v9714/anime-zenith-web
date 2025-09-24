@@ -45,7 +45,7 @@ export const adminAnimeService = {
             limit: limit.toString(),
         });
 
-        if (filters?.search) params.append('search', filters.search);
+        if (filters?.search) params.append('title', filters.search);
         if (filters?.status) params.append('status', filters.status);
         if (filters?.type) params.append('type', filters.type);
         if (filters?.genre) params.append('genre', filters.genre);

@@ -42,9 +42,9 @@ export function AnimeFilters({ searchQuery, filters, onSearchChange, onFilterCha
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Status</SelectItem>
-              <SelectItem value="Airing">Airing</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
-              <SelectItem value="Upcoming">Upcoming</SelectItem>
+              <SelectItem value="AIRING">Airing</SelectItem>
+              <SelectItem value="COMPLETED">Completed</SelectItem>
+              <SelectItem value="UPCOMING">Upcoming</SelectItem>
             </SelectContent>
           </Select>
 
@@ -58,10 +58,10 @@ export function AnimeFilters({ searchQuery, filters, onSearchChange, onFilterCha
             <SelectContent>
               <SelectItem value="All">All Types</SelectItem>
               <SelectItem value="TV">TV</SelectItem>
-              <SelectItem value="Movie">Movie</SelectItem>
+              <SelectItem value="MOVIE">Movie</SelectItem>
               <SelectItem value="OVA">OVA</SelectItem>
               <SelectItem value="ONA">ONA</SelectItem>
-              <SelectItem value="Special">Special</SelectItem>
+              <SelectItem value="SPECIAL">Special</SelectItem>
             </SelectContent>
           </Select>
 
