@@ -102,7 +102,7 @@ export const episodeService = {
 
   // Delete episode
   deleteEpisode: async (id: string | number) => {
-    const response = await backendAPI.delete(`/api/admin/episode/${id}`);
+    const response = await backendAPI.delete(`/api/admin/episode/${id}/permanent`);
     return response.data;
   }
 };

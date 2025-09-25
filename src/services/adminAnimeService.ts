@@ -77,7 +77,7 @@ export const adminAnimeService = {
 
     // Delete anime
     deleteAnime: async (id: string | number) => {
-        const response = await backendAPI.delete(`/api/admin/anime/${id}`);
+        const response = await backendAPI.delete(`/api/admin/anime/${id}/permanent`);
         return response.data;
     }
 };
