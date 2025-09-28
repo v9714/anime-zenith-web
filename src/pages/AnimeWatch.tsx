@@ -49,6 +49,7 @@ export default function AnimeWatch() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState(0);
+  const [watchedEpisodes, setWatchedEpisodes] = useState<number[]>([]);
 
   // Fetch anime and episode data
   useEffect(() => {
@@ -132,9 +133,17 @@ export default function AnimeWatch() {
     // Load user preferences from localStorage
     if (currentUser) {
       const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
+      const userWatched = localStorage.getItem(`watched_${currentUser.id}_${animeId}`);
+
       if (userSaved) {
         const savedData = JSON.parse(userSaved);
         setIsSaved(savedData.includes(animeId));
+      }
+
+
+      if (userWatched) {
+        const watchedData = JSON.parse(userWatched);
+        setWatchedEpisodes(watchedData);
       }
     }
 
@@ -179,6 +188,16 @@ export default function AnimeWatch() {
     setActiveEpisode(index);
     const episode = episodes[index];
 
+
+    // Mark this episode as watched
+    const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
+    setWatchedEpisodes(newWatchedEpisodes);
+
+    // Update localStorage to persist watched episodes
+    if (currentUser && animeId) {
+      localStorage.setItem(`watched_${currentUser.id}_${animeId}`, JSON.stringify(newWatchedEpisodes));
+    }
+
     // Generate new URLs based on episode data
     const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
     const newThumbnailUrl = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
@@ -193,7 +212,8 @@ export default function AnimeWatch() {
       duration: 2000,
       action: null
     });
-  }, [id, navigate, toast, episodes]);
+    // }, [id, navigate, toast, episodes]);
+  }, [id, navigate, toast, episodes, watchedEpisodes, currentUser, animeId]);
 
   const handlePreviousEpisode = () => {
     if (activeEpisode > 0) {
@@ -282,18 +302,18 @@ export default function AnimeWatch() {
     <Layout>
       <div className="min-h-screen bg-background">
         {/* Main content with container-fluid */}
-        <div className="w-full px-4 pb-8">
-          <div className={`grid gap-6 ${showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-12' :
-            showPlaylist && !showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
-              !showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-9' :
+        <div className="w-full px-2 pb-4">
+          <div className={`grid gap-3 ${showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-12' :
+            showPlaylist && !showSidebar ? 'grid-cols-1 lg:grid-cols-10' :
+              !showPlaylist && showSidebar ? 'grid-cols-1 lg:grid-cols-10' :
                 'grid-cols-1'
             }`}>
             {/* Episode List Sidebar - Left (conditionally shown) */}
             {showPlaylist && (
-              <div className="lg:col-span-3 order-3 lg:order-1">
+              <div className="lg:col-span-2 order-3 lg:order-1">
                 <div className="sticky top-24">
                   <EpisodeList
-                    episodes={episodeTitles}
+                    episodes={episodes}
                     active={activeEpisode}
                     onSelectEpisode={handleEpisodeSelect}
                   />
@@ -302,14 +322,14 @@ export default function AnimeWatch() {
             )}
 
             {/* Main Video Section - Center */}
-            <div className={`${showPlaylist && showSidebar ? 'lg:col-span-6' :
-              showPlaylist && !showSidebar ? 'lg:col-span-6' :
-                !showPlaylist && showSidebar ? 'lg:col-span-6' :
+            <div className={`${showPlaylist && showSidebar ? 'lg:col-span-7' :
+              showPlaylist && !showSidebar ? 'lg:col-span-8' :
+                !showPlaylist && showSidebar ? 'lg:col-span-7' :
                   'lg:col-span-12'
               } order-1 lg:order-2`}>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Episode title header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex-1">
                     <h1 className="text-xl font-bold text-foreground">{anime.title}</h1>
                     <p className="text-sm text-muted-foreground mb-2">
@@ -404,7 +424,7 @@ export default function AnimeWatch() {
             {/* Anime Info & Popular - Right */}
             {showSidebar && (
               <div className="lg:col-span-3 order-2 lg:order-3">
-                <div className="sticky top-24 space-y-6">
+                <div className="sticky top-24 space-y-4">
                   <AnimeInfoCard
                     anime={{
                       title: anime.title,
