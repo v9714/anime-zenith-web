@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Settings, Volume2, VolumeX, Subtitles, Gauge, Play, Pause, Maximize, Minimize, SkipForward, SkipBack, Zap } from "lucide-react";
@@ -78,17 +79,45 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [animeId, episodeId]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear all timers
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+      if (progressUpdateRef.current) {
+        clearTimeout(progressUpdateRef.current);
+      }
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+      if (volumeIndicatorTimerRef.current) {
+        clearTimeout(volumeIndicatorTimerRef.current);
+      }
+
+      // Cleanup HLS
+      if (hlsInstance) {
+        hlsInstance.destroy();
+      }
+
+      // Remove all tracks
+      if (videoRef.current) {
+        const tracks = videoRef.current.querySelectorAll('track');
+        tracks.forEach(track => track.remove());
+      }
+    };
+  }, [hlsInstance]);
+
   // Save progress periodically
   useEffect(() => {
     if (!videoRef.current || !animeId || !episodeId) return;
 
     const saveProgress = () => {
       if (videoRef.current && currentTime > 0 && duration > 0) {
-        // Don't save if near the end (last 5%)
         if (currentTime < duration * 0.95) {
           localStorage.setItem(`progress_${animeId}_${episodeId}`, currentTime.toString());
         } else {
-          // Clear progress if completed
           localStorage.removeItem(`progress_${animeId}_${episodeId}`);
         }
       }
@@ -105,13 +134,52 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (!video) return;
 
     if (Hls.isSupported()) {
-      const hls = new Hls({ renderTextTracksNatively: false });
+      const hls = new Hls({
+        renderTextTracksNatively: false,
+        enableWebVTT: true,
+        debug: false,
+        // Performance optimizations
+        maxBufferLength: 30,           // Maximum buffer length in seconds
+        maxMaxBufferLength: 60,        // Max buffer size cap
+        maxBufferSize: 60 * 1000 * 1000, // 60MB buffer size
+        maxBufferHole: 0.5,            // Max hole tolerance
+        lowLatencyMode: false,         // Disable low latency for better buffering
+        backBufferLength: 90,          // Keep 90s of back buffer for seeking
+
+        // Network optimizations
+        manifestLoadingTimeOut: 10000,
+        manifestLoadingMaxRetry: 3,
+        manifestLoadingRetryDelay: 1000,
+        levelLoadingTimeOut: 10000,
+        levelLoadingMaxRetry: 4,
+        fragLoadingTimeOut: 20000,
+        fragLoadingMaxRetry: 6,
+
+        // Adaptive bitrate settings
+        abrEwmaDefaultEstimate: 500000, // Start at 500kbps
+        abrEwmaSlowVoD: 3,
+        abrEwmaFastVoD: 3,
+        abrBandWidthFactor: 0.95,
+        abrBandWidthUpFactor: 0.7,
+
+        // Memory management
+        enableWorker: true,            // Use web worker for demuxing
+        enableSoftwareAES: true,       // Hardware AES if available
+      });
+
       hls.attachMedia(video);
+
       hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+        console.log("🎬 Media attached");
         hls.loadSource(videoUrl);
       });
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+        console.log("📋 Manifest parsed");
+        console.log("Audio tracks:", data.audioTracks);
+        console.log("Subtitle tracks:", data.subtitleTracks);
+        console.log("Quality levels:", data.levels);
+
         setAudioTracks(data.audioTracks || []);
         setSubtitleTracks(data.subtitleTracks || []);
         setQualityLevels(data.levels || []);
@@ -121,8 +189,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         setAudioTracks(data.audioTracks || []);
       });
 
+      hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, (_, data) => {
+        console.log("📝 Subtitle tracks updated:", data.subtitleTracks);
+        setSubtitleTracks(data.subtitleTracks || []);
+      });
+
+      hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, (_, data) => {
+        console.log("✅ Subtitle switched to:", data.id);
+        setCurrentSubtitle(data.id);
+      });
+
+      hls.on(Hls.Events.SUBTITLE_TRACK_LOADED, (_, data) => {
+        console.log("✅ Subtitle track loaded:", data);
+      });
+
+      hls.on(Hls.Events.CUES_PARSED, (_, data) => {
+        console.log("✅ Cues parsed:", data);
+      });
+
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error("HLS.js error:", data);
+        console.error("❌ HLS.js error:", data);
       });
 
       setHlsInstance(hls);
@@ -138,6 +224,47 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       console.error('HLS is not supported in this browser');
     }
   }, [videoUrl]);
+
+  // Monitor text tracks changes
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const checkTracks = () => {
+      console.log("🔍 Text tracks count:", video.textTracks.length);
+      Array.from(video.textTracks).forEach((track, i) => {
+        console.log(`Track ${i}:`, {
+          label: track.label,
+          language: track.language,
+          kind: track.kind,
+          mode: track.mode,
+          cues: track.cues?.length
+        });
+      });
+    };
+
+    const handleAddTrack = () => {
+      console.log("➕ Track added");
+      checkTracks();
+    };
+
+    const handleRemoveTrack = () => {
+      console.log("➖ Track removed");
+      checkTracks();
+    };
+
+    video.textTracks.addEventListener('addtrack', handleAddTrack);
+    video.textTracks.addEventListener('removetrack', handleRemoveTrack);
+
+    // Initial check
+    setTimeout(checkTracks, 1000);
+    setTimeout(checkTracks, 3000);
+
+    return () => {
+      video.textTracks.removeEventListener('addtrack', handleAddTrack);
+      video.textTracks.removeEventListener('removetrack', handleRemoveTrack);
+    };
+  }, []);
 
   // Video event listeners
   useEffect(() => {
@@ -206,11 +333,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current) return;
 
-      // Handle key combinations
       if (e.shiftKey) {
         if (e.key === '>') {
           e.preventDefault();
-          // Increase speed
           const newSpeed = Math.min(playbackSpeed + 0.25, 2);
           handleSpeedChange(newSpeed);
           showControlsTemporarily();
@@ -218,7 +343,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
         if (e.key === '<') {
           e.preventDefault();
-          // Decrease speed
           const newSpeed = Math.max(playbackSpeed - 0.25, 0.25);
           handleSpeedChange(newSpeed);
           showControlsTemporarily();
@@ -229,10 +353,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       switch (e.code) {
         case 'Space':
           e.preventDefault();
-          // Start long press detection
           if (!longPressTimerRef.current) {
             longPressTimerRef.current = setTimeout(() => {
-              // Long press detected - enable 2x speed
               if (videoRef.current) {
                 normalSpeedRef.current = playbackSpeed;
                 videoRef.current.playbackRate = 2;
@@ -241,7 +363,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   videoRef.current.play();
                 }
               }
-            }, 300); // 300ms for long press
+            }, 300);
           }
           break;
         case 'KeyK':
@@ -250,13 +372,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           break;
         case 'ArrowUp':
           e.preventDefault();
-          // Volume up
           handleVolumeChange([Math.min(volume + 0.1, 1)]);
           showControlsTemporarily();
           break;
         case 'ArrowDown':
           e.preventDefault();
-          // Volume down
           handleVolumeChange([Math.max(volume - 0.1, 0)]);
           showControlsTemporarily();
           break;
@@ -297,18 +417,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       if (e.code === 'Space' && videoRef.current) {
         e.preventDefault();
 
-        // Clear long press timer
         if (longPressTimerRef.current) {
           clearTimeout(longPressTimerRef.current);
           longPressTimerRef.current = null;
         }
 
-        // If 2x speed is active, restore normal speed
         if (is2xSpeed) {
           videoRef.current.playbackRate = normalSpeedRef.current;
           setIs2xSpeed(false);
         } else {
-          // Short press - toggle play/pause
           togglePlay();
         }
       }
@@ -358,11 +475,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const newVolume = value[0];
     if (videoRef.current) {
       videoRef.current.volume = newVolume;
-      videoRef.current.muted = newVolume === 0; // keep sync
+      videoRef.current.muted = newVolume === 0;
       setVolume(newVolume);
       setIsMuted(videoRef.current.muted);
 
-      // Show volume indicator
       setShowVolumeIndicator(true);
       if (volumeIndicatorTimerRef.current) {
         clearTimeout(volumeIndicatorTimerRef.current);
@@ -379,7 +495,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       videoRef.current.muted = newMuted;
       setIsMuted(newMuted);
 
-      // Show volume indicator
       setShowVolumeIndicator(true);
       if (volumeIndicatorTimerRef.current) {
         clearTimeout(volumeIndicatorTimerRef.current);
@@ -442,9 +557,54 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const switchSubtitle = (index: number) => {
-    if (!hlsInstance) return;
-    hlsInstance.subtitleTrack = index;
-    setCurrentSubtitle(index);
+    if (!videoRef.current) return;
+
+    console.log("🔄 Switching subtitle to index:", index);
+
+    // Remove all existing tracks first
+    const existingTracks = videoRef.current.querySelectorAll('track');
+    existingTracks.forEach(track => track.remove());
+
+    // Turn off all text tracks
+    Array.from(videoRef.current.textTracks).forEach(track => {
+      track.mode = 'hidden';
+    });
+
+    if (index === -1) {
+      setCurrentSubtitle(-1);
+      return;
+    }
+
+    const sub = subtitleTracks[index];
+    if (sub && sub.url) {
+      console.log("📥 Loading subtitle from:", sub.url);
+
+      // Create a new track element
+      const trackElement = document.createElement('track');
+      trackElement.kind = 'subtitles';
+      trackElement.label = sub.name || sub.lang || 'English';
+      trackElement.srclang = 'en';
+      trackElement.src = sub.url;
+      trackElement.default = true;
+
+      // Add track to video
+      videoRef.current.appendChild(trackElement);
+
+      // Wait for track to load
+      trackElement.addEventListener('load', () => {
+        console.log("✅ Track loaded successfully");
+        if (videoRef.current) {
+          const textTrack = trackElement.track;
+          textTrack.mode = 'showing';
+          console.log("✅ Subtitle showing. Cues:", textTrack.cues?.length);
+          setCurrentSubtitle(index);
+        }
+      });
+
+      trackElement.addEventListener('error', (e) => {
+        console.error("❌ Track load error:", e);
+      });
+    }
   };
 
   const switchQuality = (index: number) => {
@@ -460,14 +620,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Touch events for mobile long press
   const handleTouchStart = () => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
     }
 
     longPressTimerRef.current = setTimeout(() => {
-      // Long press detected on mobile
       if (videoRef.current) {
         normalSpeedRef.current = playbackSpeed;
         videoRef.current.playbackRate = 2;
@@ -498,6 +656,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onMouseMove={showControlsTemporarily}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
+      <style>{`
+        video::cue {
+          background-color: rgba(0, 0, 0, 0.8);
+          color: white;
+          font-size: 1.5em;
+          font-family: Arial, sans-serif;
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+          line-height: 1.4;
+        }
+        video::-webkit-media-text-track-container {
+          position: relative;
+          bottom: 80px;
+        }
+        video::-webkit-media-text-track-display {
+          background: rgba(0, 0, 0, 0.8);
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+      `}</style>
+
       {/* Video Element */}
       <video
         ref={videoRef}
@@ -517,7 +695,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       )}
 
-      {/* 2x Speed Indicator - Top Right */}
+      {/* 2x Speed Indicator */}
       <div className={`absolute top-4 right-4 z-20 pointer-events-none transition-all duration-300 ${is2xSpeed ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
         }`}>
         <div className="bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-md text-sm font-semibold backdrop-blur-sm shadow-lg">
@@ -525,7 +703,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       </div>
 
-      {/* Volume Indicator - Top Left */}
+      {/* Volume Indicator */}
       <div className={`absolute top-4 left-4 z-20 pointer-events-none transition-all duration-300 ${showVolumeIndicator ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
         }`}>
         <div className="bg-black/80 text-white px-3 py-1.5 rounded-md text-sm font-medium backdrop-blur-sm shadow-lg flex items-center gap-2">
@@ -675,7 +853,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                 : "hover:bg-white/10"
                                 }`}
                             >
-                              {sub.name || sub.lang}
+                              {sub.name || sub.lang || `Subtitle ${idx + 1}`}
                             </DropdownMenuItem>
                           ))}
                         </div>
