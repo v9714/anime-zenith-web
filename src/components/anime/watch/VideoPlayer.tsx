@@ -195,6 +195,39 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => clearTimeout(timer);
   }, [showAutoPlayCountdown, autoPlayCountdown, onNextEpisode]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!videoRef.current) return;
+      
+      switch(e.code) {
+        case 'Space':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          videoRef.current.currentTime = Math.min(
+            videoRef.current.currentTime + 10,
+            duration
+          );
+          showControlsTemporarily();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          videoRef.current.currentTime = Math.max(
+            videoRef.current.currentTime - 10,
+            0
+          );
+          showControlsTemporarily();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [duration, isPlaying]);
+
   // Controls visibility
   const showControlsTemporarily = useCallback(() => {
     setShowControls(true);
