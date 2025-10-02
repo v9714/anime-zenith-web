@@ -3,16 +3,16 @@ import { ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { ThemeProvider } from "@/lib/ThemeProvider";
-import { 
-  Sidebar, 
-  SidebarContent, 
+import {
+  Sidebar,
+  SidebarContent,
   SidebarHeader,
-  SidebarProvider, 
+  SidebarProvider,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Database, Film, ListChecks, LayoutDashboard, Users, Settings } from "lucide-react";
+import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface AdminLayoutProps {
@@ -22,7 +22,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const currentPath = location.pathname;
-  
+
   return (
     <ThemeProvider defaultTheme="dark">
       <SidebarProvider>
@@ -45,7 +45,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <Link to="/admin">
-                     <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={currentPath === "/admin"}
                       className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
@@ -56,7 +56,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/anime">
-                     <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={currentPath === "/admin/anime"}
                       className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/anime" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
@@ -67,7 +67,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link to="/admin/episodes">
-                     <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={currentPath === "/admin/episodes"}
                       className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/episodes" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
@@ -76,9 +76,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <Link to="/admin/genres">
+                    <SidebarMenuButton
+                      isActive={currentPath === "/admin/genres"}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/genres" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
+                    >
+                      <Notebook className={`h-5 w-5 transition-colors ${currentPath === "/admin/genres" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin/genres" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>genres</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+
+
+
                 <SidebarMenuItem>
                   <Link to="/admin/users">
-                     <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={currentPath === "/admin/users"}
                       className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/users" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >

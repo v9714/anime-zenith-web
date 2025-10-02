@@ -26,6 +26,7 @@ import AdminDashboard from "./pages/Admin";
 import AdminAnime from "./pages/AdminAnime";
 import AdminEpisodes from "./pages/AdminEpisodes";
 import AdminUsers from "./pages/AdminUsers";
+import AdminGenres from "./pages/AdminGenres";
 
 // Create Query Client for API requests
 const queryClient = new QueryClient({
@@ -50,7 +51,7 @@ const App = () => {
                 <Toaster />
                 <Sonner />
                 <DevelopmentNotice />
-                
+
                 <Routes>
                   {/* Main Routes */}
                   <Route path="/" element={<Home />} />
@@ -61,13 +62,14 @@ const App = () => {
                   <Route path="/search" element={<Search />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/profile" element={<UserProfile />} />
-                  
+
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/anime" element={<AdminAnime />} />
                   <Route path="/admin/episodes" element={<AdminEpisodes />} />
                   <Route path="/admin/users" element={<AdminUsers />} />
-                  
+                  <Route path="/admin/genres" element={<AdminGenres />} />
+
                   {/* Catch-all Route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
