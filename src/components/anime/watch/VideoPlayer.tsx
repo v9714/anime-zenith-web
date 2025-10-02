@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
+import { Settings, Volume2, Subtitles, Gauge } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
   const videoRef = useRef(null);
@@ -81,9 +91,9 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
   };
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full">
       {/* Video Container */}
-      <div className="relative w-full bg-black rounded-lg overflow-hidden">
+      <div className="relative w-full bg-black rounded-lg overflow-hidden group">
         <video
           ref={videoRef}
           className="w-full h-auto max-h-[70vh] object-contain"
@@ -91,108 +101,126 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }) => {
           controls
           crossOrigin="anonymous"
         ></video>
+
+        {/* Options Panel - Bottom Right Corner */}
+        {(audioTracks.length > 1 || subtitleTracks.length > 0 || qualityLevels.length > 1) && (
+          <div className="absolute bottom-16 right-4 z-10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="bg-black/80 hover:bg-black/90 text-white border border-white/20 backdrop-blur-sm shadow-lg"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Options
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-64 bg-background/95 backdrop-blur-sm border-border/50 shadow-xl"
+              >
+                {/* Quality Selection */}
+                {qualityLevels.length > 1 && (
+                  <>
+                    <DropdownMenuLabel className="flex items-center gap-2 text-foreground">
+                      <Gauge className="h-4 w-4 text-primary" />
+                      Video Quality
+                    </DropdownMenuLabel>
+                    <div className="px-2 pb-2 space-y-1">
+                      <DropdownMenuItem
+                        onClick={() => switchQuality(-1)}
+                        className={`cursor-pointer ${
+                          currentLevel === -1 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        Auto
+                      </DropdownMenuItem>
+                      {qualityLevels.map((level, idx) => (
+                        <DropdownMenuItem
+                          key={idx}
+                          onClick={() => switchQuality(idx)}
+                          className={`cursor-pointer ${
+                            currentLevel === idx 
+                              ? "bg-primary text-primary-foreground" 
+                              : "hover:bg-muted"
+                          }`}
+                        >
+                          {level.height}p
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+
+                {/* Audio Selection */}
+                {audioTracks.length > 1 && (
+                  <>
+                    <DropdownMenuLabel className="flex items-center gap-2 text-foreground">
+                      <Volume2 className="h-4 w-4 text-primary" />
+                      Audio Language
+                    </DropdownMenuLabel>
+                    <div className="px-2 pb-2 space-y-1">
+                      {audioTracks.map((track, idx) => (
+                        <DropdownMenuItem
+                          key={idx}
+                          onClick={() => switchAudio(track.name || track.lang)}
+                          className={`cursor-pointer ${
+                            currentAudio === idx 
+                              ? "bg-primary text-primary-foreground" 
+                              : "hover:bg-muted"
+                          }`}
+                        >
+                          {track.name || track.lang || `Track ${idx + 1}`}
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+
+                {/* Subtitle Selection */}
+                {subtitleTracks.length > 0 && (
+                  <>
+                    <DropdownMenuLabel className="flex items-center gap-2 text-foreground">
+                      <Subtitles className="h-4 w-4 text-primary" />
+                      Subtitles
+                    </DropdownMenuLabel>
+                    <div className="px-2 pb-2 space-y-1">
+                      <DropdownMenuItem
+                        onClick={() => switchSubtitle(-1)}
+                        className={`cursor-pointer ${
+                          currentSubtitle === -1 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        Off
+                      </DropdownMenuItem>
+                      {subtitleTracks.map((sub, idx) => (
+                        <DropdownMenuItem
+                          key={idx}
+                          onClick={() => switchSubtitle(idx)}
+                          className={`cursor-pointer ${
+                            currentSubtitle === idx 
+                              ? "bg-primary text-primary-foreground" 
+                              : "hover:bg-muted"
+                          }`}
+                        >
+                          {sub.name || sub.lang}
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
-
-      {/* Interactive Video Controls */}
-      {(audioTracks.length > 1 || subtitleTracks.length > 0 || qualityLevels.length > 1) && (
-        <div className="bg-card rounded-lg p-4 border border-border/30 space-y-4">
-          
-          {/* Audio Selection */}
-          {audioTracks.length > 1 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
-                Audio Language
-              </h4>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                {audioTracks.map((track, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => switchAudio(track.name || track.lang)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                      currentAudio === idx 
-                        ? "bg-primary text-primary-foreground shadow-md" 
-                        : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {track.name || track.lang || `Track ${idx + 1}`}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Subtitle Selection */}
-          {subtitleTracks.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
-                Subtitles
-              </h4>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                <button
-                  onClick={() => switchSubtitle(-1)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                    currentSubtitle === -1 
-                      ? "bg-primary text-primary-foreground shadow-md" 
-                      : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Off
-                </button>
-                {subtitleTracks.map((sub, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => switchSubtitle(idx)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                      currentSubtitle === idx 
-                        ? "bg-primary text-primary-foreground shadow-md" 
-                        : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {sub.name || sub.lang}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Quality Selection */}
-          {qualityLevels.length > 1 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
-                Video Quality
-              </h4>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                <button
-                  onClick={() => switchQuality(-1)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                    currentLevel === -1 
-                      ? "bg-primary text-primary-foreground shadow-md" 
-                      : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Auto
-                </button>
-                {qualityLevels.map((level, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => switchQuality(idx)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                      currentLevel === idx 
-                        ? "bg-primary text-primary-foreground shadow-md" 
-                        : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {level.height}p
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
