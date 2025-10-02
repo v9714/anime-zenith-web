@@ -52,7 +52,7 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
       <CardContent className="p-2">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-base">Episodes</h3>
-          <Badge variant="outline" className="text-[14px] px-1 py-0">S1</Badge>
+          {/* <Badge variant="outline" className="text-[14px] px-1 py-0">S1</Badge> */}
         </div>
 
         <TooltipProvider>
