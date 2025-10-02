@@ -370,6 +370,13 @@ export default function AnimeWatch() {
                 <VideoPlayer
                   videoUrl={getVideoUrl()}
                   thumbnailUrl={getThumbnailUrl()}
+                  animeId={animeId}
+                  episodeId={currentEpisode?.id?.toString()}
+                  onNextEpisode={handleNextEpisode}
+                  onPreviousEpisode={handlePreviousEpisode}
+                  hasNextEpisode={activeEpisode < episodes.length - 1}
+                  hasPreviousEpisode={activeEpisode > 0}
+                  episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
                 />
 
                 {/* Interactive Video Controls */}
