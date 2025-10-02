@@ -358,8 +358,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const newVolume = value[0];
     if (videoRef.current) {
       videoRef.current.volume = newVolume;
+      videoRef.current.muted = newVolume === 0; // keep sync
       setVolume(newVolume);
-      setIsMuted(newVolume === 0);
+      setIsMuted(videoRef.current.muted);
 
       // Show volume indicator
       setShowVolumeIndicator(true);
@@ -374,8 +375,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const toggleMute = () => {
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      const newMuted = !videoRef.current.muted;
+      videoRef.current.muted = newMuted;
+      setIsMuted(newMuted);
 
       // Show volume indicator
       setShowVolumeIndicator(true);
@@ -599,8 +601,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                           <DropdownMenuItem
                             onClick={() => switchQuality(-1)}
                             className={`cursor-pointer ${currentLevel === -1
-                                ? "bg-primary text-primary-foreground"
-                                : "hover:bg-white/10"
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-white/10"
                               }`}
                           >
                             Auto
@@ -610,8 +612,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                               key={idx}
                               onClick={() => switchQuality(idx)}
                               className={`cursor-pointer ${currentLevel === idx
-                                  ? "bg-primary text-primary-foreground"
-                                  : "hover:bg-white/10"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-white/10"
                                 }`}
                             >
                               {level.height}p
@@ -635,8 +637,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                               key={idx}
                               onClick={() => switchAudio(track.name || track.lang)}
                               className={`cursor-pointer ${currentAudio === idx
-                                  ? "bg-primary text-primary-foreground"
-                                  : "hover:bg-white/10"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-white/10"
                                 }`}
                             >
                               {track.name || track.lang || `Track ${idx + 1}`}
@@ -658,8 +660,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                           <DropdownMenuItem
                             onClick={() => switchSubtitle(-1)}
                             className={`cursor-pointer ${currentSubtitle === -1
-                                ? "bg-primary text-primary-foreground"
-                                : "hover:bg-white/10"
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-white/10"
                               }`}
                           >
                             Off
@@ -669,8 +671,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                               key={idx}
                               onClick={() => switchSubtitle(idx)}
                               className={`cursor-pointer ${currentSubtitle === idx
-                                  ? "bg-primary text-primary-foreground"
-                                  : "hover:bg-white/10"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-white/10"
                                 }`}
                             >
                               {sub.name || sub.lang}
@@ -781,8 +783,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                       key={speed}
                       onClick={() => handleSpeedChange(speed)}
                       className={`cursor-pointer ${playbackSpeed === speed
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-white/10"
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-white/10"
                         }`}
                     >
                       {speed}x
