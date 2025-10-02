@@ -24,10 +24,10 @@ interface VideoPlayerProps {
   episodeTitle?: string;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
-  videoUrl, 
-  thumbnailUrl, 
-  animeId, 
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  videoUrl,
+  thumbnailUrl,
+  animeId,
   episodeId,
   onNextEpisode,
   onPreviousEpisode,
@@ -44,7 +44,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [currentLevel, setCurrentLevel] = useState(-1);
   const [currentAudio, setCurrentAudio] = useState(0);
   const [currentSubtitle, setCurrentSubtitle] = useState(-1);
-  
+
   // Player state
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -57,9 +57,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isBuffering, setIsBuffering] = useState(false);
   const [showAutoPlayCountdown, setShowAutoPlayCountdown] = useState(false);
   const [autoPlayCountdown, setAutoPlayCountdown] = useState(10);
-  
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [is2xSpeed, setIs2xSpeed] = useState(false);
+  const [showVolumeIndicator, setShowVolumeIndicator] = useState(false);
+
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const progressUpdateRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const normalSpeedRef = useRef<number>(1);
+  const volumeIndicatorTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load saved progress on mount
   useEffect(() => {
@@ -197,13 +203,76 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current) return;
-      
-      switch(e.code) {
+
+      // Handle key combinations
+      if (e.shiftKey) {
+        if (e.key === '>') {
+          e.preventDefault();
+          // Increase speed
+          const newSpeed = Math.min(playbackSpeed + 0.25, 2);
+          handleSpeedChange(newSpeed);
+          showControlsTemporarily();
+          return;
+        }
+        if (e.key === '<') {
+          e.preventDefault();
+          // Decrease speed
+          const newSpeed = Math.max(playbackSpeed - 0.25, 0.25);
+          handleSpeedChange(newSpeed);
+          showControlsTemporarily();
+          return;
+        }
+      }
+
+      switch (e.code) {
         case 'Space':
           e.preventDefault();
+          // Start long press detection
+          if (!longPressTimerRef.current) {
+            longPressTimerRef.current = setTimeout(() => {
+              // Long press detected - enable 2x speed
+              if (videoRef.current) {
+                normalSpeedRef.current = playbackSpeed;
+                videoRef.current.playbackRate = 2;
+                setIs2xSpeed(true);
+                if (!isPlaying) {
+                  videoRef.current.play();
+                }
+              }
+            }, 300); // 300ms for long press
+          }
+          break;
+        case 'KeyK':
+          e.preventDefault();
           togglePlay();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          // Volume up
+          handleVolumeChange([Math.min(volume + 0.1, 1)]);
+          showControlsTemporarily();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          // Volume down
+          handleVolumeChange([Math.max(volume - 0.1, 0)]);
+          showControlsTemporarily();
+          break;
+        case 'KeyM':
+          e.preventDefault();
+          toggleMute();
+          showControlsTemporarily();
+          break;
+        case 'KeyF':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'KeyT':
+          e.preventDefault();
+          setIsTheaterMode(prev => !prev);
+          showControlsTemporarily();
           break;
         case 'ArrowRight':
           e.preventDefault();
@@ -224,9 +293,38 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [duration, isPlaying]);
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && videoRef.current) {
+        e.preventDefault();
+
+        // Clear long press timer
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
+
+        // If 2x speed is active, restore normal speed
+        if (is2xSpeed) {
+          videoRef.current.playbackRate = normalSpeedRef.current;
+          setIs2xSpeed(false);
+        } else {
+          // Short press - toggle play/pause
+          togglePlay();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, [duration, isPlaying, playbackSpeed, volume, is2xSpeed]);
 
   // Controls visibility
   const showControlsTemporarily = useCallback(() => {
@@ -262,6 +360,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       videoRef.current.volume = newVolume;
       setVolume(newVolume);
       setIsMuted(newVolume === 0);
+
+      // Show volume indicator
+      setShowVolumeIndicator(true);
+      if (volumeIndicatorTimerRef.current) {
+        clearTimeout(volumeIndicatorTimerRef.current);
+      }
+      volumeIndicatorTimerRef.current = setTimeout(() => {
+        setShowVolumeIndicator(false);
+      }, 2000);
     }
   };
 
@@ -269,6 +376,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+
+      // Show volume indicator
+      setShowVolumeIndicator(true);
+      if (volumeIndicatorTimerRef.current) {
+        clearTimeout(volumeIndicatorTimerRef.current);
+      }
+      volumeIndicatorTimerRef.current = setTimeout(() => {
+        setShowVolumeIndicator(false);
+      }, 2000);
     }
   };
 
@@ -342,8 +458,39 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Touch events for mobile long press
+  const handleTouchStart = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+
+    longPressTimerRef.current = setTimeout(() => {
+      // Long press detected on mobile
+      if (videoRef.current) {
+        normalSpeedRef.current = playbackSpeed;
+        videoRef.current.playbackRate = 2;
+        setIs2xSpeed(true);
+        if (!isPlaying) {
+          videoRef.current.play();
+        }
+      }
+    }, 300);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
+    if (is2xSpeed && videoRef.current) {
+      videoRef.current.playbackRate = normalSpeedRef.current;
+      setIs2xSpeed(false);
+    }
+  };
+
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative w-full bg-black rounded-lg overflow-hidden group"
       onMouseMove={showControlsTemporarily}
@@ -352,12 +499,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Video Element */}
       <video
         ref={videoRef}
-        className={`w-full object-contain cursor-pointer ${
-          isFullscreen ? 'h-screen' : 'h-auto max-h-[70vh]'
-        }`}
+        className={`w-full object-contain cursor-pointer ${isFullscreen ? 'h-screen' : isTheaterMode ? 'h-auto max-h-[85vh]' : 'h-auto max-h-[70vh]'
+          }`}
         poster={thumbnailUrl}
         crossOrigin="anonymous"
         onClick={togglePlay}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       />
 
       {/* Buffering Loader */}
@@ -366,6 +514,27 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent"></div>
         </div>
       )}
+
+      {/* 2x Speed Indicator - Top Right */}
+      <div className={`absolute top-4 right-4 z-20 pointer-events-none transition-all duration-300 ${is2xSpeed ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+        }`}>
+        <div className="bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-md text-sm font-semibold backdrop-blur-sm shadow-lg">
+          2x
+        </div>
+      </div>
+
+      {/* Volume Indicator - Top Left */}
+      <div className={`absolute top-4 left-4 z-20 pointer-events-none transition-all duration-300 ${showVolumeIndicator ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+        }`}>
+        <div className="bg-black/80 text-white px-3 py-1.5 rounded-md text-sm font-medium backdrop-blur-sm shadow-lg flex items-center gap-2">
+          {isMuted || volume === 0 ? (
+            <VolumeX className="h-4 w-4" />
+          ) : (
+            <Volume2 className="h-4 w-4" />
+          )}
+          <span>{Math.round(volume * 100)}%</span>
+        </div>
+      </div>
 
       {/* Auto-play Countdown Overlay */}
       {showAutoPlayCountdown && (
@@ -380,8 +549,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               }}>
                 Play Now
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowAutoPlayCountdown(false)}
               >
                 Cancel
@@ -392,10 +561,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       )}
 
       {/* Custom Controls Overlay */}
-      <div 
-        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 transition-opacity duration-300 pointer-events-none ${
-          showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
-        }`}
+      <div
+        className={`absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/60 transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
+          }`}
       >
         {/* Top Controls Bar */}
         <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto">
@@ -416,8 +584,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                       <Settings className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
+                  <DropdownMenuContent
+                    align="end"
                     className="w-64 bg-black/95 backdrop-blur-sm border-white/10 text-white"
                   >
                     {/* Quality Selection */}
@@ -430,11 +598,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                         <div className="px-2 pb-2 space-y-1">
                           <DropdownMenuItem
                             onClick={() => switchQuality(-1)}
-                            className={`cursor-pointer ${
-                              currentLevel === -1 
-                                ? "bg-primary text-primary-foreground" 
+                            className={`cursor-pointer ${currentLevel === -1
+                                ? "bg-primary text-primary-foreground"
                                 : "hover:bg-white/10"
-                            }`}
+                              }`}
                           >
                             Auto
                           </DropdownMenuItem>
@@ -442,11 +609,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             <DropdownMenuItem
                               key={idx}
                               onClick={() => switchQuality(idx)}
-                              className={`cursor-pointer ${
-                                currentLevel === idx 
-                                  ? "bg-primary text-primary-foreground" 
+                              className={`cursor-pointer ${currentLevel === idx
+                                  ? "bg-primary text-primary-foreground"
                                   : "hover:bg-white/10"
-                              }`}
+                                }`}
                             >
                               {level.height}p
                             </DropdownMenuItem>
@@ -468,11 +634,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             <DropdownMenuItem
                               key={idx}
                               onClick={() => switchAudio(track.name || track.lang)}
-                              className={`cursor-pointer ${
-                                currentAudio === idx 
-                                  ? "bg-primary text-primary-foreground" 
+                              className={`cursor-pointer ${currentAudio === idx
+                                  ? "bg-primary text-primary-foreground"
                                   : "hover:bg-white/10"
-                              }`}
+                                }`}
                             >
                               {track.name || track.lang || `Track ${idx + 1}`}
                             </DropdownMenuItem>
@@ -492,11 +657,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                         <div className="px-2 pb-2 space-y-1">
                           <DropdownMenuItem
                             onClick={() => switchSubtitle(-1)}
-                            className={`cursor-pointer ${
-                              currentSubtitle === -1 
-                                ? "bg-primary text-primary-foreground" 
+                            className={`cursor-pointer ${currentSubtitle === -1
+                                ? "bg-primary text-primary-foreground"
                                 : "hover:bg-white/10"
-                            }`}
+                              }`}
                           >
                             Off
                           </DropdownMenuItem>
@@ -504,11 +668,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                             <DropdownMenuItem
                               key={idx}
                               onClick={() => switchSubtitle(idx)}
-                              className={`cursor-pointer ${
-                                currentSubtitle === idx 
-                                  ? "bg-primary text-primary-foreground" 
+                              className={`cursor-pointer ${currentSubtitle === idx
+                                  ? "bg-primary text-primary-foreground"
                                   : "hover:bg-white/10"
-                              }`}
+                                }`}
                             >
                               {sub.name || sub.lang}
                             </DropdownMenuItem>
@@ -617,11 +780,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     <DropdownMenuItem
                       key={speed}
                       onClick={() => handleSpeedChange(speed)}
-                      className={`cursor-pointer ${
-                        playbackSpeed === speed 
-                          ? "bg-primary text-primary-foreground" 
+                      className={`cursor-pointer ${playbackSpeed === speed
+                          ? "bg-primary text-primary-foreground"
                           : "hover:bg-white/10"
-                      }`}
+                        }`}
                     >
                       {speed}x
                     </DropdownMenuItem>
