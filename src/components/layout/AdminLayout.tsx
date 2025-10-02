@@ -84,7 +84,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/genres" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
                     >
                       <Notebook className={`h-5 w-5 transition-colors ${currentPath === "/admin/genres" ? "text-primary" : "text-sidebar-foreground"}`} />
-                      <span className={`transition-colors ${currentPath === "/admin/genres" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>genres</span>
+                      <span className={`transition-colors ${currentPath === "/admin/genres" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Genre Management
+                      </span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
