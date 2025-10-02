@@ -319,7 +319,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Video Element */}
       <video
         ref={videoRef}
-        className="w-full h-auto max-h-[70vh] object-contain cursor-pointer"
+        className={`w-full object-contain cursor-pointer ${
+          isFullscreen ? 'h-screen' : 'h-auto max-h-[70vh]'
+        }`}
         poster={thumbnailUrl}
         crossOrigin="anonymous"
         onClick={togglePlay}
