@@ -26,6 +26,12 @@ export const genreService = {
         return response.data;
     },
 
+    // Search genres
+    searchGenres: async (query: string): Promise<GenreResponse> => {
+        const response = await backendAPI.get<GenreResponse>(`/api/admin/anime/genres/search?q=${query}`);
+        return response.data;
+    },
+
     // Create new genre
     createGenre: async (name: string): Promise<SingleGenreResponse> => {
         const response = await backendAPI.post<SingleGenreResponse>('/api/admin/genres', { name });
