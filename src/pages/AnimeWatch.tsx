@@ -496,6 +496,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAudio } from "@/contexts/AudioContext";
 import { useToast } from "@/hooks/use-toast";
 import { getAnimeById, getAnimeEpisodesBySeason, Anime, Episode } from "@/services/api";
 import { BACKEND_API_Image_URL } from "@/utils/constants";
@@ -522,6 +523,7 @@ export default function AnimeWatch() {
   const [searchParams] = useSearchParams();
   const animeId = parseInt(id || "0");
   const { updateWatchHistory, currentUser } = useAuth();
+  const { pauseBackgroundMusic, resumeBackgroundMusic } = useAudio();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -541,6 +543,16 @@ export default function AnimeWatch() {
   const [isSaved, setIsSaved] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState(0);
   const [watchedEpisodes, setWatchedEpisodes] = useState<number[]>([]);
+
+  // Pause background music when entering watch page
+  useEffect(() => {
+    pauseBackgroundMusic();
+
+    return () => {
+      // Resume background music when leaving watch page
+      resumeBackgroundMusic();
+    };
+  }, [pauseBackgroundMusic, resumeBackgroundMusic]);
 
   // Fetch anime and episode data
   useEffect(() => {

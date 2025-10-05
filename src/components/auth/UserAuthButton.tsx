@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { User, LogIn, Heart, Clock, Settings, LogOut } from "lucide-react";
+import { User, LogIn, Heart, Clock, Settings, LogOut, Volume2 } from "lucide-react";
 
 export function UserAuthButton() {
   const { currentUser, isAdmin, signOut } = useAuth();
@@ -90,6 +90,13 @@ export function UserAuthButton() {
             <DropdownMenuItem>
               <Heart className="mr-2 h-4 w-4" />
               <span>My Favorites</span>
+            </DropdownMenuItem>
+          </Link>
+          
+          <Link to="/audio-settings">
+            <DropdownMenuItem>
+              <Volume2 className="mr-2 h-4 w-4" />
+              <span>Audio Settings</span>
             </DropdownMenuItem>
           </Link>
           

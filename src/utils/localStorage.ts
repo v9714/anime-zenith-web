@@ -15,9 +15,15 @@ export interface LikedContentItem {
   imageUrl: string;
 }
 
+export interface AudioSettings {
+  backgroundMusic: boolean;
+  buttonClickSound: boolean;
+}
+
 // Keys for localStorage
 const WATCH_HISTORY_KEY = "otaku-watchHistory";
 const LIKED_CONTENT_KEY = "otaku-likedContent";
+const AUDIO_SETTINGS_KEY = "otaku-audioSettings";
 
 // Watch History Management
 export const watchHistoryUtils = {
@@ -123,5 +129,34 @@ export const likedContentUtils = {
 
   clear: (): void => {
     localStorage.removeItem(LIKED_CONTENT_KEY);
+  }
+};
+
+// Audio Settings Management
+export const audioSettingsUtils = {
+  get: (): AudioSettings => {
+    try {
+      const stored = localStorage.getItem(AUDIO_SETTINGS_KEY);
+      return stored ? JSON.parse(stored) : { backgroundMusic: true, buttonClickSound: false };
+    } catch (error) {
+      console.error('Error reading audio settings:', error);
+      return { backgroundMusic: true, buttonClickSound: false };
+    }
+  },
+
+  update: (settings: Partial<AudioSettings>): AudioSettings => {
+    try {
+      const current = audioSettingsUtils.get();
+      const updated = { ...current, ...settings };
+      localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(updated));
+      return updated;
+    } catch (error) {
+      console.error('Error updating audio settings:', error);
+      return audioSettingsUtils.get();
+    }
+  },
+
+  clear: (): void => {
+    localStorage.removeItem(AUDIO_SETTINGS_KEY);
   }
 };

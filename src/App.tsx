@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AudioProvider } from "@/contexts/AudioContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DevelopmentNotice } from "@/components/DevelopmentNotice";
 
@@ -20,6 +21,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 import AnimeWatch from "./pages/AnimeWatch";
+import AudioSettings from "./pages/AudioSettings";
 
 // Import admin pages  
 import AdminDashboard from "./pages/Admin";
@@ -46,7 +48,8 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider defaultTheme="dark">
             <AuthProvider>
-              <TooltipProvider>
+              <AudioProvider>
+                <TooltipProvider>
                 {/* Toaster components */}
                 <Toaster />
                 <Sonner />
@@ -62,6 +65,7 @@ const App = () => {
                   <Route path="/search" element={<Search />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/profile" element={<UserProfile />} />
+                  <Route path="/audio-settings" element={<AudioSettings />} />
 
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminDashboard />} />
@@ -73,7 +77,8 @@ const App = () => {
                   {/* Catch-all Route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </TooltipProvider>
+                </TooltipProvider>
+              </AudioProvider>
             </AuthProvider>
           </ThemeProvider>
         </QueryClientProvider>
