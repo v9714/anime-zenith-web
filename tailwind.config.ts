@@ -61,6 +61,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				anime: {
+					primary: 'hsl(var(--anime-primary))',
+					secondary: 'hsl(var(--anime-secondary))',
+					accent: 'hsl(var(--anime-accent))',
+					dark: 'hsl(var(--anime-dark))',
+					light: 'hsl(var(--anime-light))',
+					highlight: 'hsl(var(--anime-highlight))'
 				}
 			},
 			borderRadius: {
