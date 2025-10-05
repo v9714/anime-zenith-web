@@ -47,7 +47,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
       // Play global click sound first, then call the original handler
-      try { playButtonClick(); } catch { }
+      try { playButtonClick(); } catch { /* empty */ }
       onClick?.(e);
     };
 
