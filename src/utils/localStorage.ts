@@ -18,6 +18,8 @@ export interface LikedContentItem {
 export interface AudioSettings {
   backgroundMusic: boolean;
   buttonClickSound: boolean;
+  backgroundMusicVolume: number;
+  buttonClickVolume: number;
 }
 
 // Keys for localStorage
@@ -46,10 +48,10 @@ export const watchHistoryUtils = {
   }): WatchHistoryItem[] => {
     try {
       const current = watchHistoryUtils.get();
-      
+
       // Remove existing entry for this anime to avoid duplicates
       const filtered = current.filter(item => item.animeId !== animeData.animeId);
-      
+
       // Add new entry at the beginning
       const newHistory = [
         {
@@ -58,10 +60,10 @@ export const watchHistoryUtils = {
         },
         ...filtered,
       ];
-      
+
       // Limit to 20 items
       const limited = newHistory.slice(0, 20);
-      
+
       localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(limited));
       return limited;
     } catch (error) {
@@ -137,10 +139,20 @@ export const audioSettingsUtils = {
   get: (): AudioSettings => {
     try {
       const stored = localStorage.getItem(AUDIO_SETTINGS_KEY);
-      return stored ? JSON.parse(stored) : { backgroundMusic: true, buttonClickSound: false };
+      return stored ? JSON.parse(stored) : {
+        backgroundMusic: true,
+        buttonClickSound: false,
+        backgroundMusicVolume: 0.2,
+        buttonClickVolume: 0.3
+      };
     } catch (error) {
       console.error('Error reading audio settings:', error);
-      return { backgroundMusic: true, buttonClickSound: false };
+      return {
+        backgroundMusic: true,
+        buttonClickSound: false,
+        backgroundMusicVolume: 0.2,
+        buttonClickVolume: 0.3
+      };
     }
   },
 

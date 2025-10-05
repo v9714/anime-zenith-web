@@ -4,6 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudio } from '@/contexts/AudioContext';
 import { toast } from 'sonner';
@@ -43,6 +44,18 @@ export default function AudioSettings() {
     });
   };
 
+  const handleBackgroundMusicVolumeChange = (value: number[]) => {
+    const volume = value[0];
+    setLocalSettings((prev) => ({ ...prev, backgroundMusicVolume: volume }));
+    updateSettings({ backgroundMusicVolume: volume });
+  };
+
+  const handleButtonClickVolumeChange = (value: number[]) => {
+    const volume = value[0];
+    setLocalSettings((prev) => ({ ...prev, buttonClickVolume: volume }));
+    updateSettings({ buttonClickVolume: volume });
+  };
+
   if (!currentUser) {
     return null;
   }
@@ -76,55 +89,93 @@ export default function AudioSettings() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Background Music Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-background/50 to-accent/5 border border-border/30 hover:border-anime-primary/30 transition-all duration-300 group">
-              <div className="flex items-center gap-4 flex-1">
-                <div className="p-3 rounded-full bg-anime-primary/10 group-hover:bg-anime-primary/20 transition-colors">
-                  <Music className="w-5 h-5 text-anime-primary" />
+            <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-background/50 to-accent/5 border border-border/30 hover:border-anime-primary/30 transition-all duration-300 group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="p-3 rounded-full bg-anime-primary/10 group-hover:bg-anime-primary/20 transition-colors">
+                    <Music className="w-5 h-5 text-anime-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="background-music"
+                      className="text-base font-semibold cursor-pointer block mb-1"
+                    >
+                      Background Music
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Ambient music that plays throughout your browsing experience
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <Label 
-                    htmlFor="background-music" 
-                    className="text-base font-semibold cursor-pointer block mb-1"
-                  >
-                    Background Music
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Ambient music that plays throughout your browsing experience
-                  </p>
-                </div>
+                <Switch
+                  id="background-music"
+                  checked={localSettings.backgroundMusic}
+                  onCheckedChange={handleToggleBackgroundMusic}
+                  className="ml-4"
+                />
               </div>
-              <Switch
-                id="background-music"
-                checked={localSettings.backgroundMusic}
-                onCheckedChange={handleToggleBackgroundMusic}
-                className="ml-4"
-              />
+
+              {/* Volume Slider */}
+              {localSettings.backgroundMusic && (
+                <div className="space-y-2 pl-16">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm text-muted-foreground">Volume</Label>
+                    <span className="text-sm font-medium">{Math.round(localSettings.backgroundMusicVolume * 100)}%</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.backgroundMusicVolume]}
+                    onValueChange={handleBackgroundMusicVolumeChange}
+                    max={1}
+                    step={0.01}
+                    className="w-full"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Button Click Sound Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-background/50 to-accent/5 border border-border/30 hover:border-anime-secondary/30 transition-all duration-300 group">
-              <div className="flex items-center gap-4 flex-1">
-                <div className="p-3 rounded-full bg-anime-secondary/10 group-hover:bg-anime-secondary/20 transition-colors">
-                  <Volume2 className="w-5 h-5 text-anime-secondary" />
+            <div className="space-y-4 p-4 rounded-lg bg-gradient-to-r from-background/50 to-accent/5 border border-border/30 hover:border-anime-secondary/30 transition-all duration-300 group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="p-3 rounded-full bg-anime-secondary/10 group-hover:bg-anime-secondary/20 transition-colors">
+                    <Volume2 className="w-5 h-5 text-anime-secondary" />
+                  </div>
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="button-click"
+                      className="text-base font-semibold cursor-pointer block mb-1"
+                    >
+                      Button Click Sound
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Play a sound effect when clicking buttons
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <Label 
-                    htmlFor="button-click" 
-                    className="text-base font-semibold cursor-pointer block mb-1"
-                  >
-                    Button Click Sound
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Play a sound effect when clicking buttons
-                  </p>
-                </div>
+                <Switch
+                  id="button-click"
+                  checked={localSettings.buttonClickSound}
+                  onCheckedChange={handleToggleButtonClick}
+                  className="ml-4"
+                />
               </div>
-              <Switch
-                id="button-click"
-                checked={localSettings.buttonClickSound}
-                onCheckedChange={handleToggleButtonClick}
-                className="ml-4"
-              />
+
+              {/* Volume Slider */}
+              {localSettings.buttonClickSound && (
+                <div className="space-y-2 pl-16">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm text-muted-foreground">Volume</Label>
+                    <span className="text-sm font-medium">{Math.round(localSettings.buttonClickVolume * 100)}%</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.buttonClickVolume]}
+                    onValueChange={handleButtonClickVolumeChange}
+                    max={1}
+                    step={0.01}
+                    className="w-full"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Info Note */}

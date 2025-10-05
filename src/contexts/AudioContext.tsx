@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { audioSettingsUtils, AudioSettings } from '@/utils/localStorage';
+import { BACKEND_API_BASE_URL } from '@/utils/constants';
 
 interface AudioContextType {
   settings: AudioSettings;
@@ -15,20 +16,20 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<AudioSettings>(audioSettingsUtils.get());
   const [isBackgroundMusicPlaying, setIsBackgroundMusicPlaying] = useState(false);
-  
+
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
   const buttonClickSoundRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize audio elements
   useEffect(() => {
     // Background music
-    backgroundMusicRef.current = new Audio('http://localhost:8081/music/ui/click.wav');
+    backgroundMusicRef.current = new Audio(`${BACKEND_API_BASE_URL}/music/ui/theme.mp3`);
     backgroundMusicRef.current.loop = true;
-    backgroundMusicRef.current.volume = 0.3;
+    backgroundMusicRef.current.volume = settings.backgroundMusicVolume;
 
     // Button click sound
-    buttonClickSoundRef.current = new Audio('http://localhost:8081/music/ui/theme.mp3');
-    buttonClickSoundRef.current.volume = 0.5;
+    buttonClickSoundRef.current = new Audio(`${BACKEND_API_BASE_URL}/music/ui/click.mp3`);
+    buttonClickSoundRef.current.volume = settings.buttonClickVolume;
 
     return () => {
       if (backgroundMusicRef.current) {
@@ -55,6 +56,16 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateSettings = useCallback((newSettings: Partial<AudioSettings>) => {
     const updated = audioSettingsUtils.update(newSettings);
     setSettings(updated);
+
+    // Handle background music volume
+    if (newSettings.backgroundMusicVolume !== undefined && backgroundMusicRef.current) {
+      backgroundMusicRef.current.volume = newSettings.backgroundMusicVolume;
+    }
+
+    // Handle button click volume
+    if (newSettings.buttonClickVolume !== undefined && buttonClickSoundRef.current) {
+      buttonClickSoundRef.current.volume = newSettings.buttonClickVolume;
+    }
 
     // Handle background music toggle
     if (newSettings.backgroundMusic !== undefined) {
