@@ -8,11 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
 import { Heart, Clock, Film, Video } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAudio } from "@/contexts/AudioContext";
 
 export default function UserProfile() {
   const { currentUser, watchHistory, likedContent, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState("history");
-  
+  const { playButtonClick } = useAudio();
+
   if (!currentUser) {
     return (
       <Layout>
@@ -48,10 +50,10 @@ export default function UserProfile() {
           {/* Tabs Navigation */}
           <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="grid grid-cols-2 w-full max-w-md">
-              <TabsTrigger value="history" className="flex items-center gap-2">
+              <TabsTrigger value="history" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Clock className="h-4 w-4" /> Watch History
               </TabsTrigger>
-              <TabsTrigger value="favorites" className="flex items-center gap-2">
+              <TabsTrigger value="favorites" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Heart className="h-4 w-4" /> Favorites
               </TabsTrigger>
             </TabsList>
@@ -65,9 +67,9 @@ export default function UserProfile() {
                     <Link to={`/anime/${item.animeId}`} key={`${item.animeId}-${item.lastWatched}`}>
                       <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
                         <div className="aspect-video relative">
-                          <LazyImage 
-                            src={item.imageUrl} 
-                            alt={item.title} 
+                          <LazyImage
+                            src={item.imageUrl}
+                            alt={item.title}
                             className="object-cover"
                           />
                           {item.episodeNumber && (
@@ -106,15 +108,15 @@ export default function UserProfile() {
               {hasLikedContent ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {likedContent.map((item) => (
-                    <Link 
-                      to={item.type === "anime" ? `/anime/${item.id}` : `/episodes/${item.id}`} 
+                    <Link
+                      to={item.type === "anime" ? `/anime/${item.id}` : `/episodes/${item.id}`}
                       key={`${item.type}-${item.id}`}
                     >
                       <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
                         <div className="aspect-video relative">
-                          <LazyImage 
-                            src={item.imageUrl} 
-                            alt={item.title} 
+                          <LazyImage
+                            src={item.imageUrl}
+                            alt={item.title}
                             className="object-cover"
                           />
                           <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
@@ -162,6 +164,6 @@ export default function UserProfile() {
           )}
         </div>
       </div>
-    </Layout>
+    </Layout >
   );
 }

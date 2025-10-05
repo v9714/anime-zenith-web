@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAudio } from "@/contexts/AudioContext";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "./AuthModal";
 import { 
@@ -16,6 +17,7 @@ import { User, LogIn, Heart, Clock, Settings, LogOut, Volume2 } from "lucide-rea
 
 export function UserAuthButton() {
   const { currentUser, isAdmin, signOut } = useAuth();
+  const { playButtonClick } = useAudio();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authView, setAuthView] = useState<"signin" | "signup">("signin");
 
@@ -72,28 +74,28 @@ export function UserAuthButton() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           
-          <Link to="/profile">
+          <Link to="/profile" onClick={playButtonClick}>
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               <span>My Profile</span>
             </DropdownMenuItem>
           </Link>
           
-          <Link to="/profile?tab=history">
+          <Link to="/profile?tab=history" onClick={playButtonClick}>
             <DropdownMenuItem>
               <Clock className="mr-2 h-4 w-4" />
               <span>Watch History</span>
             </DropdownMenuItem>
           </Link>
           
-          <Link to="/profile?tab=favorites">
+          <Link to="/profile?tab=favorites" onClick={playButtonClick}>
             <DropdownMenuItem>
               <Heart className="mr-2 h-4 w-4" />
               <span>My Favorites</span>
             </DropdownMenuItem>
           </Link>
           
-          <Link to="/audio-settings">
+          <Link to="/audio-settings" onClick={playButtonClick}>
             <DropdownMenuItem>
               <Volume2 className="mr-2 h-4 w-4" />
               <span>Audio Settings</span>
@@ -104,7 +106,7 @@ export function UserAuthButton() {
           
           {isAdmin && (
             <>
-              <Link to="/admin">
+              <Link to="/admin" onClick={playButtonClick}>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Admin Dashboard</span>
@@ -114,7 +116,7 @@ export function UserAuthButton() {
             </>
           )}
           
-          <DropdownMenuItem onClick={signOut}>
+          <DropdownMenuItem onClick={() => { playButtonClick(); signOut(); }}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Sign Out</span>
           </DropdownMenuItem>

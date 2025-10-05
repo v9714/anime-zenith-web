@@ -9,8 +9,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SITE_NAME, ROUTES } from "@/utils/constants";
 import { UserAuthButton } from "@/components/auth/UserAuthButton";
 import { cn } from "@/lib/utils";
+import { useAudio } from "@/contexts/AudioContext";
 
 export function Header() {
+  const { playButtonClick } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -45,7 +47,7 @@ export function Header() {
 
   // Transparent/absolute on top, solid bg with blur on scroll
   return (
-    <header 
+    <header
       className={cn(
         "fixed top-0 left-0 z-40 w-full transition-all duration-500",
         isScrolled
@@ -56,17 +58,18 @@ export function Header() {
     >
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6 md:gap-10">
-          <Link to={ROUTES.home} className="flex items-center space-x-2">
+          <Link to={ROUTES.home} className="flex items-center space-x-2" onClick={playButtonClick}>
             <span className="inline-block font-heading font-bold text-xl md:text-2xl bg-gradient-to-r from-primary via-anime-secondary to-anime-accent bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
               {SITE_NAME}
             </span>
           </Link>
-          
+
           <nav className="hidden md:flex gap-6">
             {menuItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
+                onClick={playButtonClick}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 {item.name}
@@ -97,9 +100,9 @@ export function Header() {
               </Button>
             )}
           </div>
-          
+
           <ThemeToggle />
-          
+
           <UserAuthButton />
 
           <Sheet>
@@ -111,7 +114,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[270px] sm:w-[300px]">
               <div className="px-2">
-                <Link to={ROUTES.home} className="flex items-center pb-6 pt-4">
+                <Link to={ROUTES.home} className="flex items-center pb-6 pt-4" onClick={playButtonClick}>
                   <span className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-anime-secondary bg-clip-text text-transparent">
                     {SITE_NAME}
                   </span>
@@ -137,6 +140,7 @@ export function Header() {
                     <Link
                       key={item.name}
                       to={item.path}
+                      onClick={playButtonClick}
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent hover:bg-opacity-10"
                     >
                       <item.icon className="h-4 w-4" />
@@ -145,6 +149,7 @@ export function Header() {
                   ))}
                   <Link
                     to="/profile"
+                    onClick={playButtonClick}
                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent hover:bg-opacity-10"
                   >
                     <User className="h-4 w-4" />
