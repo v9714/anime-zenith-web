@@ -4,36 +4,39 @@
 
 @layer base {
   :root {
+    /* ===== BACKGROUND & SURFACE COLORS ===== */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 265 84% 63%; /* Purple */
+    /* ===== BRAND COLORS ===== */
+    --primary: 265 84% 63%; /* Purple - Main brand color */
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 295 84% 60%; /* Pink */
+    --secondary: 295 84% 60%; /* Pink - Secondary brand color */
     --secondary-foreground: 0 0% 100%;
+    --accent: 24 94% 53%; /* Orange - Accent/CTA color */
+    --accent-foreground: 0 0% 100%;
 
+    /* ===== NEUTRAL COLORS ===== */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 24 94% 53%; /* Orange */
-    --accent-foreground: 0 0% 100%;
-
+    /* ===== SEMANTIC COLORS ===== */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
+    /* ===== FORM CONTROLS ===== */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 265 84% 63%;
 
+    /* ===== LAYOUT ===== */
     --radius: 0.5rem;
 
+    /* ===== SIDEBAR ===== */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 265 84% 63%;
@@ -42,37 +45,43 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* ===== CUSTOM HOVER/ACTIVE STATES ===== */
+    --hover-opacity: 0.9;
+    --active-opacity: 0.8;
   }
 
   .dark {
+    /* ===== BACKGROUND & SURFACE COLORS ===== */
     --background: 224 19% 14%; /* Dark blue/black */
     --foreground: 210 40% 98%;
-
     --card: 224 19% 14%;
     --card-foreground: 210 40% 98%;
-
     --popover: 224 19% 14%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 265 84% 63%; /* Purple */
+    /* ===== BRAND COLORS ===== */
+    --primary: 265 84% 63%; /* Purple - Main brand color */
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 295 84% 60%; /* Pink */
+    --secondary: 295 84% 60%; /* Pink - Secondary brand color */
     --secondary-foreground: 0 0% 100%;
+    --accent: 24 94% 53%; /* Orange - Accent/CTA color */
+    --accent-foreground: 0 0% 100%;
 
+    /* ===== NEUTRAL COLORS ===== */
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 24 94% 53%; /* Orange */
-    --accent-foreground: 0 0% 100%;
-
+    /* ===== SEMANTIC COLORS ===== */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+    /* ===== FORM CONTROLS ===== */
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 265 84% 63%;
     
+    /* ===== SIDEBAR ===== */
     --sidebar-background: 224 19% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 265 84% 63%;
@@ -81,6 +90,10 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* ===== CUSTOM HOVER/ACTIVE STATES ===== */
+    --hover-opacity: 0.85;
+    --active-opacity: 0.7;
   }
 
   /* Custom Scrollbars */

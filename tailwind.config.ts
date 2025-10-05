@@ -61,14 +61,6 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				anime: {
-					primary: '#8B5CF6', // Purple
-					secondary: '#D946EF', // Pink
-					accent: '#F97316', // Orange
-					dark: '#1A1F2C', // Dark blue/black
-					light: '#D6BCFA', // Light purple
-					highlight: '#0EA5E9' // Bright blue
 				}
 			},
 			borderRadius: {
