@@ -87,7 +87,11 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
     resolver: zodResolver(animeFormSchema),
     defaultValues: {
       title: anime?.title || "",
-      alternativeTitles: anime?.alternativeTitles || [],
+      alternativeTitles: Array.isArray(anime?.alternativeTitles) 
+        ? anime.alternativeTitles 
+        : (typeof anime?.alternativeTitles === 'string' 
+          ? JSON.parse(anime.alternativeTitles) 
+          : []),
       description: anime?.description || "",
       // genres: anime?.genres?.map(g => g.mal_id) || [],
       genres: Array.isArray(anime?.genres) ? anime.genres.map(g => g.mal_id) : [],
@@ -128,15 +132,15 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
       formData.append('genres[]', genreId.toString());
     });
 
+    // Add alternative titles as array
+    data.alternativeTitles.forEach(title => {
+      formData.append('alternativeTitles[]', title);
+    });
+
     // Add optional fields if they exist
     if (data.rating) formData.append('rating', data.rating.toString());
     if (data.studio) formData.append('studio', data.studio);
     if (data.episodeDuration) formData.append('episodeDuration', data.episodeDuration);
-
-    // Add alternative titles as JSON string
-    if (data.alternativeTitles.length > 0) {
-      formData.append('alternativeTitles', JSON.stringify(data.alternativeTitles));
-    }
 
     // Handle cover image
     if (data.coverImageType === 'upload' && data.coverImageFile) {
