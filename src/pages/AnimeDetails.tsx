@@ -271,11 +271,9 @@ export default function AnimeDetails() {
             {/* Genres */}
             <div className="flex flex-wrap gap-2 mt-4">
               {anime.genres?.map((genre, inx) => (
-                <Link key={inx} to={`/genre/${genre.mal_id}`}>
-                  <Badge variant="outline" className="hover:bg-primary hover:text-primary-foreground">
-                    {genre.name}
-                  </Badge>
-                </Link>
+                <Badge key={inx} variant="outline">
+                  {genre.name}
+                </Badge>
               ))}
             </div>
 
