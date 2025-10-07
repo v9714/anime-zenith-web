@@ -123,8 +123,10 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
     formData.append('votesCount', data.votesCount.toString());
     formData.append('isDeleted', data.isDeleted.toString());
 
-    // Add genres
-    formData.append('genres', JSON.stringify(data.genres));
+    // Add genres as array
+    data.genres.forEach(genreId => {
+      formData.append('genres[]', genreId.toString());
+    });
 
     // Add optional fields if they exist
     if (data.rating) formData.append('rating', data.rating.toString());

@@ -81,7 +81,7 @@ export function GenreMultiSelect({ value, onChange, className }: GenreMultiSelec
                 className="h-9"
               />
             </div>
-            <ScrollArea className="max-h-64">
+            <ScrollArea className="h-64">
               <div className="p-1">
                 {isLoading ? (
                   <div className="py-6 text-center text-sm text-muted-foreground">
