@@ -176,7 +176,7 @@ const AdminGenres = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {genresData?.data.map((genre) => (
+                  {(genresData?.data || []).map((genre) => (
                     <TableRow key={genre.id}>
                       <TableCell>{genre.id}</TableCell>
                       <TableCell>{genre.name}</TableCell>
