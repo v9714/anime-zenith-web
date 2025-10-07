@@ -12,9 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { X, Upload, Check } from "lucide-react";
+import { X, Upload } from "lucide-react";
+import { GenreMultiSelect } from "./GenreMultiSelect";
 import { Anime } from "@/services/api";
 import dropdownOptions from "@/data/dropdown-options.json";
 import { useToast } from "@/hooks/use-toast";
@@ -81,29 +80,8 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   );
   const [alternativeTitleInput, setAlternativeTitleInput] = useState("");
   const [deleteImageLoading, setDeleteImageLoading] = useState<string>("");
-  const [genreSearch, setGenreSearch] = useState("");
-  const [genreOptions, setGenreOptions] = useState<Genre[]>([]);
-  const [genreOpen, setGenreOpen] = useState(false);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch genres on component mount and when search changes
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        if (genreSearch) {
-          const response = await genreService.searchGenres(genreSearch);
-          setGenreOptions(response.data);
-        } else {
-          const response = await genreService.getAllGenres();
-          setGenreOptions(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching genres:", error);
-      }
-    };
-    fetchGenres();
-  }, [genreSearch]);
 
   const form = useForm<AnimeFormValues>({
     resolver: zodResolver(animeFormSchema),
@@ -307,78 +285,14 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
               control={form.control}
               name="genres"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Genres *</FormLabel>
-                  <Popover open={genreOpen} onOpenChange={setGenreOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "w-full justify-between",
-                            !field.value?.length && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value?.length
-                            ? `${field.value.length} genre(s) selected`
-                            : "Select genres"}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput
-                          placeholder="Search genres..."
-                          value={genreSearch}
-                          onValueChange={setGenreSearch}
-                        />
-                        <CommandEmpty>No genre found.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-auto">
-                          {/* {genreOptions.map((genre) => (
-                            <CommandItem
-                              key={genre.id}
-                              value={genre.name}
-                              onSelect={() => {
-                                const currentValues = field.value || [];
-                                const newValues = currentValues.includes(genre.id)
-                                  ? currentValues.filter((id) => id !== genre.id)
-                                  : [...currentValues, genre.id];
-                                field.onChange(newValues);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  field.value?.includes(genre.id)
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {genre.name}
-                            </CommandItem>
-                          ))} */}
-                        </CommandGroup>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {field.value?.map((genreId) => {
-                      const genre = genreOptions.find((g) => g.id === genreId);
-                      return genre ? (
-                        <Badge key={genreId} variant="secondary" className="flex items-center gap-1">
-                          {genre.name}
-                          <X
-                            className="h-3 w-3 cursor-pointer"
-                            onClick={() => {
-                              const newValues = (field.value || []).filter((id) => id !== genreId);
-                              field.onChange(newValues);
-                            }}
-                          />
-                        </Badge>
-                      ) : null;
-                    })}
-                  </div>
+                  <FormControl>
+                    <GenreMultiSelect
+                      value={field.value || []}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
