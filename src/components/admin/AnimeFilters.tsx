@@ -42,9 +42,9 @@ export function AnimeFilters({ searchQuery, filters, onSearchChange, onFilterCha
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Status</SelectItem>
-              <SelectItem value="AIRING">Airing</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-              <SelectItem value="UPCOMING">Upcoming</SelectItem>
+              <SelectItem value="ONGOING">ONGOING</SelectItem>
+              <SelectItem value="COMPLETED">COMPLETED</SelectItem>
+              <SelectItem value="UPCOMING">UPCOMING</SelectItem>
             </SelectContent>
           </Select>
 
