@@ -19,6 +19,8 @@ import { episodeService, type Episode, type EpisodeFilters as EpisodeFiltersType
 import { toast } from "@/components/ui/use-toast";
 
 const AdminEpisodes = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>();
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -29,10 +31,27 @@ const AdminEpisodes = () => {
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [filters, setFilters] = useState<EpisodeFiltersType>({});
 
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const fetchEpisodes = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await episodeService.getPaginatedEpisodes(currentPage, 20, filters);
+      const response = await episodeService.getPaginatedEpisodes(
+        currentPage,
+        20,
+        {
+          search: searchQuery || undefined,
+          ...filters
+        }
+      );
       if (response.success) {
         setEpisodes(response.data.episodes);
         setTotalPages(response.data.totalPages);
@@ -50,7 +69,7 @@ const AdminEpisodes = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [currentPage, searchQuery, filters]);
 
   useEffect(() => {
     fetchEpisodes();
@@ -60,9 +79,16 @@ const AdminEpisodes = () => {
     setCurrentPage(page);
   };
 
-  const handleFiltersChange = (newFilters: EpisodeFiltersType) => {
-    setFilters(newFilters);
+  const handleFilterChange = (key: keyof EpisodeFiltersType, value: string | number | undefined) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
     setCurrentPage(1);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchInput(value);
   };
 
   const handleAddEpisode = async (episodeData: any) => {
@@ -182,18 +208,20 @@ const AdminEpisodes = () => {
                   }
                 </DialogDescription>
               </DialogHeader>
-               <EpisodeForm
-                 episode={selectedEpisode}
-                 onSubmit={handleAddEpisode}
-                 creating={creating}
-               />
+              <EpisodeForm
+                episode={selectedEpisode}
+                onSubmit={handleAddEpisode}
+                creating={creating}
+              />
             </DialogContent>
           </Dialog>
         </div>
 
         <EpisodeFilters
+          searchQuery={searchInput}
           filters={filters}
-          onFiltersChange={handleFiltersChange}
+          onSearchChange={handleSearch}
+          onFilterChange={handleFilterChange}
           loading={loading}
         />
 
