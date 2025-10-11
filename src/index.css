@@ -2,149 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
 @layer base {
   :root {
-    /* ===== BACKGROUND & SURFACE COLORS ===== */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    /* ===== BRAND COLORS ===== */
-    --primary: 265 84% 63%; /* Purple - Main brand color */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 295 84% 60%; /* Pink - Secondary brand color */
-    --secondary-foreground: 0 0% 100%;
-    --accent: 24 94% 53%; /* Orange - Accent/CTA color */
+    --card: 240 10% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 263 70% 50%;
     --accent-foreground: 0 0% 100%;
 
-    /* ===== NEUTRAL COLORS ===== */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    /* ===== SEMANTIC COLORS ===== */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    /* ===== FORM CONTROLS ===== */
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 265 84% 63%;
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
+    --ring: 263 70% 50%;
 
-    /* ===== LAYOUT ===== */
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    /* ===== SIDEBAR ===== */
     --sidebar-background: 0 0% 98%;
+
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 265 84% 63%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
     --sidebar-primary-foreground: 0 0% 98%;
+
     --sidebar-accent: 240 4.8% 95.9%;
+
     --sidebar-accent-foreground: 240 5.9% 10%;
+
     --sidebar-border: 220 13% 91%;
+
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* ===== ANIME THEME COLORS (for gradients & special effects) ===== */
-    --anime-primary: 265 84% 63%; /* Purple */
-    --anime-secondary: 295 84% 60%; /* Pink */
-    --anime-accent: 24 94% 53%; /* Orange */
-    --anime-dark: 224 19% 14%; /* Dark blue/black */
-    --anime-light: 265 84% 85%; /* Light purple */
-    --anime-highlight: 199 89% 48%; /* Bright blue */
-
-    /* ===== CUSTOM HOVER/ACTIVE STATES ===== */
-    --hover-opacity: 0.9;
-    --active-opacity: 0.8;
   }
 
   .dark {
-    /* ===== BACKGROUND & SURFACE COLORS ===== */
-    --background: 224 19% 14%; /* Dark blue/black */
-    --foreground: 210 40% 98%;
-    --card: 224 19% 14%;
-    --card-foreground: 210 40% 98%;
-    --popover: 224 19% 14%;
-    --popover-foreground: 210 40% 98%;
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
 
-    /* ===== BRAND COLORS ===== */
-    --primary: 265 84% 63%; /* Purple - Main brand color */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 263 70% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 295 84% 60%; /* Pink - Secondary brand color */
-    --secondary-foreground: 0 0% 100%;
-    --accent: 24 94% 53%; /* Orange - Accent/CTA color */
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 3.9%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 263 70% 50%;
     --accent-foreground: 0 0% 100%;
 
-    /* ===== NEUTRAL COLORS ===== */
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    /* ===== SEMANTIC COLORS ===== */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    /* ===== FORM CONTROLS ===== */
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 265 84% 63%;
-    
-    /* ===== SIDEBAR ===== */
-    --sidebar-background: 224 19% 10%;
+    --border: 240 5% 90%;
+    --input: 240 5% 90%;
+    --ring: 263 70% 50%;
+    --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 265 84% 63%;
+    --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* ===== ANIME THEME COLORS (for gradients & special effects) ===== */
-    --anime-primary: 265 84% 63%; /* Purple */
-    --anime-secondary: 295 84% 60%; /* Pink */
-    --anime-accent: 24 94% 53%; /* Orange */
-    --anime-dark: 224 19% 10%; /* Darker blue/black */
-    --anime-light: 265 84% 85%; /* Light purple */
-    --anime-highlight: 199 89% 48%; /* Bright blue */
-
-    /* ===== CUSTOM HOVER/ACTIVE STATES ===== */
-    --hover-opacity: 0.85;
-    --active-opacity: 0.7;
-  }
-
-  /* Custom Scrollbars */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-  }
-
-  body::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.8);
-    border-radius: 5px;
-  }
-
-  .carousel::-webkit-scrollbar-thumb {
-    background: hsl(var(--secondary) / 0.8);
-    border-radius: 5px;
-  }
-
-  .sidebar::-webkit-scrollbar-thumb {
-    background: hsl(var(--accent) / 0.8);
-    border-radius: 5px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
-  }
-
-  /* Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted)) hsl(var(--background));
   }
 }
 
@@ -155,20 +101,5 @@
 
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-/* Container Width */
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
   }
 }

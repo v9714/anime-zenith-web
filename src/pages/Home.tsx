@@ -34,19 +34,19 @@ export default function Home() {
         // Fetch critical data first
         const topResponse = await getTopAnime(1, 20);
         const topResults = topResponse.data;
-        
+
         if (topResults && topResults.length > 0) {
           // Preload hero images for LCP improvement
           const criticalImages = topResults.slice(0, 5).map(
             anime => anime?.coverImage || anime?.bannerImage
           );
           preloadCriticalImages(criticalImages);
-          
+
           // Update state for top anime
           setFeaturedAnime(topResults.slice(0, 5));
-          setTopAnime(topResults.slice(5, 15));
+          setTopAnime(topResults.slice(0, 15));
         }
-        
+
         // Defer less important data fetching
         if (typeof window !== 'undefined') {
           setTimeout(async () => {
@@ -94,15 +94,15 @@ export default function Home() {
   const renderSkeleton = () => (
     <>
       {/* Banner Skeleton - preset dimensions to prevent CLS */}
-      <div 
-        className="w-full bg-muted/30 animate-pulse" 
-        style={{ 
+      <div
+        className="w-full bg-muted/30 animate-pulse"
+        style={{
           height: "500px",
-          contain: 'layout paint' 
-        }} 
+          contain: 'layout paint'
+        }}
         aria-label="Loading hero content"
       ></div>
-      
+
       {/* Carousel Skeletons - fixed dimensions for layout stability */}
       <div className="container py-6">
         <Skeleton className="h-8 w-48 mb-4" />
@@ -132,26 +132,28 @@ export default function Home() {
             <meta itemProp="url" content="https://Otaku.com/" />
             <meta itemProp="name" content="Otaku - Your Ultimate Anime Streaming Platform" />
           </div>
-          
+
           {/* Hero Slider - High priority content, optimized for LCP */}
           {featuredAnime.length > 0 && (
-            <HeroSlider 
-              animes={featuredAnime} 
-              onSlideChange={handleSlideChange}
-            />
+            <div className="mb-8 md:mb-12">
+              <HeroSlider
+                animes={featuredAnime}
+                onSlideChange={handleSlideChange}
+              />
+            </div>
           )}
-          
+
           {/* Top Anime Section with overflow styling */}
           <div>
             {topAnime.length > 0 && (
-              <AnimeCarousel 
-                title="Top Anime" 
-                animes={topAnime} 
-                link="/anime?sort=top" 
+              <AnimeCarousel
+                title="Top Anime"
+                animes={topAnime}
+                link="/anime?sort=top"
               />
             )}
           </div>
-          
+
           {/* Sidebar Ad and Content */}
           <div className="container py-6">
             <div className="flex flex-col md:flex-row gap-6">
@@ -164,7 +166,7 @@ export default function Home() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {trendingAnime.slice(0, 8).map((anime) => (
                         <div key={anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
-                          <LazyImage 
+                          <LazyImage
                             src={getImageUrl(anime?.coverImage || anime?.bannerImage)}
                             alt={anime.title}
                             width="64"
@@ -191,10 +193,10 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* In-content Ad */}
                 <AdBanner className="h-[250px] mb-8" slot="in-content" />
-                
+
                 {/* Seasonal Anime */}
                 {seasonalAnime.length > 0 ? (
                   <div>
@@ -202,7 +204,7 @@ export default function Home() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {seasonalAnime.slice(0, 8).map((anime) => (
                         <div key={anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
-                          <LazyImage 
+                          <LazyImage
                             src={getImageUrl(anime.coverImage || anime.bannerImage)}
                             alt={anime.title}
                             width="64"
@@ -230,23 +232,23 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              
+
               {/* Sidebar - with fixed height to avoid CLS */}
               <div className="md:w-1/4">
                 <AdBanner className="h-[600px]" slot="sidebar" />
               </div>
             </div>
           </div>
-          
+
           {/* More Recommended Anime - Deferred loading */}
           {seasonalAnime.length > 0 && (
-            <AnimeCarousel 
-              title="Seasonal Highlights" 
-              animes={seasonalAnime.slice(0, 10)} 
-              link="/seasonal" 
+            <AnimeCarousel
+              title="Seasonal Highlights"
+              animes={seasonalAnime.slice(0, 10)}
+              link="/seasonal"
             />
           )}
-          
+
           {/* Bottom Banner Ad */}
           <div className="container py-6">
             <AdBanner className="h-[90px]" slot="bottom-banner" />

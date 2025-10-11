@@ -75,7 +75,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full h-[60vh] flex items-stretch overflow-hidden rounded-2xl shadow-2xl group/slider"
+      className="relative w-full h-[60vh] sm:h-[65vh] md:h-[65vh] flex items-stretch overflow-hidden rounded-2xl shadow-2xl group/slider"
     >
       {/* Background with parallax effect and smooth transitions */}
       <div className="absolute inset-0 z-0 transition-all duration-1000 ease-out">
@@ -97,17 +97,17 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
       {/* Content - Fixed positioning to prevent movement */}
       <div className="absolute inset-0 flex flex-col">
         {/* Main content area with fixed positioning */}
-        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-center px-6 md:px-12 lg:px-16 py-8 md:py-12">
+        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-center px-4 sm:px-6 md:px-10 lg:px-12 py-4 sm:py-6 md:py-8 pb-24 sm:pb-28 md:pb-24">
           {/* LEFT: anime info panel - Cinematic text presentation */}
-          <div className="w-full md:w-3/5 h-full flex flex-col justify-center pr-0 md:pr-12">
-            <div className="space-y-4 md:space-y-6">
+          <div className="w-full md:w-3/5 h-full flex flex-col justify-start pr-0 ">
+            <div className="space-y-2 sm:space-y-3 md:space-y-4">
               {/* Spotlight badge with glow */}
               <span className="inline-block uppercase tracking-[0.3em] text-xs md:text-sm font-bold text-primary animate-fade-in px-4 py-1.5 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/30 shadow-lg shadow-primary/20" style={{ animationDelay: "0.1s" }}>
                 ✨ #{activeIndex + 1} Spotlight
               </span>
               
               {/* Title with dramatic entrance */}
-              <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight line-clamp-2 min-h-[4rem] md:min-h-[6rem] animate-fade-in drop-shadow-2xl transition-all duration-300 group-hover/slider:text-primary" style={{ animationDelay: "0.2s" }}>
+              <h1 className="font-heading text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight line-clamp-2 min-h-[3rem] sm:min-h-[4rem] md:min-h-[6rem] animate-fade-in drop-shadow-2xl transition-all duration-300 group-hover/slider:text-primary" style={{ animationDelay: "0.2s" }}>
                 {currentAnime?.title}
               </h1>
 
@@ -119,28 +119,28 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               </div>
 
               {/* Synopsis with subtle fade */}
-              <p className="text-sm md:text-base lg:text-lg text-white/95 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[3rem] md:min-h-[4.5rem] animate-fade-in font-medium drop-shadow-lg" style={{ animationDelay: "0.4s" }}>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg text-white/95 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[4.5rem] animate-fade-in font-medium drop-shadow-lg" style={{ animationDelay: "0.4s" }}>
                 {currentAnime?.description}
               </p>
 
               {/* Action buttons with glow effects */}
-              <div className="flex flex-wrap gap-4 pt-4 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+              <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
                 <Button 
                   asChild 
-                  className="rounded-full px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-primary/50 border-2 border-primary/30"
+                  className="rounded-full px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-primary/50 border-2 border-primary/30"
                 >
-                  <Link to={`/anime/${currentAnime?.id}`} className="flex gap-2 items-center">
-                    <Play className="w-5 h-5 fill-current" />
+                  <Link to={`/anime/${currentAnime?.id}`} className="flex gap-1.5 sm:gap-2 items-center">
+                    <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                     Watch Now
                   </Link>
                 </Button>
                 <Button 
                   asChild 
                   variant="outline" 
-                  className="rounded-full border-2 border-white/40 px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-bold bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/60 text-white transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/20"
+                  className="rounded-full border-2 border-white/40 px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg font-bold bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/60 text-white transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/20"
                 >
-                  <Link to={`/anime/${currentAnime?.id}`} className="flex gap-2 items-center">
-                    <Plus className="w-5 h-5" />
+                  <Link to={`/anime/${currentAnime?.id}`} className="flex gap-1.5 sm:gap-2 items-center">
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                     Add to List
                   </Link>
                 </Button>
@@ -166,19 +166,19 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
           </div>
         </div>
 
-        {/* Navigation section - Absolute positioned to stay fixed */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 px-6 md:px-12 lg:px-16 pb-6 md:pb-8">
-          <div className="flex items-center justify-between backdrop-blur-sm bg-black/20 rounded-full px-6 py-3 border border-white/10">
+        {/* Navigation section - Centered and with pointer-events to prevent blocking */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 pb-4 sm:pb-6 md:pb-8 pointer-events-none">
+          <div className="flex items-center justify-between backdrop-blur-sm bg-black/20 rounded-full px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-2 pointer-events-auto">
             {/* Slide indicators with smooth animation */}
-            <div className="flex justify-center gap-3 flex-1">
+            <div className="flex justify-center gap-2 sm:gap-3 flex-1">
               {animes.map((_, index) => (
                 <button
                   key={index}
                   className={cn(
-                    "h-1.5 rounded-full transition-all duration-500 ease-out",
+                    "h-1 sm:h-1.5 rounded-full transition-all duration-500 ease-out",
                     activeIndex === index
-                      ? "bg-primary w-12 shadow-lg shadow-primary/50"
-                      : "bg-white/40 w-8 hover:bg-white/70 hover:w-10"
+                      ? "bg-primary w-8 sm:w-12 shadow-lg shadow-primary/50"
+                      : "bg-white/40 w-6 sm:w-8 hover:bg-white/70 hover:w-7 sm:hover:w-10"
                   )}
                   onClick={() => handleSlideChange(index)}
                   aria-label={`Go to slide ${index + 1}`}
@@ -187,19 +187,19 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
             </div>
 
             {/* Control buttons with glow effects */}
-            <div className="flex gap-3 ml-6 flex-shrink-0">
+            <div className="flex gap-2 sm:gap-3 ml-3 sm:ml-4 md:ml-6 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleAutoplay}
-                className="rounded-full bg-white/10 backdrop-blur-md border-white/30 hover:bg-white/20 hover:border-white/50 text-white w-10 h-10 p-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/30"
+                className="rounded-full bg-white/10 backdrop-blur-md border-white/30 hover:border-white/50 text-white w-8 h-8 sm:w-10 sm:h-10 p-0 transition-all duration-300 hover:scale-110"
                 title={isPlaying ? "Pause slideshow" : "Play slideshow"}
                 aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
               >
                 {isPlaying ? (
-                  <Pause className="w-4 h-4" />
+                  <Pause className="w-3 h-3 sm:w-4 sm:h-4" />
                 ) : (
-                  <Play className="w-4 h-4 fill-current" />
+                  <Play className="w-3 h-3 sm:w-4 sm:h-4 fill-current" />
                 )}
               </Button>
 
@@ -207,11 +207,11 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSlideChange((activeIndex + 1) % animes.length)}
-                className="rounded-full bg-white/10 backdrop-blur-md border-white/30 hover:bg-white/20 hover:border-white/50 text-white w-10 h-10 p-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/30"
+                className="rounded-full bg-white/10 backdrop-blur-md border-white/30 hover:border-white/50 text-white w-8 h-8 sm:w-10 sm:h-10 p-0 transition-all duration-300 hover:scale-110"
                 title="Next slide"
                 aria-label="Next slide"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
