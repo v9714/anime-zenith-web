@@ -1,19 +1,19 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, ChevronRight, Pause } from "lucide-react";
+import { Play, ChevronRight, Pause, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Anime } from "@/services/api";
 import { cn } from "@/lib/utils";
 import { getImageUrl } from "@/utils/commanFunction";
 
-// Simplified metadata item
+// Metadata badge with glass morphism effect
 function MetaItem({ label, value }: { label: string, value?: string | number }) {
   if (!value) return null;
   return (
-    <span className="inline-flex items-center text-xs md:text-sm bg-white/10 rounded-full px-2 py-1 font-medium mr-2 mb-2">
-      <span className="font-semibold text-white/70 pr-1">{label}:</span>
-      <span className="text-white/90">{value}</span>
+    <span className="inline-flex items-center text-xs md:text-sm bg-white/10 backdrop-blur-md rounded-full px-3 py-1.5 font-semibold border border-white/20 transition-all duration-300 hover:bg-white/20 hover:scale-105 hover:border-white/30 shadow-lg">
+      <span className="text-white/80 pr-1.5">{label}:</span>
+      <span className="text-white">{value}</span>
     </span>
   );
 }
@@ -75,91 +75,110 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full h-[50vh] flex items-stretch overflow-hidden bg-gradient-to-r from-primary/20 to-secondary/20 backdrop-blur-sm border border-border/20 rounded-lg"
+      className="relative w-full h-[60vh] flex items-stretch overflow-hidden rounded-2xl shadow-2xl group/slider"
     >
-      {/* Background with optimized gradient and smooth transitions */}
-      <div className="absolute inset-0 z-0 transition-opacity duration-700 ease-in-out">
-        {/* Background image with improved opacity and smooth fade */}
+      {/* Background with parallax effect and smooth transitions */}
+      <div className="absolute inset-0 z-0 transition-all duration-1000 ease-out">
+        {/* Background image with zoom effect on hover */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 rounded-lg transition-all duration-700 ease-in-out"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-out group-hover/slider:scale-105"
           style={{
             backgroundImage: currentAnime
               ? `url(${getImageUrl(currentAnime.coverImage || currentAnime.bannerImage)})`
               : undefined,
           }}
         />
-        {/* Simplified gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/60 rounded-lg" />
+        {/* Cinematic gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/95" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent" />
       </div>
 
       {/* Content - Fixed positioning to prevent movement */}
       <div className="absolute inset-0 flex flex-col">
         {/* Main content area with fixed positioning */}
-        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-center px-6 md:px-8 py-6">
-          {/* LEFT: anime info panel - Fixed height container with smooth animations */}
-          <div className="w-full md:w-1/2 h-full flex flex-col justify-center pr-0 md:pr-8">
-            <div className="space-y-3 animate-fade-in">
-              <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                #{activeIndex + 1} Spotlight
+        <div className="flex-1 relative z-10 flex flex-col md:flex-row items-center px-6 md:px-12 lg:px-16 py-8 md:py-12">
+          {/* LEFT: anime info panel - Cinematic text presentation */}
+          <div className="w-full md:w-3/5 h-full flex flex-col justify-center pr-0 md:pr-12">
+            <div className="space-y-4 md:space-y-6">
+              {/* Spotlight badge with glow */}
+              <span className="inline-block uppercase tracking-[0.3em] text-xs md:text-sm font-bold text-primary animate-fade-in px-4 py-1.5 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/30 shadow-lg shadow-primary/20" style={{ animationDelay: "0.1s" }}>
+                ✨ #{activeIndex + 1} Spotlight
               </span>
-              <h1 className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight line-clamp-2 min-h-[3rem] animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              
+              {/* Title with dramatic entrance */}
+              <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight line-clamp-2 min-h-[4rem] md:min-h-[6rem] animate-fade-in drop-shadow-2xl transition-all duration-300 group-hover/slider:text-primary" style={{ animationDelay: "0.2s" }}>
                 {currentAnime?.title}
               </h1>
 
-              {/* Metadata with responsive display and smooth fade */}
-              <div className="flex flex-wrap items-center min-h-[2rem] animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              {/* Metadata badges with glass morphism */}
+              <div className="flex flex-wrap items-center gap-2 min-h-[2.5rem] animate-fade-in" style={{ animationDelay: "0.3s" }}>
                 {meta.slice(0, 3).map(({ label, value }) => (
                   <MetaItem key={label} label={label} value={value} />
                 ))}
               </div>
 
-              {/* Synopsis with fixed height and smooth fade */}
-              <p className="text-xs md:text-sm text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3.5rem] animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              {/* Synopsis with subtle fade */}
+              <p className="text-sm md:text-base lg:text-lg text-white/95 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[3rem] md:min-h-[4.5rem] animate-fade-in font-medium drop-shadow-lg" style={{ animationDelay: "0.4s" }}>
                 {currentAnime?.description}
               </p>
 
-              {/* Buttons with fixed positioning and smooth fade */}
-              <div className="flex gap-3 pt-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
-                <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white transition-all duration-300 hover:scale-105 hover:shadow-lg">
+              {/* Action buttons with glow effects */}
+              <div className="flex flex-wrap gap-4 pt-4 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+                <Button 
+                  asChild 
+                  className="rounded-full px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-primary/50 border-2 border-primary/30"
+                >
                   <Link to={`/anime/${currentAnime?.id}`} className="flex gap-2 items-center">
-                    <Play className="w-4 h-4" />
-                    Watch
+                    <Play className="w-5 h-5 fill-current" />
+                    Watch Now
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-full border-white/30 px-4 py-2 bg-white/10 hover:bg-anime-primary/20 text-white transition-all duration-300 hover:scale-105">
-                  <Link to={`/anime/${currentAnime?.id}`}>Details</Link>
+                <Button 
+                  asChild 
+                  variant="outline" 
+                  className="rounded-full border-2 border-white/40 px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-bold bg-white/10 backdrop-blur-md hover:bg-white/20 hover:border-white/60 text-white transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/20"
+                >
+                  <Link to={`/anime/${currentAnime?.id}`} className="flex gap-2 items-center">
+                    <Plus className="w-5 h-5" />
+                    Add to List
+                  </Link>
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: anime image with fixed dimensions and hover effects */}
-          <div className="hidden md:flex w-1/2 h-full justify-center items-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <div className="relative w-48 h-64 lg:w-56 lg:h-80 flex-shrink-0 group">
+          {/* RIGHT: anime poster with cinematic effects */}
+          <div className="hidden md:flex w-2/5 h-full justify-center items-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <div className="relative w-56 h-80 lg:w-64 lg:h-96 flex-shrink-0 group/poster">
+              {/* Poster image */}
               <img
                 src={getImageUrl(currentAnime?.coverImage || currentAnime?.bannerImage)}
                 alt={currentAnime?.title}
-                className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg transition-all duration-500 ease-out group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-anime-primary/30"
+                className="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-2xl transition-all duration-700 ease-out group-hover/poster:scale-110 group-hover/poster:rotate-2 group-hover/poster:shadow-[0_0_40px_rgba(var(--primary),0.6)]"
                 loading="lazy"
               />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-anime-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {/* Glow overlay */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover/poster:opacity-100 transition-opacity duration-700" />
+              {/* Border glow */}
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-primary via-accent to-secondary opacity-0 group-hover/poster:opacity-30 blur-xl transition-opacity duration-700 -z-10" />
             </div>
           </div>
         </div>
 
         {/* Navigation section - Absolute positioned to stay fixed */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 px-6 md:px-8 pb-4">
-          <div className="flex items-center justify-between">
-            {/* Slide indicators */}
-            <div className="flex justify-center gap-2 flex-1">
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-6 md:px-12 lg:px-16 pb-6 md:pb-8">
+          <div className="flex items-center justify-between backdrop-blur-sm bg-black/20 rounded-full px-6 py-3 border border-white/10">
+            {/* Slide indicators with smooth animation */}
+            <div className="flex justify-center gap-3 flex-1">
               {animes.map((_, index) => (
                 <button
                   key={index}
                   className={cn(
-                    "w-2 h-2 rounded-full transition-all",
+                    "h-1.5 rounded-full transition-all duration-500 ease-out",
                     activeIndex === index
-                      ? "bg-anime-secondary w-4"
-                      : "bg-white/30 hover:bg-white/60"
+                      ? "bg-primary w-12 shadow-lg shadow-primary/50"
+                      : "bg-white/40 w-8 hover:bg-white/70 hover:w-10"
                   )}
                   onClick={() => handleSlideChange(index)}
                   aria-label={`Go to slide ${index + 1}`}
@@ -167,20 +186,20 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               ))}
             </div>
 
-            {/* Control buttons - Fixed positioning */}
-            <div className="flex gap-2 ml-4 flex-shrink-0">
+            {/* Control buttons with glow effects */}
+            <div className="flex gap-3 ml-6 flex-shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleAutoplay}
-                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white w-8 h-8 p-0"
+                className="rounded-full bg-white/10 backdrop-blur-md border-white/30 hover:bg-white/20 hover:border-white/50 text-white w-10 h-10 p-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/30"
                 title={isPlaying ? "Pause slideshow" : "Play slideshow"}
                 aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
               >
                 {isPlaying ? (
                   <Pause className="w-4 h-4" />
                 ) : (
-                  <Play className="w-4 h-4" />
+                  <Play className="w-4 h-4 fill-current" />
                 )}
               </Button>
 
@@ -188,7 +207,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => handleSlideChange((activeIndex + 1) % animes.length)}
-                className="rounded-full bg-black/40 border-white/20 hover:bg-black/60 text-white w-8 h-8 p-0"
+                className="rounded-full bg-white/10 backdrop-blur-md border-white/30 hover:bg-white/20 hover:border-white/50 text-white w-10 h-10 p-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-white/30"
                 title="Next slide"
                 aria-label="Next slide"
               >
