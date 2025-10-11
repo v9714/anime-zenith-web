@@ -45,16 +45,19 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Transparent/absolute on top, solid bg with blur on scroll
+  // Transparent/absolute on top, solid bg with smooth fade on scroll
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 z-40 w-full transition-all duration-500",
+        "fixed top-0 left-0 z-40 w-full transition-all duration-300 ease-in-out",
         isScrolled
           ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-md"
           : "bg-transparent"
       )}
-      style={{ pointerEvents: "auto" }}
+      style={{ 
+        pointerEvents: "auto",
+        transition: "background-color 0.3s ease"
+      }}
     >
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6 md:gap-10">

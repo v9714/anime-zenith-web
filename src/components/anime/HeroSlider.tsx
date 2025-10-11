@@ -75,13 +75,13 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full h-[350px] sm:h-[380px] md:h-[400px] flex items-stretch overflow-hidden bg-gradient-to-r from-primary/20 to-secondary/20 backdrop-blur-sm border border-border/20 rounded-lg"
+      className="relative w-full h-[50vh] flex items-stretch overflow-hidden bg-gradient-to-r from-primary/20 to-secondary/20 backdrop-blur-sm border border-border/20 rounded-lg"
     >
-      {/* Background with optimized gradient */}
-      <div className="absolute inset-0 z-0">
-        {/* Background image with improved opacity */}
+      {/* Background with optimized gradient and smooth transitions */}
+      <div className="absolute inset-0 z-0 transition-opacity duration-700 ease-in-out">
+        {/* Background image with improved opacity and smooth fade */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 rounded-lg"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 rounded-lg transition-all duration-700 ease-in-out"
           style={{
             backgroundImage: currentAnime
               ? `url(${getImageUrl(currentAnime.coverImage || currentAnime.bannerImage)})`
@@ -96,52 +96,53 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
       <div className="absolute inset-0 flex flex-col">
         {/* Main content area with fixed positioning */}
         <div className="flex-1 relative z-10 flex flex-col md:flex-row items-center px-6 md:px-8 py-6">
-          {/* LEFT: anime info panel - Fixed height container */}
+          {/* LEFT: anime info panel - Fixed height container with smooth animations */}
           <div className="w-full md:w-1/2 h-full flex flex-col justify-center pr-0 md:pr-8">
-            <div className="space-y-3">
-              <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary">
+            <div className="space-y-3 animate-fade-in">
+              <span className="block uppercase tracking-widest text-xs md:text-sm font-semibold text-anime-secondary animate-fade-in" style={{ animationDelay: "0.1s" }}>
                 #{activeIndex + 1} Spotlight
               </span>
-              <h1 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight line-clamp-2 min-h-[3rem]">
+              <h1 className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight line-clamp-2 min-h-[3rem] animate-fade-in" style={{ animationDelay: "0.2s" }}>
                 {currentAnime?.title}
               </h1>
 
-              {/* Metadata with responsive display */}
-              <div className="flex flex-wrap items-center min-h-[2rem]">
+              {/* Metadata with responsive display and smooth fade */}
+              <div className="flex flex-wrap items-center min-h-[2rem] animate-fade-in" style={{ animationDelay: "0.3s" }}>
                 {meta.slice(0, 3).map(({ label, value }) => (
                   <MetaItem key={label} label={label} value={value} />
                 ))}
               </div>
 
-              {/* Synopsis with fixed height */}
-              <p className="text-xs md:text-sm text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3.5rem]">
+              {/* Synopsis with fixed height and smooth fade */}
+              <p className="text-xs md:text-sm text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3 min-h-[2.5rem] md:min-h-[3.5rem] animate-fade-in" style={{ animationDelay: "0.4s" }}>
                 {currentAnime?.description}
               </p>
 
-              {/* Buttons with fixed positioning */}
-              <div className="flex gap-3 pt-2">
-                <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white">
+              {/* Buttons with fixed positioning and smooth fade */}
+              <div className="flex gap-3 pt-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+                <Button asChild className="rounded-full px-4 py-2 bg-anime-primary hover:bg-anime-secondary text-white transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <Link to={`/anime/${currentAnime?.id}`} className="flex gap-2 items-center">
                     <Play className="w-4 h-4" />
                     Watch
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="rounded-full border-white/30 px-4 py-2 bg-white/10 hover:bg-anime-primary/20 text-white">
+                <Button asChild variant="outline" className="rounded-full border-white/30 px-4 py-2 bg-white/10 hover:bg-anime-primary/20 text-white transition-all duration-300 hover:scale-105">
                   <Link to={`/anime/${currentAnime?.id}`}>Details</Link>
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: anime image with fixed dimensions */}
-          <div className="hidden md:flex w-1/2 h-full justify-center items-center">
-            <div className="relative w-48 h-64 flex-shrink-0">
+          {/* RIGHT: anime image with fixed dimensions and hover effects */}
+          <div className="hidden md:flex w-1/2 h-full justify-center items-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <div className="relative w-48 h-64 lg:w-56 lg:h-80 flex-shrink-0 group">
               <img
                 src={getImageUrl(currentAnime?.coverImage || currentAnime?.bannerImage)}
                 alt={currentAnime?.title}
-                className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg"
-                loading="eager"
+                className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg transition-all duration-500 ease-out group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-anime-primary/30"
+                loading="lazy"
               />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-anime-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
           </div>
         </div>
