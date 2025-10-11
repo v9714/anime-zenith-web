@@ -26,7 +26,7 @@ export function AnimeCard({ anime, className = "", showDescription = false }: An
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-            <Button asChild variant="secondary" size="sm" className="rounded-full bg-primary/90 text-white">
+            <Button asChild variant="secondary" size="sm" className="rounded-full bg-primary/90 text-primary-foreground">
               <Link to={`/anime/${anime.id}`} className="flex items-center gap-1">
                 <Play className="h-3.5 w-3.5" />
                 <span>Details</span>
