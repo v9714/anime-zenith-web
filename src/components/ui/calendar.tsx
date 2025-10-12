@@ -16,7 +16,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 bg-popover text-popover-foreground [&_select]:bg-background [&_select]:text-foreground [&_select]:border [&_select]:border-input [&_select]:rounded-md [&_select]:px-2 [&_select]:py-1", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",

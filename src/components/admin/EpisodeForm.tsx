@@ -31,7 +31,7 @@ const episodeFormSchema = z.object({
   thumbnailFile: z.any().optional(),
   videoSourceType: z.enum(["url", "upload"]),
   masterUrl: z.string().optional(),
-  duration: z.coerce.number().min(1, "Duration must be at least 1 second"),
+  duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
   description: z.string().min(1, "Description is required"),
   airDate: z.date({ required_error: "Air date is required" }),
   isDeleted: z.boolean(),
@@ -406,32 +406,28 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
               />
             )}
 
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Duration (minutes) <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="23" 
-                    value={field.value ? Math.round(field.value / 60) : ''}
-                    onChange={(e) => {
-                      const minutes = parseFloat(e.target.value) || 0;
-                      field.onChange(minutes * 60);
-                    }}
-                  />
-                </FormControl>
-                <FormDescription className="text-xs text-muted-foreground">
-                  Enter duration in minutes (will be converted to seconds)
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Duration (minutes) <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="23"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    Enter duration in minutes
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           {/* Description */}

@@ -44,8 +44,7 @@ export function EpisodeTable({ episodes, loading, onEdit, onDelete }: EpisodeTab
     }
   };
 
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
+  const formatDuration = (minutes: number) => {
     return `${minutes}m`;
   };
 
