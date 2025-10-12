@@ -133,6 +133,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const video = videoRef.current;
     if (!video) return;
 
+    // Clean up existing HLS instance before creating new one
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      setHlsInstance(null);
+    }
+
     if (Hls.isSupported()) {
       const hls = new Hls({
         renderTextTracksNatively: false,
@@ -679,7 +685,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Video Element */}
       <video
         ref={videoRef}
-        className={`w-full object-contain cursor-pointer ${isFullscreen ? 'h-screen' : isTheaterMode ? 'h-auto max-h-[85vh]' : 'h-auto max-h-[70vh]'
+        className={`w-full ${thumbnailUrl ? 'object-contain' : 'object-cover aspect-video'} cursor-pointer ${isFullscreen ? 'h-screen' : isTheaterMode ? 'h-auto max-h-[85vh]' : 'h-auto max-h-[70vh]'
           }`}
         poster={thumbnailUrl}
         crossOrigin="anonymous"
@@ -759,14 +765,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="bg-black/40 hover:bg-black/60 text-white border-0 backdrop-blur-sm"
+                      className="bg-black/40 hover:bg-black/60 text-white border-0 backdrop-blur-sm pointer-events-auto z-50"
                     >
                       <Settings className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-64 bg-black/95 backdrop-blur-sm border-white/10 text-white"
+                    className="w-64 bg-black/95 backdrop-blur-sm border-white/10 text-white z-50 pointer-events-auto"
                   >
                     {/* Quality Selection */}
                     {qualityLevels.length > 1 && (

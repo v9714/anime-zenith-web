@@ -406,21 +406,32 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
               />
             )}
 
-            <FormField
-              control={form.control}
-              name="duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Duration (seconds) <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="1400" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  Duration (minutes) <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="23" 
+                    value={field.value ? Math.round(field.value / 60) : ''}
+                    onChange={(e) => {
+                      const minutes = parseFloat(e.target.value) || 0;
+                      field.onChange(minutes * 60);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs text-muted-foreground">
+                  Enter duration in minutes (will be converted to seconds)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           </div>
 
           {/* Description */}
@@ -481,6 +492,9 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
                         date > new Date() || date < new Date("1900-01-01")
                       }
                       initialFocus
+                      captionLayout="dropdown-buttons"
+                      fromYear={1900}
+                      toYear={new Date().getFullYear()}
                       className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>

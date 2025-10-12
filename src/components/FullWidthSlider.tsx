@@ -36,7 +36,7 @@ export const FullWidthSlider = ({ slides, className }: FullWidthSliderProps) => 
                         <CarouselItem key={slide.id}>
                             <div
                                 className={cn(
-                                    "w-full h-[60vh] sm:h-[70vh] lg:h-[80vh] flex items-center justify-center relative overflow-hidden rounded-2xl",
+                                    "w-full h-[60vh] sm:h-[70vh] lg:h-[80vh] flex items-center justify-center relative overflow-hidden rounded-lg",
                                     slide.gradient
                                 )}
                             >

@@ -55,10 +55,18 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
           {/* <Badge variant="outline" className="text-[14px] px-1 py-0">S1</Badge> */}
         </div>
 
-        <TooltipProvider>
-          <ScrollArea className="h-[340px]">
-            <div className="grid grid-cols-5 gap-1.5 mt-1">
-              {episodes.map((ep, i) => {
+        {episodes.length === 0 ? (
+          <div className="h-[340px] flex items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">No episodes found</p>
+              <p className="text-xs mt-2">Check back later for new episodes</p>
+            </div>
+          </div>
+        ) : (
+          <TooltipProvider>
+            <ScrollArea className="h-[340px]">
+              <div className="grid grid-cols-5 gap-1.5 mt-1">
+                {episodes.map((ep, i) => {
                 const episodeTitle = getEpisodeTitle(ep, i);
                 const episodeNumber = getEpisodeNumber(ep, i);
                 const episodeViews = ep.views;
@@ -88,11 +96,12 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
                       </div>
                     </TooltipContent>
                   </Tooltip>
-                );
-              })}
-            </div>
-          </ScrollArea>
-        </TooltipProvider>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </TooltipProvider>
+        )}
       </CardContent>
     </Card>
   );

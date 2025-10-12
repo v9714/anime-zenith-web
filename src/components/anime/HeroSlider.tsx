@@ -75,7 +75,7 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
 
   return (
     <section
-      className="relative w-full h-[60vh] sm:h-[65vh] md:h-[65vh] flex items-stretch overflow-hidden rounded-2xl shadow-2xl group/slider"
+      className="relative w-full h-[60vh] sm:h-[65vh] md:h-[65vh] flex items-stretch overflow-hidden rounded-lg shadow-2xl group/slider"
     >
       {/* Background with parallax effect and smooth transitions */}
       <div className="absolute inset-0 z-0 transition-all duration-1000 ease-out">
@@ -155,13 +155,13 @@ export function HeroSlider({ animes, onSlideChange }: HeroSliderProps) {
               <img
                 src={getImageUrl(currentAnime?.coverImage || currentAnime?.bannerImage)}
                 alt={currentAnime?.title}
-                className="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-2xl transition-all duration-700 ease-out group-hover/poster:scale-110 group-hover/poster:rotate-2 group-hover/poster:shadow-[0_0_40px_rgba(var(--primary),0.6)]"
+                className="absolute inset-0 w-full h-full object-cover rounded-lg shadow-2xl transition-all duration-700 ease-out group-hover/poster:scale-110 group-hover/poster:rotate-2 group-hover/poster:shadow-[0_0_40px_rgba(var(--primary),0.6)]"
                 loading="lazy"
               />
               {/* Glow overlay */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover/poster:opacity-100 transition-opacity duration-700" />
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-primary/40 via-transparent to-transparent opacity-0 group-hover/poster:opacity-100 transition-opacity duration-700" />
               {/* Border glow */}
-              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-primary via-accent to-secondary opacity-0 group-hover/poster:opacity-30 blur-xl transition-opacity duration-700 -z-10" />
+              <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-br from-primary via-accent to-secondary opacity-0 group-hover/poster:opacity-30 blur-xl transition-opacity duration-700 -z-10" />
             </div>
           </div>
         </div>

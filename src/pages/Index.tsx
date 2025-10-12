@@ -106,7 +106,7 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 lg:space-y-10">
-            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 sm:p-8 lg:p-10">
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 sm:p-8 lg:p-10">
               <ValueSlider
                 title="Volume Control"
                 min={0}
@@ -116,7 +116,7 @@ const Index = () => {
               />
             </div>
 
-            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 sm:p-8 lg:p-10">
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 sm:p-8 lg:p-10">
               <ValueSlider
                 title="Price Range"
                 min={0}
@@ -127,7 +127,7 @@ const Index = () => {
               />
             </div>
 
-            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 sm:p-8 lg:p-10">
+            <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 sm:p-8 lg:p-10">
               <ValueSlider
                 title="Temperature"
                 min={-20}
