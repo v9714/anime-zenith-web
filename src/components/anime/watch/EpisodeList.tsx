@@ -2,7 +2,7 @@ import { Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipPortal } from "@/components/ui/tooltip";
 
 interface Episode {
   episodeNumber: number;
@@ -106,16 +106,18 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
                         )}
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-[280px] z-[9999] bg-popover/95 backdrop-blur-md border-border/50 shadow-xl">
-                      <div className="space-y-2 p-1">
-                        <p className="font-bold text-sm bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{episodeTitle}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">EP {episodeNumber}</Badge>
-                          {episodeViews && <span>{episodeViews.toLocaleString()} views</span>}
+                    <TooltipPortal>
+                      <TooltipContent side="right" className="max-w-[280px] z-[9999] bg-popover/95 backdrop-blur-md border-border/50 shadow-xl">
+                        <div className="space-y-2 p-1">
+                          <p className="font-bold text-sm bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{episodeTitle}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">EP {episodeNumber}</Badge>
+                            {episodeViews && <span>{episodeViews.toLocaleString()} views</span>}
+                          </div>
+                          <p className="text-xs leading-relaxed text-foreground/80">{episodeDescription}</p>
                         </div>
-                        <p className="text-xs leading-relaxed text-foreground/80">{episodeDescription}</p>
-                      </div>
-                    </TooltipContent>
+                      </TooltipContent>
+                    </TooltipPortal>
                   </Tooltip>
                   );
                 })}
