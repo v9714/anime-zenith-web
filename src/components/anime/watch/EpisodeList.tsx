@@ -48,24 +48,39 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
   };
 
   return (
-    <Card className="bg-card/90 shadow-xl overflow-hidden border-border/50 h-[380px]">
-      <CardContent className="p-2">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-base">Episodes</h3>
-          {/* <Badge variant="outline" className="text-[14px] px-1 py-0">S1</Badge> */}
+    <Card className="relative bg-gradient-to-br from-card via-card to-card/80 backdrop-blur-sm shadow-2xl overflow-hidden border border-border/30 h-[380px] group hover:shadow-primary/10 transition-shadow duration-300">
+      {/* Decorative gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      
+      <CardContent className="p-4 relative z-10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 bg-gradient-to-b from-primary to-accent rounded-full" />
+            <h3 className="font-heading font-bold text-lg bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+              Episodes
+            </h3>
+          </div>
+          {episodes.length > 0 && (
+            <Badge variant="outline" className="text-xs px-2 py-0.5 bg-primary/10 border-primary/30 text-primary font-medium">
+              {episodes.length} EP
+            </Badge>
+          )}
         </div>
 
         {episodes.length === 0 ? (
-          <div className="h-[340px] flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <p className="text-sm">No episodes found</p>
-              <p className="text-xs mt-2">Check back later for new episodes</p>
+          <div className="h-[320px] flex items-center justify-center">
+            <div className="text-center text-muted-foreground space-y-2">
+              <div className="w-16 h-16 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-3">
+                <Play className="w-8 h-8 opacity-50" />
+              </div>
+              <p className="text-sm font-medium">No episodes found</p>
+              <p className="text-xs">Check back later for new episodes</p>
             </div>
           </div>
         ) : (
           <TooltipProvider>
-            <ScrollArea className="h-[340px]">
-              <div className="grid grid-cols-5 gap-1.5 mt-1">
+            <ScrollArea className="h-[320px]">
+              <div className="grid grid-cols-5 gap-2 mt-1 pr-2">
                 {episodes.map((ep, i) => {
                 const episodeTitle = getEpisodeTitle(ep, i);
                 const episodeNumber = getEpisodeNumber(ep, i);
@@ -76,23 +91,29 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`relative w-8 h-8 rounded-md cursor-pointer transition-all duration-200 flex items-center justify-center text-[13px] font-semibold ${getEpisodeStyles(i)}`}
+                        className={`relative w-full aspect-square rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center text-sm font-bold shadow-md hover:shadow-xl ${getEpisodeStyles(i)} group/episode`}
                         onClick={() => onSelectEpisode && onSelectEpisode(i)}
                       >
-                        {episodeNumber}
+                        <span className="relative z-10">{episodeNumber}</span>
+                        
+                        {/* Shine effect on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover/episode:opacity-100 transition-opacity duration-300 rounded-lg" />
+                        
                         {i === active && (
-                          <div className="absolute top-0 right-0 w-4 h-4 bg-primary rounded-full flex items-center justify-center transform translate-x-0.5 -translate-y-0.5 ">
-                            <Play className="h-2 w-2 text-primary-foreground fill-current" />
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                            <Play className="h-2.5 w-2.5 text-primary-foreground fill-current" />
                           </div>
                         )}
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-[250px]">
-                      <div className="space-y-1">
-                        <p className="font-semibold text-sm">{episodeTitle}</p>
-                        <p className="text-xs text-muted-foreground">Episode {episodeNumber}</p>
-                        <p className="text-xs text-muted-foreground">{episodeViews.toLocaleString()} views</p>
-                        <p className="text-xs mt-2">{episodeDescription}</p>
+                    <TooltipContent side="right" className="max-w-[280px] z-[9999] bg-popover/95 backdrop-blur-md border-border/50 shadow-xl">
+                      <div className="space-y-2 p-1">
+                        <p className="font-bold text-sm bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{episodeTitle}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">EP {episodeNumber}</Badge>
+                          {episodeViews && <span>{episodeViews.toLocaleString()} views</span>}
+                        </div>
+                        <p className="text-xs leading-relaxed text-foreground/80">{episodeDescription}</p>
                       </div>
                     </TooltipContent>
                   </Tooltip>
