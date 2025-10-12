@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -685,11 +686,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       {/* Video Element */}
       <video
         ref={videoRef}
-        className={`w-full ${thumbnailUrl ? 'object-contain' : 'object-cover aspect-video'} cursor-pointer ${isFullscreen ? 'h-screen' : isTheaterMode ? 'h-auto max-h-[85vh]' : 'h-auto max-h-[70vh]'
+        className={`w-full ${thumbnailUrl ? 'object-contain' : 'object-cover aspect-video'} ${isFullscreen ? 'h-screen' : isTheaterMode ? 'h-auto max-h-[85vh]' : 'h-auto max-h-[70vh]'
           }`}
         poster={thumbnailUrl}
         crossOrigin="anonymous"
         onClick={togglePlay}
+        onDoubleClick={toggleFullscreen}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       />
@@ -760,19 +762,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             <div className="flex gap-2">
               {/* Settings Dropdown */}
               {(audioTracks.length > 1 || subtitleTracks.length > 0 || qualityLevels.length > 1) && (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="bg-black/40 hover:bg-black/60 text-white border-0 backdrop-blur-sm pointer-events-auto z-50"
+                      className="bg-black/40 hover:bg-black/60 text-white border-0 backdrop-blur-sm pointer-events-auto z-[60]"
                     >
                       <Settings className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-64 bg-black/95 backdrop-blur-sm border-white/10 text-white z-50 pointer-events-auto"
+                    sideOffset={5}
+                    container={containerRef.current}
+                    className="w-64 bg-black/95 backdrop-blur-sm border-white/10 text-white z-[9999] pointer-events-auto"
                   >
                     {/* Quality Selection */}
                     {qualityLevels.length > 1 && (
@@ -892,103 +896,149 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           {/* Control Buttons */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {/* Play/Pause */}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={togglePlay}
-                className="text-white hover:bg-white/10 h-10 w-10 p-0"
-              >
-                {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-              </Button>
-
-              {/* Previous Episode */}
-              {hasPreviousEpisode && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onPreviousEpisode}
-                  className="text-white hover:bg-white/10"
-                >
-                  <SkipBack className="h-4 w-4" />
-                </Button>
-              )}
-
-              {/* Next Episode */}
-              {hasNextEpisode && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={onNextEpisode}
-                  className="text-white hover:bg-white/10"
-                >
-                  <SkipForward className="h-4 w-4" />
-                </Button>
-              )}
-
-              {/* Volume */}
-              <div className="flex items-center gap-2 group/volume">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={toggleMute}
-                  className="text-white hover:bg-white/10 h-10 w-10 p-0"
-                >
-                  {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                </Button>
-                <div className="w-0 group-hover/volume:w-24 opacity-0 group-hover/volume:opacity-100 transition-all overflow-hidden">
-                  <Slider
-                    value={[volume]}
-                    max={1}
-                    step={0.01}
-                    onValueChange={handleVolumeChange}
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Speed Control */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-white hover:bg-white/10 gap-1"
-                  >
-                    <Zap className="h-4 w-4" />
-                    <span className="text-xs">{playbackSpeed}x</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-black/95 backdrop-blur-sm border-white/10 text-white">
-                  <DropdownMenuLabel>Playback Speed</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((speed) => (
-                    <DropdownMenuItem
-                      key={speed}
-                      onClick={() => handleSpeedChange(speed)}
-                      className={`cursor-pointer ${playbackSpeed === speed
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-white/10"
-                        }`}
+              <TooltipProvider>
+                {/* Play/Pause */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={togglePlay}
+                      className="text-white hover:bg-white/10 h-10 w-10 p-0"
                     >
-                      {speed}x
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>{isPlaying ? 'Pause' : 'Play'} (K or Space)</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {/* Previous Episode */}
+                {hasPreviousEpisode && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={onPreviousEpisode}
+                        className="text-white hover:bg-white/10"
+                      >
+                        <SkipBack className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Previous Episode</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Next Episode */}
+                {hasNextEpisode && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={onNextEpisode}
+                        className="text-white hover:bg-white/10"
+                      >
+                        <SkipForward className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Next Episode</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+
+                {/* Volume */}
+                <div className="flex items-center gap-2 group/volume">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={toggleMute}
+                        className="text-white hover:bg-white/10 h-10 w-10 p-0"
+                      >
+                        {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Mute (M) / Volume (↑↓)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="w-0 group-hover/volume:w-24 opacity-0 group-hover/volume:opacity-100 transition-all overflow-hidden">
+                    <Slider
+                      value={[volume]}
+                      max={1}
+                      step={0.01}
+                      onValueChange={handleVolumeChange}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* Speed Control */}
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-white hover:bg-white/10 gap-1"
+                        >
+                          <Zap className="h-4 w-4" />
+                          <span className="text-xs">{playbackSpeed}x</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Speed (Shift + &lt; / &gt;)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent className="bg-black/95 backdrop-blur-sm border-white/10 text-white">
+                    <DropdownMenuLabel>Playback Speed</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((speed) => (
+                      <DropdownMenuItem
+                        key={speed}
+                        onClick={() => handleSpeedChange(speed)}
+                        className={`cursor-pointer ${playbackSpeed === speed
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-white/10"
+                          }`}
+                      >
+                        {speed}x
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipProvider>
             </div>
 
             {/* Right side controls */}
             <div className="flex items-center gap-2">
-              {/* Fullscreen */}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={toggleFullscreen}
-                className="text-white hover:bg-white/10 h-10 w-10 p-0"
-              >
-                {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
-              </Button>
+              <TooltipProvider>
+                {/* Fullscreen */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={toggleFullscreen}
+                      className="text-white hover:bg-white/10 h-10 w-10 p-0"
+                    >
+                      {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>Fullscreen (F or Double Click)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
