@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BACKEND_API_BASE_URL } from "@/utils/constants";
 import axios from "axios";
 
@@ -32,7 +33,7 @@ export const removeToken = (name: string) => {
 const backendAPI = axios.create({
   baseURL: BACKEND_API_BASE_URL,
   withCredentials: true,
-  timeout: 10000,
+  // timeout: 10000,
 });
 
 // Request interceptor to add token to headers
