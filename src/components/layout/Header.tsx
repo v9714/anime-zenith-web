@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Search, Menu, Home, Film, Video, BookOpen, Mail, User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -10,22 +10,39 @@ import { SITE_NAME, ROUTES } from "@/utils/constants";
 import { UserAuthButton } from "@/components/auth/UserAuthButton";
 import { cn } from "@/lib/utils";
 import { useAudio } from "@/contexts/AudioContext";
+import { SearchDropdown } from "./SearchDropdown";
 
 export function Header() {
   const { playButtonClick } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setShowDropdown(false);
       window.location.href = `/search?title=${encodeURIComponent(searchQuery)}`;
     }
   };
 
   const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
+    const newState = !isSearchOpen;
+    setIsSearchOpen(newState);
+    if (newState) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    } else {
+      setShowDropdown(false);
+      setSearchQuery("");
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowDropdown(value.trim().length > 0);
   };
 
   const menuItems = [
@@ -82,18 +99,31 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-64' : 'w-10'} transition-all duration-300`}>
+          <div className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-80' : 'w-10'} transition-all duration-300`}>
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="w-full">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                   <Input
-                    type="search"
+                    ref={searchInputRef}
+                    type="text"
                     placeholder="Search anime..."
-                    className="w-full pl-8"
+                    className="w-full pl-8 pr-3"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleSearchChange}
+                    onFocus={() => searchQuery.trim() && setShowDropdown(true)}
+                    autoComplete="off"
                   />
+                  {showDropdown && (
+                    <SearchDropdown 
+                      searchQuery={searchQuery} 
+                      onClose={() => {
+                        setShowDropdown(false);
+                        setIsSearchOpen(false);
+                        setSearchQuery("");
+                      }} 
+                    />
+                  )}
                 </div>
               </form>
             ) : (
