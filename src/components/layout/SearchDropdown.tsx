@@ -1,18 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Film } from "lucide-react";
+import { Film, Star, Calendar } from "lucide-react";
 import backendAPI from "@/services/backendApi";
 import { LazyImage } from "./LazyImage";
-
-interface AnimeSearchResult {
-  id: number;
-  title: string;
-  thumbnail_url?: string;
-  release_year?: string;
-  season?: string;
-  total_episodes?: number;
-  duration?: number;
-}
+import { Badge } from "@/components/ui/badge";
+import { Anime } from "@/services/api";
+import { getImageUrl } from "@/utils/commanFunction";
 
 interface SearchDropdownProps {
   searchQuery: string;
@@ -20,7 +13,7 @@ interface SearchDropdownProps {
 }
 
 export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
-  const [results, setResults] = useState<AnimeSearchResult[]>([]);
+  const [results, setResults] = useState<Anime[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -40,21 +33,8 @@ export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
             limit: 8
           }
         });
-        
-        console.log('Search API Response:', response.data);
-        
-        // Handle different possible response structures
-        let animeData = [];
-        
-        if (response.data?.success && response.data?.data?.anime) {
-          animeData = response.data.data.anime;
-        } else if (response.data?.data) {
-          animeData = Array.isArray(response.data.data) ? response.data.data : [];
-        } else if (Array.isArray(response.data)) {
-          animeData = response.data;
-        }
-        
-        console.log('Parsed anime data:', animeData);
+
+        const animeData = response.data?.data || [];
         setResults(animeData);
       } catch (error) {
         console.error('Search error:', error);
@@ -82,9 +62,9 @@ export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
   if (!searchQuery.trim()) return null;
 
   return (
-    <div 
+    <div
       ref={dropdownRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-xl max-h-[500px] overflow-y-auto z-[9999]"
+      className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl max-h-[500px] overflow-y-auto z-[9999]"
     >
       {isLoading ? (
         <div className="p-4 text-center text-muted-foreground">
@@ -97,52 +77,71 @@ export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
               key={anime.id}
               to={`/anime/${anime.id}`}
               onClick={onClose}
-              className="flex items-start gap-3 px-3 py-2.5 hover:bg-accent/50 transition-colors"
+              className="flex items-start gap-3 px-4 py-3 hover:bg-accent transition-colors border-b border-border last:border-0"
             >
-              <div className="flex-shrink-0 w-16 h-20 rounded overflow-hidden bg-muted">
-                {anime.thumbnail_url ? (
+              <div className="flex-shrink-0 w-20 h-28 rounded-md overflow-hidden bg-muted shadow-sm">
+                {anime.coverImage ? (
                   <LazyImage
-                    src={anime.thumbnail_url}
+                    src={getImageUrl(anime.coverImage)}
                     alt={anime.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Film className="w-6 h-6 text-muted-foreground" />
+                    <Film className="w-8 h-8 text-muted-foreground" />
                   </div>
                 )}
               </div>
-              
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm text-foreground truncate mb-1">
-                  {anime.title}
-                </h4>
-                
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  {anime.release_year && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {anime.release_year}
-                    </span>
-                  )}
-                  
-                  {anime.season && (
-                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded">
-                      {anime.season}
-                    </span>
-                  )}
-                  
-                  {anime.total_episodes && (
-                    <span className="flex items-center gap-1">
-                      <Film className="w-3 h-3" />
-                      {anime.total_episodes} Episodes
-                    </span>
+
+              <div className="flex-1 min-w-0 space-y-2">
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground line-clamp-1 mb-0.5">
+                    {anime.title}
+                  </h4>
+                  {anime.alternativeTitles?.[0] && (
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {anime.alternativeTitles[0]}
+                    </p>
                   )}
                 </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {anime.rating && (
+                    <Badge variant="secondary" className="gap-1 px-2 py-0">
+                      <Star className="w-3 h-3 fill-primary text-primary" />
+                      <span className="text-xs font-semibold">{anime.rating}</span>
+                    </Badge>
+                  )}
+
+                  {anime.year && (
+                    <Badge variant="outline" className="gap-1 px-2 py-0">
+                      <Calendar className="w-3 h-3" />
+                      <span className="text-xs">{anime.year}</span>
+                    </Badge>
+                  )}
+
+                  {anime.season && (
+                    <Badge variant="outline" className="px-2 py-0">
+                      <span className="text-xs">{anime.season}</span>
+                    </Badge>
+                  )}
+
+                  {anime.type && (
+                    <Badge variant="outline" className="px-2 py-0">
+                      <span className="text-xs">{anime.type}</span>
+                    </Badge>
+                  )}
+                </div>
+
+                {anime.studio && (
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {anime.studio}
+                  </p>
+                )}
               </div>
             </Link>
           ))}
-          
+
           <Link
             to={`/search?title=${encodeURIComponent(searchQuery)}`}
             onClick={onClose}
