@@ -119,7 +119,6 @@ export function Header() {
                       searchQuery={searchQuery} 
                       onClose={() => {
                         setShowDropdown(false);
-                        setIsSearchOpen(false);
                         setSearchQuery("");
                       }} 
                     />
