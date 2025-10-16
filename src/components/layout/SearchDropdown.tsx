@@ -41,11 +41,21 @@ export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
           }
         });
         
+        console.log('Search API Response:', response.data);
+        
+        // Handle different possible response structures
+        let animeData = [];
+        
         if (response.data?.success && response.data?.data?.anime) {
-          setResults(response.data.data.anime);
-        } else {
-          setResults([]);
+          animeData = response.data.data.anime;
+        } else if (response.data?.data) {
+          animeData = Array.isArray(response.data.data) ? response.data.data : [];
+        } else if (Array.isArray(response.data)) {
+          animeData = response.data;
         }
+        
+        console.log('Parsed anime data:', animeData);
+        setResults(animeData);
       } catch (error) {
         console.error('Search error:', error);
         setResults([]);
