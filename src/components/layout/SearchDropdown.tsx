@@ -71,7 +71,7 @@ export function SearchDropdown({ searchQuery, onClose, inputRef }: SearchDropdow
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl max-h-[500px] overflow-y-auto z-[9999] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
+      className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl max-h-[500px] overflow-y-auto z-[9999]"
     >
       {isLoading ? (
         <div className="p-4 text-center text-muted-foreground">
