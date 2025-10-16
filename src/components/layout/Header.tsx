@@ -35,7 +35,6 @@ export function Header() {
       setTimeout(() => searchInputRef.current?.focus(), 100);
     } else {
       setShowDropdown(false);
-      setSearchQuery("");
     }
   };
 
@@ -71,7 +70,7 @@ export function Header() {
           ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-md"
           : "bg-transparent"
       )}
-      style={{ 
+      style={{
         pointerEvents: "auto",
         transition: "background-color 0.3s ease"
       }}
@@ -115,12 +114,9 @@ export function Header() {
                     autoComplete="off"
                   />
                   {showDropdown && (
-                    <SearchDropdown 
-                      searchQuery={searchQuery} 
-                      onClose={() => {
-                        setShowDropdown(false);
-                        setSearchQuery("");
-                      }} 
+                    <SearchDropdown
+                      searchQuery={searchQuery}
+                      onClose={() => setShowDropdown(false)}
                     />
                   )}
                 </div>
