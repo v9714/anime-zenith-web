@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Film, Star, Calendar } from "lucide-react";
+import { Clock, Film, Star, Calendar } from "lucide-react";
 import backendAPI from "@/services/backendApi";
 import { LazyImage } from "./LazyImage";
 import { Badge } from "@/components/ui/badge";
-import { Anime } from "@/services/api";
 import { getImageUrl } from "@/utils/commanFunction";
+import { Anime } from "@/services/api";
 
 interface SearchDropdownProps {
   searchQuery: string;
   onClose: () => void;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
-export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
+export function SearchDropdown({ searchQuery, onClose, inputRef }: SearchDropdownProps) {
   const [results, setResults] = useState<Anime[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -50,21 +51,27 @@ export function SearchDropdown({ searchQuery, onClose }: SearchDropdownProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose();
+      const target = event.target as Node;
+      // Don't close if clicking inside the dropdown or the input field
+      if (
+        (dropdownRef.current && dropdownRef.current.contains(target)) ||
+        (inputRef?.current && inputRef.current.contains(target))
+      ) {
+        return;
       }
+      onClose();
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
+  }, [onClose, inputRef]);
 
   if (!searchQuery.trim()) return null;
 
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl max-h-[500px] overflow-y-auto z-[9999]"
+      className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-xl max-h-[500px] overflow-y-auto z-[9999] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
     >
       {isLoading ? (
         <div className="p-4 text-center text-muted-foreground">

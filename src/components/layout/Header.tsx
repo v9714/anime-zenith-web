@@ -19,6 +19,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +62,23 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+        setShowDropdown(false);
+      }
+    };
+
+    if (isSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSearchOpen]);
+
   // Transparent/absolute on top, solid bg with smooth fade on scroll
   return (
     <header
@@ -98,7 +116,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-80' : 'w-10'} transition-all duration-300`}>
+          <div ref={searchContainerRef} className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-80' : 'w-10'} transition-all duration-300`}>
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="w-full">
                 <div className="relative">
@@ -117,6 +135,7 @@ export function Header() {
                     <SearchDropdown
                       searchQuery={searchQuery}
                       onClose={() => setShowDropdown(false)}
+                      inputRef={searchInputRef}
                     />
                   )}
                 </div>
