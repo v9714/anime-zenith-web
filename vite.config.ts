@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: './',
   server: {
     host: "::",
     port: 8080,
@@ -21,10 +22,12 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force single React instance - YEH ADD KIYA HAI
+      // CRITICAL: Force single React instance
       'react': path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
+    // Add dedupe to force single version
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     minify: mode === 'production' ? "esbuild" : false,
@@ -44,10 +47,22 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     reportCompressedSize: false,
     chunkSizeWarningLimit: 1000,
+    // Add commonjsOptions
+    commonjsOptions: {
+      include: [/node_modules/],
+      extensions: ['.js', '.cjs'],
+    },
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@radix-ui/react-tooltip'],
+    // Force pre-bundling
     force: true,
+    // Add esbuildOptions
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+      },
+    },
   },
   define: {
     global: 'globalThis',
