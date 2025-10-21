@@ -121,13 +121,13 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
             >
               Try Demo User
             </button>
-            <button
+            {/* <button
               type="button"
               className="text-primary hover:underline text-sm"
               onClick={() => fillDemoCredentials("admin")}
             >
               Try Demo Admin
-            </button>
+            </button> */}
           </div>
 
           <div className="text-center text-sm text-muted-foreground mt-4">
