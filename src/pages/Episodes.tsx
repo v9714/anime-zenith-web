@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { getTopAnime, Anime } from "@/services/api";
+import { SEO, BreadcrumbSchema } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -99,11 +99,17 @@ export default function Episodes() {
   
   return (
     <Layout>
-      {/* SEO Metadata */}
-      <div style={{ display: 'none' }} itemScope itemType="https://schema.org/CollectionPage">
-        <meta itemProp="name" content="Latest Anime Episodes - Otaku" />
-        <meta itemProp="description" content="Watch the latest episodes of your favorite anime shows. New episodes added daily." />
-      </div>
+      <SEO
+        title="Latest Anime Episodes - Watch New Releases Daily"
+        description="Watch the latest anime episodes released today. New episodes added daily from popular and trending anime series. Stream in HD quality."
+        keywords="latest anime episodes, new anime episodes, anime releases, watch latest anime, new episodes today"
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://otakutv.in/" },
+          { name: "Latest Episodes", url: "https://otakutv.in/episodes" }
+        ]}
+      />
       
       <div className="container py-8">
         <h1 className="text-3xl font-heading font-bold mb-6">Latest Episodes</h1>

@@ -1,9 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { AnimeGrid } from "@/components/anime/AnimeGrid";
 import { searchAnime, Anime, AnimeResponse } from "@/services/api";
+import { SEO, BreadcrumbSchema } from "@/components/SEO";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,13 +73,28 @@ export default function Search() {
     window.scrollTo(0, 0);
   };
   
+  const pageTitle = query ? `Search Results for "${query}"` : "Search Anime";
+  const pageDescription = query 
+    ? `Found ${totalResults} anime matching "${query}". Browse anime series and movies on OtakuTV.`
+    : "Search for your favorite anime series and movies. Find anime by title, genre, or characters.";
+
   return (
     <Layout>
-      {/* SEO Metadata */}
-      <div style={{ display: 'none' }} itemScope itemType="https://schema.org/SearchResultsPage">
-        <meta itemProp="name" content={`Search Results for "${query}" - Otaku`} />
-        <meta itemProp="description" content={`Browse search results for "${query}" on Otaku. Find your favorite anime shows and movies.`} />
-      </div>
+      <SEO
+        title={pageTitle}
+        description={pageDescription}
+        keywords={`search anime, find anime, ${query}, anime search`}
+        noIndex={!query}
+      />
+      {query && (
+        <BreadcrumbSchema
+          items={[
+            { name: "Home", url: "https://otakutv.in/" },
+            { name: "Search", url: "https://otakutv.in/search" },
+            { name: `Results for "${query}"`, url: `https://otakutv.in/search?title=${encodeURIComponent(query)}` }
+          ]}
+        />
+      )}
       
       <div className="container py-8">
         <h1 className="text-3xl font-heading font-bold mb-6">

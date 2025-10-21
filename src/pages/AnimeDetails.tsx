@@ -1,6 +1,6 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { SEO, BreadcrumbSchema, VideoSchema } from "@/components/SEO";
 import {
   Calendar,
   Clock,
@@ -127,22 +127,31 @@ export default function AnimeDetails() {
     );
   }
 
-  // SEO Schema.org structured data
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Movie",
-    "name": anime.title,
-    "alternateName": anime.alternativeTitles,
-    "image": anime.bannerImage || anime.coverImage,
-    "description": anime.description,
-    "datePublished": anime.year?.toString(),
-    "genre": anime.genres?.map(g => g.name)
-  };
-
+  const animeImage = getImageUrl(anime.bannerImage || anime.coverImage);
+  const genresList = anime.genres?.map(g => g.name).join(', ') || '';
+  
   return (
     <Layout>
-      {/* Structured Data for SEO */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <SEO
+        title={`${anime.title} - Watch Anime Online`}
+        description={anime.description || `Watch ${anime.title} anime online in HD. ${anime.type} • ${anime.status} • ${genresList}`}
+        keywords={`${anime.title}, watch ${anime.title}, ${anime.title} anime, ${genresList}, anime online`}
+        image={animeImage}
+        type="video.movie"
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://otakutv.in/" },
+          { name: "Anime", url: "https://otakutv.in/anime" },
+          { name: anime.title, url: `https://otakutv.in/anime/${anime.id}` }
+        ]}
+      />
+      <VideoSchema
+        name={anime.title}
+        description={anime.description || `Watch ${anime.title} anime`}
+        thumbnailUrl={animeImage}
+        uploadDate={anime.year ? `${anime.year}-01-01` : new Date().toISOString()}
+      />
 
       {/* Background Banner */}
       <div className="relative w-full h-[300px] overflow-hidden mb-8">

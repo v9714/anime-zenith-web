@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { AnimeGrid } from "@/components/anime/AnimeGrid";
 import { getTopAnime, getAnimeGenres, getAnimeByGenre, Anime } from "@/services/api";
+import { SEO, BreadcrumbSchema } from "@/components/SEO";
 import {
   Select,
   SelectContent,
@@ -103,13 +104,27 @@ export default function AnimeList() {
     setSearchParams(searchParams);
   };
 
+  const selectedGenre = genres.find(g => g.id.toString() === genre);
+  const pageTitle = selectedGenre 
+    ? `${selectedGenre.name} Anime - Browse ${selectedGenre.name} Series & Movies`
+    : "Browse All Anime Series & Movies - Complete Collection";
+  const pageDescription = selectedGenre
+    ? `Discover the best ${selectedGenre.name} anime series and movies. Browse our extensive collection of ${selectedGenre.name} anime, sorted by popularity and rating.`
+    : "Browse our complete collection of anime series and movies. Filter by genre, sort by popularity, rating, or title. Discover your next favorite anime.";
+
   return (
     <Layout>
-      {/* SEO Metadata */}
-      <div style={{ display: 'none' }} itemScope itemType="https://schema.org/CollectionPage">
-        <meta itemProp="name" content="Anime List - Otaku" />
-        <meta itemProp="description" content="Browse through our extensive collection of anime shows and movies. Filter by genre, sort by popularity, and discover new content." />
-      </div>
+      <SEO
+        title={pageTitle}
+        description={pageDescription}
+        keywords={`anime list, browse anime, ${selectedGenre?.name || 'all'} anime, anime series, anime movies, anime by genre`}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://otakutv.in/" },
+          { name: "Anime List", url: "https://otakutv.in/anime" }
+        ]}
+      />
 
       <div className="container py-8">
         <h1 className="text-3xl font-heading font-bold mb-6">Anime List</h1>

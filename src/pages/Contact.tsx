@@ -1,6 +1,6 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
+import { SEO, BreadcrumbSchema } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,11 +68,17 @@ export default function Contact() {
   
   return (
     <Layout>
-      {/* SEO Metadata */}
-      <div style={{ display: 'none' }} itemScope itemType="https://schema.org/ContactPage">
-        <meta itemProp="name" content="Contact Us - Otaku" />
-        <meta itemProp="description" content="Get in touch with the Otaku team. We're here to help with any questions or feedback you might have." />
-      </div>
+      <SEO
+        title="Contact Us - Get in Touch with OtakuTV Support"
+        description="Have questions or feedback? Contact OtakuTV support team. We're here to help with anime streaming issues, requests, and general inquiries."
+        keywords="contact otakutv, anime support, customer service, feedback, anime requests"
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://otakutv.in/" },
+          { name: "Contact", url: "https://otakutv.in/contact" }
+        ]}
+      />
       
       <div className="container py-12">
         <div className="text-center mb-12">

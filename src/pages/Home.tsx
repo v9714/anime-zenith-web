@@ -4,9 +4,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LazyImage } from "@/components/layout/LazyImage";
 import { getTopAnime, getSeasonalAnime, Anime, AnimeResponse } from "@/services/api";
 import { preloadCriticalImages } from "@/lib/image-optimizer";
-import { HeroSlider } from "@/components/anime/HeroSlider";  // Use regular import instead of dynamic import
+import { HeroSlider } from "@/components/anime/HeroSlider";
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 import { getImageUrl } from "@/utils/commanFunction";
+import { SEO, OrganizationSchema, WebSiteSchema } from "@/components/SEO";
 
 // Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -123,15 +124,19 @@ export default function Home() {
 
   return (
     <Layout>
+      <SEO
+        title="Watch Anime Online | Stream HD Anime Episodes & Movies"
+        description="Watch thousands of anime series and movies in HD quality. Stream the latest episodes, discover classic favorites, and enjoy the best anime streaming experience."
+        keywords="anime, watch anime online, anime streaming, HD anime, latest anime episodes, anime movies, top anime series"
+        type="website"
+      />
+      <OrganizationSchema />
+      <WebSiteSchema />
+      
       {isLoading ? (
         renderSkeleton()
       ) : (
         <>
-          {/* SEO Metadata */}
-          <div style={{ display: 'none' }} itemScope itemType="https://schema.org/WebSite">
-            <meta itemProp="url" content="https://Otaku.com/" />
-            <meta itemProp="name" content="Otaku - Your Ultimate Anime Streaming Platform" />
-          </div>
 
           {/* Hero Slider - High priority content, optimized for LCP */}
           {featuredAnime.length > 0 && (

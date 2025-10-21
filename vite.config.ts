@@ -10,10 +10,8 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     headers: {
-      // Remove content encoding headers in development to avoid decoding issues
       'Cache-Control': 'max-age=31536000',
       'X-Content-Type-Options': 'nosniff',
-      // Remove 'Content-Encoding' header which was causing the ERR_CONTENT_DECODING_FAILED error
     },
   },
   plugins: [
@@ -27,26 +25,28 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Configure different minification options based on mode
     minify: mode === 'production' ? "esbuild" : false,
     cssCodeSplit: true,
-    // Optimize asset loading
-    assetsInlineLimit: 4096, // 4KB - inline small assets
+    assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
-        // Simplified chunking to avoid React module issues
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['@radix-ui/react-slot', '@radix-ui/react-tooltip'],
+        },
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
+    target: 'esnext',
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
   },
-  // Optimize asset compression - disable built-in compression to avoid encoding issues
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@radix-ui/react-tooltip'],
-    force: true, // Force re-optimization
+    force: true,
   },
-  // Ensure React is properly resolved
   define: {
     global: 'globalThis',
   },

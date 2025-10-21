@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { SEO, BreadcrumbSchema, VideoSchema } from "@/components/SEO";
 import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, Search, Eye } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -310,9 +311,33 @@ export default function AnimeWatch() {
   if (!animeId) return null;
 
   const currentEpisode = getCurrentEpisode();
+  const episodeTitle = `${anime.title} Episode ${currentEpisode?.episodeNumber || episodeNumber}`;
+  const animeImage = `${BACKEND_API_Image_URL}${anime.coverImage || anime.bannerImage}`;
 
   return (
     <Layout>
+      <SEO
+        title={`Watch ${episodeTitle} Online - HD Streaming`}
+        description={`Watch ${episodeTitle} in HD quality. ${anime.description?.substring(0, 150) || `Stream ${anime.title} anime online with English subtitles.`}`}
+        keywords={`watch ${anime.title}, ${anime.title} episode ${currentEpisode?.episodeNumber || episodeNumber}, ${anime.title} online, stream anime`}
+        image={animeImage}
+        type="video.movie"
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "https://otakutv.in/" },
+          { name: "Anime", url: "https://otakutv.in/anime" },
+          { name: anime.title, url: `https://otakutv.in/anime/${anime.id}` },
+          { name: `Episode ${currentEpisode?.episodeNumber || episodeNumber}`, url: window.location.href }
+        ]}
+      />
+      <VideoSchema
+        name={episodeTitle}
+        description={currentEpisode?.title || `Episode ${currentEpisode?.episodeNumber || episodeNumber} of ${anime.title}`}
+        thumbnailUrl={getThumbnailUrl()}
+        uploadDate={new Date().toISOString()}
+        contentUrl={getVideoUrl()}
+      />
       <div className="min-h-screen bg-background">
         {/* Main content with container-fluid */}
         <div className="w-full px-2 pb-4">
