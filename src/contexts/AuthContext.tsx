@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+
 import * as React from "react";
 import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
@@ -22,6 +23,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
+  refreshUserProfile: () => Promise<void>;
   updateWatchHistory: (animeData: {
     animeId: number;
     title: string;
@@ -221,6 +223,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return likedContentUtils.isLiked(id, type);
   };
 
+  const refreshUserProfile = async () => {
+    const userData = await fetchUserProfile();
+    if (userData) {
+      setCurrentUser(userData);
+    }
+  };
+
   const value = {
     currentUser,
     isLoading,
@@ -230,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signOut,
+    refreshUserProfile,
     updateWatchHistory,
     toggleLikedContent,
     isContentLiked,

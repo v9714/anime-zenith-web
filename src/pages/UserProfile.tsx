@@ -1,19 +1,34 @@
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
-import { Heart, Clock, Film, Video } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Heart, Clock, Film, Video, Settings } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAudio } from "@/contexts/AudioContext";
+import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
+import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
 
 export default function UserProfile() {
-  const { currentUser, watchHistory, likedContent, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState("history");
+  const { currentUser, watchHistory, likedContent, signOut, refreshUserProfile } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "history";
   const { playButtonClick } = useAudio();
+
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
+  const handleProfileUpdate = async () => {
+    await refreshUserProfile();
+  };
+
+  const handleAccountDelete = () => {
+    signOut();
+  };
 
   if (!currentUser) {
     return (
@@ -49,12 +64,15 @@ export default function UserProfile() {
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid grid-cols-2 w-full max-w-md">
+            <TabsList className="grid grid-cols-3 w-full max-w-2xl">
               <TabsTrigger value="history" className="flex items-center gap-2" onClick={playButtonClick}>
-                <Clock className="h-4 w-4" /> Watch History
+                <Clock className="h-4 w-4" /> History
               </TabsTrigger>
               <TabsTrigger value="favorites" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Heart className="h-4 w-4" /> Favorites
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2" onClick={playButtonClick}>
+                <Settings className="h-4 w-4" /> Settings
               </TabsTrigger>
             </TabsList>
 
@@ -146,6 +164,19 @@ export default function UserProfile() {
                   </Link>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings">
+              <h2 className="text-2xl font-semibold mb-4">Account Settings</h2>
+              <div className="space-y-6">
+                {currentUser && (
+                  <>
+                    <ProfileEditForm currentUser={currentUser} onUpdate={handleProfileUpdate} />
+                    <DeleteAccountSection currentUser={currentUser} onDelete={handleAccountDelete} />
+                  </>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
 

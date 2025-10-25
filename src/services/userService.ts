@@ -45,6 +45,29 @@ export interface UpdateUserResponse {
   success: boolean;
 }
 
+export interface UpdateProfileRequest {
+  displayName?: string;
+  avatarUrl?: string;
+}
+
+export interface UpdateProfileWithFileRequest {
+  displayName?: string;
+  avatarFile?: File;
+}
+
+export interface UpdateProfileResponse {
+  statusCode: number;
+  data: UserProfile;
+  message: string;
+  success: boolean;
+}
+
+export interface DeleteAccountResponse {
+  statusCode: number;
+  message: string;
+  success: boolean;
+}
+
 export const userService = {
   getProfile: async (): Promise<UserProfileResponse> => {
     const response = await backendAPI.get<UserProfileResponse>('auth/me');
@@ -58,6 +81,35 @@ export const userService = {
 
   updateUser: async (userId: string, updates: UpdateUserRequest): Promise<UpdateUserResponse> => {
     const response = await backendAPI.patch<UpdateUserResponse>(`/api/admin/users/${userId}`, updates);
+    return response.data;
+  },
+
+  updateProfile: async (userId: string, updates: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
+    const response = await backendAPI.patch<UpdateProfileResponse>(`/api/users/${userId}`, updates);
+    return response.data;
+  },
+
+  updateProfileWithFile: async (userId: string, updates: UpdateProfileWithFileRequest): Promise<UpdateProfileResponse> => {
+    const formData = new FormData();
+
+    if (updates.displayName) {
+      formData.append('displayName', updates.displayName);
+    }
+
+    if (updates.avatarFile) {
+      formData.append('avatar', updates.avatarFile);
+    }
+
+    const response = await backendAPI.patch<UpdateProfileResponse>(`/api/users/${userId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteAccount: async (userId: string): Promise<DeleteAccountResponse> => {
+    const response = await backendAPI.delete<DeleteAccountResponse>(`/api/users/${userId}`);
     return response.data;
   }
 };
