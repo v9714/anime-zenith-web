@@ -1,14 +1,16 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import * as React from "react";
 import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
 import { userService, UserProfile } from "@/services/userService";
 import { getToken, setToken, removeToken } from "@/services/backendApi";
-import { 
-  watchHistoryUtils, 
-  likedContentUtils, 
-  WatchHistoryItem, 
-  LikedContentItem 
+import {
+  watchHistoryUtils,
+  likedContentUtils,
+  WatchHistoryItem,
+  LikedContentItem
 } from "@/utils/localStorage";
 
 interface AuthContextType {
@@ -43,14 +45,14 @@ const AuthContext = React.createContext<AuthContextType | null>(null);
 const refreshToken = async (): Promise<UserProfile | null> => {
   try {
     const response = await authService.refreshToken();
-    
+
     if (response.success) {
       const { user, accessToken, refreshToken: newRefreshToken } = response.data;
-      
+
       // Set tokens in localStorage
       setToken('accessToken', accessToken);
       setToken('refreshToken', newRefreshToken);
-      
+
       return user;
     }
   } catch (error) {
@@ -90,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuthState = async () => {
       const accessToken = getToken('accessToken');
       const refreshTokenValue = getToken('refreshToken');
-      
+
       if (accessToken) {
         // If we have access token, fetch current user profile
         const userData = await fetchUserProfile();
@@ -104,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setCurrentUser(userData);
         }
       }
-      
+
       setIsLoading(false);
     };
 
@@ -115,18 +117,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, displayName: string) => {
     setIsLoading(true);
     try {
-      // For now, keep the existing signup logic as the API endpoint wasn't provided
-      toast({
-        id: String(Date.now()),
-        title: "Sign up unavailable",
-        description: "Please use the demo accounts for now"
-      });
+      const response = await authService.register(email, password, displayName);
+
+      if (response.success) {
+        toast({
+          id: String(Date.now()),
+          title: "Account created successfully",
+          description: "Please sign in with your credentials"
+        });
+      }
     } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "There was a problem creating your account";
       toast({
         id: String(Date.now()),
         title: "Sign up failed",
-        description: error.message || "There was a problem creating your account"
+        description: errorMessage
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -139,14 +146,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.success) {
         const { user, accessToken, refreshToken: newRefreshToken } = response.data;
-        
+
         // Set tokens in localStorage
         setToken('accessToken', accessToken);
         setToken('refreshToken', newRefreshToken);
-        
+
         // Set user data in state (no localStorage for user data)
         setCurrentUser(user);
-        
+
         toast({
           id: String(Date.now()),
           title: "Signed in successfully",
@@ -202,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { liked, wasAdded } = likedContentUtils.toggle(content);
     setLikedContent(liked);
-    
+
     toast({
       id: String(Date.now()),
       title: wasAdded ? "Added to favorites" : "Removed from favorites",

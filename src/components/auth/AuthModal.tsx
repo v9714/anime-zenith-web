@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import {
   Dialog,
@@ -20,6 +20,13 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModalProps) {
   const [view, setView] = useState<"signin" | "signup">(defaultView);
 
+  // Reset view when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setView(defaultView);
+    }
+  }, [isOpen, defaultView]);
+
   const handleViewChange = (newView: "signin" | "signup") => {
     setView(newView);
   };
@@ -32,12 +39,12 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
             {view === "signin" ? "Sign In" : "Create Account"}
           </DialogTitle>
           <DialogDescription>
-            {view === "signin" 
-              ? "Sign in to access your account" 
+            {view === "signin"
+              ? "Sign in to access your account"
               : "Create a new account to track your favorite anime"}
           </DialogDescription>
         </DialogHeader>
-        
+
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"

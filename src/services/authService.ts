@@ -40,7 +40,32 @@ export interface RefreshTokenResponse {
   success: boolean;
 }
 
+export interface RegisterResponse {
+  statusCode: number;
+  data: {
+    id: number;
+    email: string;
+    displayName: string;
+    avatarUrl: string | null;
+    isPremium: boolean;
+    isAdmin: boolean;
+    createdAt: string;
+    lastLogin: string | null;
+  };
+  message: string;
+  success: boolean;
+}
+
 export const authService = {
+  register: async (email: string, password: string, displayName: string): Promise<RegisterResponse> => {
+    const response = await backendAPI.post<RegisterResponse>('/auth/register', {
+      email,
+      password,
+      displayName
+    });
+    return response.data;
+  },
+
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const response = await backendAPI.post<LoginResponse>('/auth/login', {
       email,

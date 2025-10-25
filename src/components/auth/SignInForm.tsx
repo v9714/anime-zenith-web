@@ -43,6 +43,7 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
     setIsSubmitting(true);
     try {
       await signIn(values.email, values.password);
+      form.reset();
       onSuccess();
     } finally {
       setIsSubmitting(false);
@@ -85,10 +86,10 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    {...field} 
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...field}
                   />
                   <button
                     type="button"
@@ -112,7 +113,7 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Sign In"}
           </Button>
-          
+
           <div className="flex justify-between text-sm">
             <button
               type="button"

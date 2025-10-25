@@ -48,7 +48,10 @@ export function SignUpForm({ onSuccess, switchToSignIn }: SignUpFormProps) {
     setIsSubmitting(true);
     try {
       await signUp(values.email, values.password, values.displayName);
-      onSuccess();
+      form.reset();
+      switchToSignIn();
+    } catch (error) {
+      // Error is already handled in AuthContext with toast
     } finally {
       setIsSubmitting(false);
     }
