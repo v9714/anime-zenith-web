@@ -5,9 +5,26 @@ import App from './App.tsx';
 import './index.css';
 import { optimizeLCPImages } from './lib/image-optimizer';
 
+// Validate React is available before anything else
+if (!React || typeof React.createElement !== 'function' || typeof React.useState !== 'function') {
+  console.error('React is not properly loaded! Forcing reload...');
+  window.location.reload();
+  throw new Error('React hooks are not available');
+}
+
+// Make React available globally to prevent module loading issues
+(globalThis as any).React = React;
+
 // Create a proper error handler for the application
 const handleError = (event: ErrorEvent | PromiseRejectionEvent) => {
   console.error('Application error:', event);
+  
+  // Check if error is related to React hooks being null
+  if (event instanceof ErrorEvent && event.message?.includes('Cannot read properties of null')) {
+    console.error('React hooks error detected - reloading application');
+    window.location.reload();
+    return;
+  }
   
   // For resource loading errors like script/module failures
   if (event instanceof ErrorEvent && event.target && (event.target as HTMLElement).tagName === 'SCRIPT') {

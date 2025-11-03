@@ -14,6 +14,15 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Validate React is properly loaded
+  if (!React || typeof useState !== 'function') {
+    console.error('React hooks are not available in AudioProvider. Reloading...');
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+    return <>{children}</>;
+  }
+
   const [settings, setSettings] = useState<AudioSettings>(audioSettingsUtils.get());
   const [isBackgroundMusicPlaying, setIsBackgroundMusicPlaying] = useState(false);
 

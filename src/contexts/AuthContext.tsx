@@ -78,6 +78,15 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Validate React is properly loaded
+  if (!React || typeof React.useState !== 'function') {
+    console.error('React hooks are not available in AuthProvider. Reloading...');
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+    return <>{children}</>;
+  }
+
   const [currentUser, setCurrentUser] = React.useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [watchHistory, setWatchHistory] = React.useState<WatchHistoryItem[]>([]);
