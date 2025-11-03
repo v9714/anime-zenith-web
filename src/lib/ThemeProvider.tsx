@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import * as React from "react";
 import {
   createContext,
   useContext,
@@ -34,27 +35,54 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  // Validate React is properly loaded
+  if (!React || typeof useState !== 'function') {
+    console.error('React hooks are not available. Reloading...');
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+    return <>{children}</>;
+  }
+
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return (stored as Theme) || defaultTheme;
+    } catch {
+      return defaultTheme;
+    }
+  });
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
+    try {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-      return;
+      if (theme === "system") {
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "dark"
+          : "light";
+        root.classList.add(systemTheme);
+        return;
+      }
+
+      root.classList.add(theme);
+      localStorage.setItem(storageKey, theme);
+    } catch (error) {
+      console.error('Theme application error:', error);
     }
-
-    root.classList.add(theme);
-  }, [theme]);
+  }, [theme, storageKey]);
 
   const value = useMemo(() => ({
     theme,
-    setTheme,
+    setTheme: (newTheme: Theme) => {
+      try {
+        setTheme(newTheme);
+      } catch (error) {
+        console.error('Theme update error:', error);
+      }
+    },
   }), [theme]);
 
   return (
