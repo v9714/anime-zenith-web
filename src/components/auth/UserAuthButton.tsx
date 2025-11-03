@@ -65,13 +65,15 @@ export function UserAuthButton() {
           <Button variant="ghost" size="icon" className="relative rounded-full p-0 h-10 w-10">
             <Avatar className="h-9 w-9">
               <AvatarImage src={getImageUrl(currentUser.avatarUrl || undefined)} alt={currentUser.displayName} />
-              <AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {currentUser.displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            {isAdmin && (
-              <span className="absolute -top-1 -right-1 bg-primary rounded-full w-2.5 h-2.5 border-2 border-background"></span>
-            )}
+            {/* Green active status dot */}
+            <span 
+              className="absolute bottom-0 right-0 bg-green-500 rounded-full w-2.5 h-2.5 border-2 border-background"
+              aria-label="Online"
+            />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
