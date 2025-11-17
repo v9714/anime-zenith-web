@@ -38,9 +38,7 @@ export default function AnimeWatch() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Get dynamic values from URL query parameters
-  const videoUrl = searchParams.get('videoUrl') || "";
-  const thumbnailUrl = searchParams.get('thumbnailUrl') || "";
+  // Get episode from URL parameter only (no video URL in address bar)
   const episodeParam = searchParams.get('episode');
   const episodeNumber = parseInt(episodeParam || "1");
 
@@ -54,6 +52,8 @@ export default function AnimeWatch() {
   const [isSaved, setIsSaved] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState(0);
   const [watchedEpisodes, setWatchedEpisodes] = useState<number[]>([]);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
+  const [currentThumbnail, setCurrentThumbnail] = useState<string>("");
 
   // Pause background music when entering watch page
   useEffect(() => {
