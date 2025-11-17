@@ -1,7 +1,7 @@
 import { BACKEND_API_Image_URL } from "./constants";
 
-const getImageUrl = (path: string | undefined): string => {
-    if (!path) return '/placeholder.svg';
+const getImageUrl = (path: string | undefined): string | undefined => {
+    if (!path) return undefined;
 
     // If it's an external URL (starts with http:// or https://), use it directly
     if (path.startsWith('http://') || path.startsWith('https://')) {

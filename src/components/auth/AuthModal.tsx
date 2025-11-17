@@ -20,12 +20,10 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModalProps) {
   const [view, setView] = useState<"signin" | "signup">(defaultView);
 
-  // Reset view when modal closes
+  // Update view when defaultView changes
   useEffect(() => {
-    if (!isOpen) {
-      setView(defaultView);
-    }
-  }, [isOpen, defaultView]);
+    setView(defaultView);
+  }, [defaultView]);
 
   const handleViewChange = (newView: "signin" | "signup") => {
     setView(newView);

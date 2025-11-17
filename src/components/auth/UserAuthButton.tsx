@@ -64,7 +64,9 @@ export function UserAuthButton() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative rounded-full p-0 h-10 w-10">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={getImageUrl(currentUser.avatarUrl || undefined)} alt={currentUser.displayName} />
+              {currentUser.avatarUrl && (
+                <AvatarImage src={getImageUrl(currentUser.avatarUrl)} alt={currentUser.displayName} />
+              )}
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {currentUser.displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
