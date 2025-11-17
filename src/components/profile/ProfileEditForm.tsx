@@ -37,7 +37,7 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
     useEffect(() => {
         form.reset({
             displayName: currentUser.displayName,
-            avatarUrl: currentUser.avatarUrl || ""
+            avatarUrl: "" // Don't populate URL field with uploaded image paths
         });
         setAvatarPreview(getImageUrl(currentUser.avatarUrl || undefined));
     }, [currentUser]);
@@ -46,7 +46,7 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
         resolver: zodResolver(profileSchema),
         defaultValues: {
             displayName: currentUser.displayName,
-            avatarUrl: currentUser.avatarUrl || ""
+            avatarUrl: "" // Keep URL field empty by default
         }
     });
 
