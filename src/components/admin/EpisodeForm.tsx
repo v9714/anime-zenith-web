@@ -353,41 +353,37 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
             </div>
           )}
 
-          {/* Video Source Type Switch */}
-          <FormField
-            control={form.control}
-            name="videoSourceType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Video Source <span className="text-red-500">*</span>
-                </FormLabel>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={field.value === "upload"}
-                    onCheckedChange={(checked) => {
-                      const newType = checked ? "upload" : "url";
-                      field.onChange(newType);
-                      // Clear opposite field when switching
-                      if (newType === "upload") {
-                        form.setValue("masterUrl", "");
-                      } else {
-                        form.setValue("sourceFile", undefined);
-                      }
-                    }}
-                  />
-                  <span className="text-sm">
-                    {field.value === "upload" ? "Upload Source File" : "Use Master URL"}
-                  </span>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Video Source */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="videoSourceType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Video Source *</FormLabel>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={field.value === "upload"}
+                      onCheckedChange={(checked) => {
+                        const newType = checked ? "upload" : "url";
+                        field.onChange(newType);
+                        // Clear opposite field when switching
+                        if (newType === "upload") {
+                          form.setValue("masterUrl", "");
+                        } else {
+                          form.setValue("sourceFile", undefined);
+                        }
+                      }}
+                    />
+                    <span className="text-sm">
+                      {field.value === "upload" ? "Upload File" : "Use URL"}
+                    </span>
+                  </div>
+                </FormItem>
+              )}
+            />
 
-          {/* Master URL or Duration - shown side by side */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {form.watch("videoSourceType") === "url" && (
+            {form.watch("videoSourceType") === "url" ? (
               <FormField
                 control={form.control}
                 name="masterUrl"
@@ -397,38 +393,58 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
                     <FormControl>
                       <Input placeholder="https://example.com/video.mp4" {...field} />
                     </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground">
-                      Direct video URL for streaming
-                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <FormField
+                control={form.control}
+                name="sourceFile"
+                render={({ field: { onChange, value, ...field } }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">Source File</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          onChange(file);
+                        }}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             )}
-
-            <FormField
-              control={form.control}
-              name="duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Duration (minutes) <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="23"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs text-muted-foreground">
-                    Enter duration in minutes
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
+
+          {/* Duration */}
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  Duration (minutes) <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="23"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs text-muted-foreground">
+                  Enter duration in minutes
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Description */}
           <FormField
