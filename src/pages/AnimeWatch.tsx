@@ -54,7 +54,7 @@ export default function AnimeWatch() {
       return { episodeNumber: 1, episodeId: null };
     }
   };
-
+  
   const { episodeNumber, episodeId: episodeIdFromUrl } = decodeParams(encParam);
 
   // State management
@@ -126,13 +126,13 @@ export default function AnimeWatch() {
     // Only update if the episode actually changed
     if (targetIndex !== activeEpisode || !currentVideoUrl) {
       setActiveEpisode(targetIndex);
-
+      
       // Update video URLs
       const episode = episodes[targetIndex];
       if (episode?.masterUrl) {
         const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
         const newThumbnail = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
-
+        
         // Batch state updates to prevent multiple re-renders
         setCurrentVideoUrl(newVideoUrl);
         setCurrentThumbnail(newThumbnail);
@@ -241,13 +241,13 @@ export default function AnimeWatch() {
     if (!episodes[index]) return;
 
     const episode = episodes[index];
-
+    
     // Encode parameters for URL (obfuscated)
     const encodeParams = (epNum: number, epId: number): string => {
       const data = `${epNum}:${epId}`;
       return btoa(data); // base64 encode
     };
-
+    
     // Update URL - this will trigger the useEffect to update video
     const encodedParam = encodeParams(episode.episodeNumber, episode.id);
     navigate(`/watch/${id}?v=${encodedParam}`, { replace: true });
@@ -415,10 +415,12 @@ export default function AnimeWatch() {
                       Episode {currentEpisode?.episodeNumber || episodeNumber}: {currentEpisode?.title || `Episode ${episodeNumber}`}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {currentEpisode?.views?.toLocaleString()} views
-                      </div>
+                      {currentEpisode?.views && currentEpisode.views > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {currentEpisode.views.toLocaleString()} views
+                        </div>
+                      )}
                       <Badge variant="secondary" className="text-xs">
                         {anime.status}
                       </Badge>
@@ -529,7 +531,8 @@ export default function AnimeWatch() {
                       year: anime.year,
                       studio: anime.studio,
                       duration: anime.episodeDuration,
-                      status: anime.status
+                      status: anime.status,
+                      imageUrl: animeImage
                     }}
                     animeId={animeId}
                   />
