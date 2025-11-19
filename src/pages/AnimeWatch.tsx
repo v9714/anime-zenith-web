@@ -112,31 +112,30 @@ export default function AnimeWatch() {
   useEffect(() => {
     if (episodes.length === 0) return;
 
+    let targetIndex = 0;
+
     // Set active episode based on URL params (prioritize episodeId, then episodeNumber)
     if (episodeIdFromUrl) {
       const foundIndex = episodes.findIndex((ep: Episode) => ep.id === episodeIdFromUrl);
-      if (foundIndex >= 0) {
-        setActiveEpisode(foundIndex);
-        // Update video URLs immediately
-        const episode = episodes[foundIndex];
-        setCurrentVideoUrl(`${BACKEND_API_Image_URL}${episode.masterUrl}`);
-        setCurrentThumbnail(`${BACKEND_API_Image_URL}${episode.thumbnail}`);
-      }
-    } else if (encParam) {
+      targetIndex = foundIndex >= 0 ? foundIndex : 0;
+    } else if (encParam && episodeNumber) {
       const foundIndex = episodes.findIndex((ep: Episode) => ep.episodeNumber === episodeNumber);
-      if (foundIndex >= 0) {
-        setActiveEpisode(foundIndex);
-        // Update video URLs immediately
-        const episode = episodes[foundIndex];
-        setCurrentVideoUrl(`${BACKEND_API_Image_URL}${episode.masterUrl}`);
-        setCurrentThumbnail(`${BACKEND_API_Image_URL}${episode.thumbnail}`);
-      }
-    } else {
-      // Default to first episode
-      setActiveEpisode(0);
-      if (episodes[0]) {
-        setCurrentVideoUrl(`${BACKEND_API_Image_URL}${episodes[0].masterUrl}`);
-        setCurrentThumbnail(`${BACKEND_API_Image_URL}${episodes[0].thumbnail}`);
+      targetIndex = foundIndex >= 0 ? foundIndex : 0;
+    }
+
+    // Only update if the episode actually changed
+    if (targetIndex !== activeEpisode || !currentVideoUrl) {
+      setActiveEpisode(targetIndex);
+      
+      // Update video URLs
+      const episode = episodes[targetIndex];
+      if (episode?.masterUrl) {
+        const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
+        const newThumbnail = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
+        
+        // Batch state updates to prevent multiple re-renders
+        setCurrentVideoUrl(newVideoUrl);
+        setCurrentThumbnail(newThumbnail);
       }
     }
   }, [episodes, encParam, episodeNumber, episodeIdFromUrl]);
@@ -243,10 +242,15 @@ export default function AnimeWatch() {
 
     const episode = episodes[index];
     
-    // Update state immediately (NO API CALL)
-    setActiveEpisode(index);
-    setCurrentVideoUrl(`${BACKEND_API_Image_URL}${episode.masterUrl}`);
-    setCurrentThumbnail(`${BACKEND_API_Image_URL}${episode.thumbnail}`);
+    // Encode parameters for URL (obfuscated)
+    const encodeParams = (epNum: number, epId: number): string => {
+      const data = `${epNum}:${epId}`;
+      return btoa(data); // base64 encode
+    };
+    
+    // Update URL - this will trigger the useEffect to update video
+    const encodedParam = encodeParams(episode.episodeNumber, episode.id);
+    navigate(`/watch/${id}?v=${encodedParam}`, { replace: true });
 
     // Mark this episode as watched
     const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
@@ -256,16 +260,6 @@ export default function AnimeWatch() {
     if (currentUser && animeId) {
       localStorage.setItem(`watched_${currentUser.id}_${animeId}`, JSON.stringify(newWatchedEpisodes));
     }
-
-    // Encode parameters for URL (obfuscated)
-    const encodeParams = (epNum: number, epId: number): string => {
-      const data = `${epNum}:${epId}`;
-      return btoa(data); // base64 encode
-    };
-    
-    // Update URL without navigation (using replace to avoid history pollution)
-    const encodedParam = encodeParams(episode.episodeNumber, episode.id);
-    navigate(`/watch/${id}?v=${encodedParam}`, { replace: true });
 
     toast({
       id: String(Date.now()),
