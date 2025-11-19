@@ -110,9 +110,9 @@ export default function AnimeWatch() {
   // Get episode titles for EpisodeList component
   const episodeTitles = episodes.map(ep => ep.title || `Episode ${ep.episodeNumber}`);
 
-  // Get video URL and thumbnail based on current episode or URL params
+  // Get video URL and thumbnail based on current episode
   const getVideoUrl = () => {
-    if (videoUrl) return videoUrl;
+    if (currentVideoUrl) return currentVideoUrl;
     const currentEpisode = getCurrentEpisode();
     if (currentEpisode?.masterUrl) {
       return `${BACKEND_API_Image_URL}${currentEpisode.masterUrl}`;
@@ -121,7 +121,7 @@ export default function AnimeWatch() {
   };
 
   const getThumbnailUrl = () => {
-    if (thumbnailUrl) return thumbnailUrl;
+    if (currentThumbnail) return currentThumbnail;
     const currentEpisode = getCurrentEpisode();
     if (currentEpisode?.thumbnail) {
       return `${BACKEND_API_Image_URL}${currentEpisode.thumbnail}`;
@@ -131,7 +131,7 @@ export default function AnimeWatch() {
 
   // Record watch history when component mounts
   useEffect(() => {
-    if (!animeId || (!videoUrl && !getVideoUrl())) {
+    if (!animeId || !getVideoUrl()) {
       return;
     }
 
@@ -161,7 +161,7 @@ export default function AnimeWatch() {
       }
     }
 
-  }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, videoUrl]);
+  }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, currentVideoUrl]);
 
 
   const handleSave = () => {
