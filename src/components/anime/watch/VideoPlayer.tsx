@@ -63,6 +63,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [is2xSpeed, setIs2xSpeed] = useState(false);
   const [showVolumeIndicator, setShowVolumeIndicator] = useState(false);
 
+
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const progressUpdateRef = useRef<NodeJS.Timeout | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -665,21 +666,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     >
       <style>{`
         video::cue {
-          background-color: rgba(0, 0, 0, 0.8);
-          color: white;
-          font-size: 1.5em;
-          font-family: Arial, sans-serif;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+          background-color: rgba(0, 0, 0, 0.85);
+          color: #ffffff;
+          font-size: clamp(14px, 1.8vw, 20px);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-weight: 500;
+          text-shadow: 
+            2px 2px 4px rgba(0, 0, 0, 0.9),
+            -1px -1px 2px rgba(0, 0, 0, 0.9),
+            1px -1px 2px rgba(0, 0, 0, 0.9),
+            -1px 1px 2px rgba(0, 0, 0, 0.9);
           line-height: 1.4;
+          padding: 0.2em 0.6em;
+          border-radius: 4px;
+          letter-spacing: 0.02em;
         }
         video::-webkit-media-text-track-container {
-          position: relative;
-          bottom: 80px;
+          position: absolute;
+          bottom: 12%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100%;
+          text-align: center;
+          transition: bottom 0.1s ease;
+          pointer-events: none;
         }
-        video::-webkit-media-text-track-display {
-          background: rgba(0, 0, 0, 0.8);
-          padding: 4px 8px;
-          border-radius: 4px;
+        video::cue-region {
+          background: transparent;
         }
       `}</style>
 
@@ -710,6 +723,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           2x
         </div>
       </div>
+
 
       {/* Volume Indicator */}
       <div className={`absolute top-4 left-4 z-20 pointer-events-none transition-all duration-300 ${showVolumeIndicator ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
