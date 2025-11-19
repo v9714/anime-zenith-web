@@ -38,9 +38,11 @@ export default function AnimeWatch() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Get episode from URL parameter only (no video URL in address bar)
+  // Get episode from URL parameters
   const episodeParam = searchParams.get('episode');
+  const episodeIdParam = searchParams.get('episodeId');
   const episodeNumber = parseInt(episodeParam || "1");
+  const episodeIdFromUrl = episodeIdParam ? parseInt(episodeIdParam) : null;
 
   // State management
   const [anime, setAnime] = useState<Anime | null>(null);
@@ -82,8 +84,11 @@ export default function AnimeWatch() {
         if (episodesResponse?.success) {
           setEpisodes(episodesResponse.data || []);
 
-          // Set active episode based on URL param or find by episode number
-          if (episodeParam) {
+          // Set active episode based on URL params (prioritize episodeId, then episodeNumber)
+          if (episodeIdFromUrl) {
+            const foundIndex = episodesResponse.data.findIndex((ep: Episode) => ep.id === episodeIdFromUrl);
+            setActiveEpisode(foundIndex >= 0 ? foundIndex : 0);
+          } else if (episodeParam) {
             const foundIndex = episodesResponse.data.findIndex((ep: Episode) => ep.episodeNumber === episodeNumber);
             setActiveEpisode(foundIndex >= 0 ? foundIndex : 0);
           }
@@ -97,7 +102,7 @@ export default function AnimeWatch() {
     };
 
     fetchData();
-  }, [id, currentSeason, episodeParam, episodeNumber]);
+  }, [id, currentSeason, episodeParam, episodeNumber, episodeIdFromUrl]);
 
   // Get current episode data
   const getCurrentEpisode = () => {
@@ -212,12 +217,8 @@ export default function AnimeWatch() {
       localStorage.setItem(`watched_${currentUser.id}_${animeId}`, JSON.stringify(newWatchedEpisodes));
     }
 
-    // Generate new URLs based on episode data
-    const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
-    const newThumbnailUrl = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
-
-    // Navigate to new episode URL
-    navigate(`/watch/${id}?episode=${episode.episodeNumber}&videoUrl=${encodeURIComponent(newVideoUrl)}&thumbnailUrl=${encodeURIComponent(newThumbnailUrl)}`);
+    // Navigate to new episode URL with episode ID
+    navigate(`/watch/${id}?episode=${episode.episodeNumber}&episodeId=${episode.id}`);
 
     toast({
       id: String(Date.now()),
