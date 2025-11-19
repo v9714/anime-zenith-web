@@ -38,11 +38,24 @@ export default function AnimeWatch() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Get episode from URL parameters
-  const episodeParam = searchParams.get('episode');
-  const episodeIdParam = searchParams.get('episodeId');
-  const episodeNumber = parseInt(episodeParam || "1");
-  const episodeIdFromUrl = episodeIdParam ? parseInt(episodeIdParam) : null;
+  // Decode URL parameters (obfuscated for security)
+  const encParam = searchParams.get('v'); // encoded video/episode data
+  const decodeParams = (encoded: string | null): { episodeNumber: number; episodeId: number | null } => {
+    if (!encoded) return { episodeNumber: 1, episodeId: null };
+    try {
+      // Decode from base64
+      const decoded = atob(encoded);
+      const [ep, eid] = decoded.split(':');
+      return {
+        episodeNumber: parseInt(ep) || 1,
+        episodeId: eid ? parseInt(eid) : null
+      };
+    } catch {
+      return { episodeNumber: 1, episodeId: null };
+    }
+  };
+  
+  const { episodeNumber, episodeId: episodeIdFromUrl } = decodeParams(encParam);
 
   // State management
   const [anime, setAnime] = useState<Anime | null>(null);
@@ -88,7 +101,7 @@ export default function AnimeWatch() {
           if (episodeIdFromUrl) {
             const foundIndex = episodesResponse.data.findIndex((ep: Episode) => ep.id === episodeIdFromUrl);
             setActiveEpisode(foundIndex >= 0 ? foundIndex : 0);
-          } else if (episodeParam) {
+          } else if (encParam) {
             const foundIndex = episodesResponse.data.findIndex((ep: Episode) => ep.episodeNumber === episodeNumber);
             setActiveEpisode(foundIndex >= 0 ? foundIndex : 0);
           }
@@ -102,7 +115,7 @@ export default function AnimeWatch() {
     };
 
     fetchData();
-  }, [id, currentSeason, episodeParam, episodeNumber, episodeIdFromUrl]);
+  }, [id, currentSeason, encParam, episodeNumber, episodeIdFromUrl]);
 
   // Get current episode data
   const getCurrentEpisode = () => {
@@ -217,8 +230,15 @@ export default function AnimeWatch() {
       localStorage.setItem(`watched_${currentUser.id}_${animeId}`, JSON.stringify(newWatchedEpisodes));
     }
 
-    // Navigate to new episode URL with episode ID
-    navigate(`/watch/${id}?episode=${episode.episodeNumber}&episodeId=${episode.id}`);
+    // Encode parameters for URL (obfuscated)
+    const encodeParams = (epNum: number, epId: number): string => {
+      const data = `${epNum}:${epId}`;
+      return btoa(data); // base64 encode
+    };
+    
+    // Navigate to new episode URL with encoded params
+    const encodedParam = encodeParams(episode.episodeNumber, episode.id);
+    navigate(`/watch/${id}?v=${encodedParam}`);
 
     toast({
       id: String(Date.now()),
