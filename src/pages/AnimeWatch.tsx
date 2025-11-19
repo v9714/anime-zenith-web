@@ -19,6 +19,7 @@ import { CommentsSection } from "@/components/anime/watch/CommentsSection";
 import { MostPopularSidebar } from "@/components/anime/watch/MostPopularSidebar";
 import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 import { SeasonsSection } from "@/components/anime/watch/SeasonsSection";
+import { getImageUrl } from "@/utils/commanFunction";
 
 // Dummy popular anime data
 const popularAnime = [
@@ -54,7 +55,7 @@ export default function AnimeWatch() {
       return { episodeNumber: 1, episodeId: null };
     }
   };
-  
+
   const { episodeNumber, episodeId: episodeIdFromUrl } = decodeParams(encParam);
 
   // State management
@@ -126,13 +127,13 @@ export default function AnimeWatch() {
     // Only update if the episode actually changed
     if (targetIndex !== activeEpisode || !currentVideoUrl) {
       setActiveEpisode(targetIndex);
-      
+
       // Update video URLs
       const episode = episodes[targetIndex];
       if (episode?.masterUrl) {
         const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
         const newThumbnail = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
-        
+
         // Batch state updates to prevent multiple re-renders
         setCurrentVideoUrl(newVideoUrl);
         setCurrentThumbnail(newThumbnail);
@@ -241,13 +242,13 @@ export default function AnimeWatch() {
     if (!episodes[index]) return;
 
     const episode = episodes[index];
-    
+
     // Encode parameters for URL (obfuscated)
     const encodeParams = (epNum: number, epId: number): string => {
       const data = `${epNum}:${epId}`;
       return btoa(data); // base64 encode
     };
-    
+
     // Update URL - this will trigger the useEffect to update video
     const encodedParam = encodeParams(episode.episodeNumber, episode.id);
     navigate(`/watch/${id}?v=${encodedParam}`, { replace: true });
@@ -353,7 +354,8 @@ export default function AnimeWatch() {
 
   const currentEpisode = getCurrentEpisode();
   const episodeTitle = `${anime.title} Episode ${currentEpisode?.episodeNumber || episodeNumber}`;
-  const animeImage = `${BACKEND_API_Image_URL}${anime.coverImage || anime.bannerImage}`;
+  const animeImage = getImageUrl(`${anime.bannerImage || anime.coverImage}`);
+
 
   return (
     <Layout>
