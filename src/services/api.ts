@@ -126,6 +126,7 @@ export interface Episode {
   description?: string;
   airDate?: string;
   views: number;
+  loginRequired?: boolean;
 }
 
 export interface EpisodesBySeasonResponse {
