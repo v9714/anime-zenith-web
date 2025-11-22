@@ -20,6 +20,7 @@ import { MostPopularSidebar } from "@/components/anime/watch/MostPopularSidebar"
 import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 import { SeasonsSection } from "@/components/anime/watch/SeasonsSection";
 import { getImageUrl } from "@/utils/commanFunction";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 // Dummy popular anime data
 const popularAnime = [
@@ -70,6 +71,7 @@ export default function AnimeWatch() {
   const [watchedEpisodes, setWatchedEpisodes] = useState<number[]>([]);
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
   const [currentThumbnail, setCurrentThumbnail] = useState<string>("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Pause background music when entering watch page
   useEffect(() => {
@@ -242,6 +244,18 @@ export default function AnimeWatch() {
     if (!episodes[index]) return;
 
     const episode = episodes[index];
+
+    // Check if episode requires login
+    if (episode.loginRequired && !currentUser) {
+      setShowLoginModal(true);
+      toast({
+        id: String(Date.now()),
+        title: "Login Required",
+        description: "This episode requires you to be logged in to watch.",
+        duration: 3000,
+      });
+      return;
+    }
 
     // Encode parameters for URL (obfuscated)
     const encodeParams = (epNum: number, epId: number): string => {
@@ -576,6 +590,13 @@ export default function AnimeWatch() {
           </div>
         </div>
       </div>
+
+      {/* Login Modal */}
+      <AuthModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        defaultView="signin"
+      />
     </Layout>
   );
 }
