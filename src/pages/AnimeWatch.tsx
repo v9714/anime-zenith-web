@@ -126,12 +126,28 @@ export default function AnimeWatch() {
       targetIndex = foundIndex >= 0 ? foundIndex : 0;
     }
 
+    const episode = episodes[targetIndex];
+
+    // Check if episode requires login and user is not logged in
+    if (episode?.loginRequired && !currentUser) {
+      setShowLoginModal(true);
+      toast({
+        id: String(Date.now()),
+        title: "Login Required",
+        description: "This episode requires you to be logged in to watch.",
+        duration: 3000,
+      });
+      // Clear video URL to stop playback
+      setCurrentVideoUrl("");
+      setCurrentThumbnail("");
+      return;
+    }
+
     // Only update if the episode actually changed
     if (targetIndex !== activeEpisode || !currentVideoUrl) {
       setActiveEpisode(targetIndex);
 
       // Update video URLs
-      const episode = episodes[targetIndex];
       if (episode?.masterUrl) {
         const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
         const newThumbnail = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
@@ -141,7 +157,7 @@ export default function AnimeWatch() {
         setCurrentThumbnail(newThumbnail);
       }
     }
-  }, [episodes, encParam, episodeNumber, episodeIdFromUrl]);
+  }, [episodes, encParam, episodeNumber, episodeIdFromUrl, currentUser]);
 
   // Get current episode data
   const getCurrentEpisode = () => {
