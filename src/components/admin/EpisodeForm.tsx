@@ -515,35 +515,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
               </FormItem>
             )}
           />
-
-          {/* Source File Upload (Only shown when upload is selected) */}
-          {form.watch("videoSourceType") === "upload" && (
-            <FormField
-              control={form.control}
-              name="sourceFile"
-              render={({ field: { onChange, value, ...field } }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">Source File</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        onChange(file);
-                      }}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs text-muted-foreground">
-                    Upload the original video file for processing
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
+          
           {/* Settings */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-foreground">Episode Settings</h3>
