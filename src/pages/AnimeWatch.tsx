@@ -482,7 +482,7 @@ export default function AnimeWatch() {
 
                 <VideoPlayer
                   key={`${animeId}-${currentEpisode?.id || activeEpisode}`}
-                  videoUrl={getVideoUrl()}
+                  videoUrl={currentEpisode?.loginRequired && !currentUser ? "" : getVideoUrl()}
                   thumbnailUrl={getThumbnailUrl()}
                   animeId={animeId}
                   episodeId={currentEpisode?.id?.toString()}
@@ -492,6 +492,19 @@ export default function AnimeWatch() {
                   hasPreviousEpisode={activeEpisode > 0}
                   episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
                 />
+
+                {/* Login Required Message */}
+                {currentEpisode?.loginRequired && !currentUser && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-semibold text-destructive mb-2">Login Required</h3>
+                    <p className="text-muted-foreground mb-4">
+                      This episode is available for logged-in users only. Please sign in to continue watching.
+                    </p>
+                    <Button onClick={() => setShowLoginModal(true)} className="gap-2">
+                      Sign In to Watch
+                    </Button>
+                  </div>
+                )}
 
                 {/* Interactive Video Controls */}
                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
