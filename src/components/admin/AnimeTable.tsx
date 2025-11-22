@@ -110,8 +110,8 @@ export function AnimeTable({ animes, loading, onEdit, onDelete }: AnimeTableProp
               <TableCell>
                 <div className="flex items-center gap-3">
                   <img
-                    src={getImageUrl(anime.coverImage)}
-                    alt={anime.title}
+                    src={getImageUrl(anime?.coverImage)}
+                    alt={anime?.title}
                     className="h-12 w-12 rounded-md object-cover shadow-sm"
                   />
                   <div className="min-w-0 flex-1">
