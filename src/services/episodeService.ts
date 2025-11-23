@@ -18,6 +18,7 @@ export interface Episode {
   isDeleted: boolean;
   commentsEnabled: boolean;
   loginRequired: boolean;
+  isFiller: boolean;
   views: number;
   sourceFile?: string;
   processingStatus: "QUEUED" | "PROCESSING" | "READY" | "FAILED";

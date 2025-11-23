@@ -493,6 +493,22 @@ export default function AnimeWatch() {
                   episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
                 />
 
+
+                {/* Filler Episode Notice */}
+                {currentEpisode?.isFiller && (
+                  <div className="bg-red-600/20 border-2 border-red-600/50 rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+                      <p className="text-red-600 font-semibold text-sm">
+                        You are watching Filler Episode {currentEpisode?.episodeNumber}
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      If current server doesn't work please try other servers beside.
+                    </p>
+                  </div>
+                )}
+
                 {/* Login Required Message */}
                 {currentEpisode?.loginRequired && !currentUser && (
                   <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">

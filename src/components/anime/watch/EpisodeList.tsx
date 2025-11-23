@@ -9,6 +9,7 @@ interface Episode {
   title: string;
   views?: number;
   description?: string;
+  isFiller?: boolean;
 }
 
 interface EpisodeListProps {
@@ -34,12 +35,15 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
     return ep.description || "Watch this exciting episode now!";
   };
 
-  const getEpisodeStyles = (index: number): string => {
+  const getEpisodeStyles = (index: number, ep: Episode | string): string => {
     const isActive = index === active;
     const isWatched = watchedEpisodes.includes(index);
+    const isFiller = typeof ep !== 'string' && ep.isFiller;
 
     if (isActive) {
       return "bg-primary text-primary-foreground shadow-md scale-105";
+    } else if (isFiller) {
+      return "bg-red-600/80 text-white hover:bg-red-600 hover:scale-105 border-2 border-red-400";
     } else if (isWatched) {
       return "bg-green-600/80 text-white hover:bg-green-600 hover:scale-105";
     } else {
@@ -91,7 +95,7 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
                   <Tooltip key={i}>
                     <TooltipTrigger asChild>
                       <div
-                        className={`relative w-full aspect-square rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center text-sm font-bold shadow-md hover:shadow-xl ${getEpisodeStyles(i)} group/episode`}
+                        className={`relative w-full aspect-square rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center text-sm font-bold shadow-md hover:shadow-xl ${getEpisodeStyles(i, ep)} group/episode`}
                         onClick={() => onSelectEpisode && onSelectEpisode(i)}
                       >
                         <span className="relative z-10">{episodeNumber}</span>
