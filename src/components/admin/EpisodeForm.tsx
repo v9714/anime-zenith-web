@@ -37,6 +37,7 @@ const episodeFormSchema = z.object({
   isDeleted: z.boolean(),
   commentsEnabled: z.boolean(),
   loginRequired: z.boolean(),
+  isFiller: z.boolean(),
   sourceFile: z.any().optional(),
 }).refine((data) => {
   if (data.thumbnailType === "url") {
@@ -96,6 +97,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
       isDeleted: episode?.isDeleted || false,
       commentsEnabled: episode?.commentsEnabled ?? true,
       loginRequired: episode?.loginRequired || false,
+      isFiller: episode?.isFiller || false,
     },
   });
 
@@ -554,6 +556,29 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
                     </FormLabel>
                     <FormDescription className="text-xs text-muted-foreground">
                       Require users to be logged in to watch this episode
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isFiller"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-medium">
+                      Filler Episode
+                    </FormLabel>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      Mark this episode as filler content (non-canon)
                     </FormDescription>
                   </div>
                   <FormControl>
