@@ -85,20 +85,18 @@ const AdminAnime = () => {
       if (anime?.id) {
         // Update existing anime
         response = await adminAnimeService.updateAnime(anime.id, formData);
-        const updatedAnimes = animes.map(a =>
-          a.id === anime.id ? { ...a, ...response.data } : a
-        );
-        setAnimes(updatedAnimes);
         toast.success(response.message || "Anime updated successfully");
       } else {
         // Create new anime
         response = await adminAnimeService.createAnime(formData);
-        setAnimes([...animes, response.data]);
         toast.success(response.message || "Anime created successfully");
       }
 
       setDialogOpen(false);
       setEditingAnime(null);
+      
+      // Refresh the anime list to show updated data
+      await fetchAnimes();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "An error occurred");
     } finally {
