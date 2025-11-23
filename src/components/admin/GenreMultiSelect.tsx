@@ -49,7 +49,13 @@ export function GenreMultiSelect({ value, onChange, className }: GenreMultiSelec
     onChange(value.filter((id) => id !== genreId));
   };
 
-  const selectedGenres = genreOptions.filter((g) => value.includes(g.id));
+  // Find selected genres from options, fallback to creating genre objects from IDs
+  const selectedGenres = value
+    .map((id) => {
+      const found = genreOptions.find((g) => g.id === id);
+      return found || { id, name: `Genre ${id}` };
+    })
+    .filter((g) => g !== null) as Genre[];
 
   return (
     <div className={cn("space-y-2", className)}>
