@@ -60,7 +60,7 @@ const App = () => {
                   <Route path="/" element={<Home />} />
                   <Route path="/anime" element={<AnimeList />} />
                   <Route path="/anime/:id" element={<AnimeDetails />} />
-                  <Route path="/watch/:id" element={<AnimeWatch />} />
+                  <Route path="/anime/:id/watch" element={<AnimeWatch />} />
                   <Route path="/episodes" element={<Episodes />} />
                   <Route path="/search" element={<Search />} />
                   <Route path="/contact" element={<Contact />} />

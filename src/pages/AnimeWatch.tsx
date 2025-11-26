@@ -282,7 +282,7 @@ export default function AnimeWatch() {
 
     // Update URL - this will trigger the useEffect to update video
     const encodedParam = encodeParams(episode.episodeNumber, episode.id);
-    navigate(`/watch/${id}?v=${encodedParam}`, { replace: true });
+    navigate(`/anime/${id}/watch?v=${encodedParam}`, { replace: true });
 
     // Mark this episode as watched
     const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
