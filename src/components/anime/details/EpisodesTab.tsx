@@ -121,7 +121,7 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
               <div className="flex gap-2 pt-1">
                 <Button asChild size="sm" className="rounded-full">
                   <Link
-                    to={`/watch/${ep.animeId}?videoUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.masterUrl}`)}&thumbnailUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.thumbnail}`)}&episode=${ep.episodeNumber}`}
+                    to={`/anime/${ep.animeId}/watch?videoUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.masterUrl}`)}&thumbnailUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.thumbnail}`)}&episode=${ep.episodeNumber}`}
                   >
                     <Play className="h-4 w-4 mr-1" /> Watch
                   </Link>

@@ -180,7 +180,7 @@ export default function AnimeDetails() {
 
               <div className="flex justify-center gap-2 mt-4">
                 <Button asChild className="flex-1 rounded-full">
-                  <Link to={`/watch/${anime.id}`} className="flex items-center justify-center gap-1">
+                  <Link to={`/anime/${anime.id}/watch`} className="flex items-center justify-center gap-1">
                     <Play className="h-4 w-4" />
                     <span>Watch</span>
                   </Link>
