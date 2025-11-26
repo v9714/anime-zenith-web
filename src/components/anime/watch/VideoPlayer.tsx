@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import defaultThumbnail from "@/assets/default-episode-thumbnail.jpg";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -696,18 +697,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }
       `}</style>
 
-      {/* Video Element */}
-      <video
-        ref={videoRef}
-        className={`w-full ${thumbnailUrl ? 'object-contain' : 'object-cover aspect-video'} ${isFullscreen ? 'h-screen' : isTheaterMode ? 'h-auto max-h-[85vh]' : 'h-auto max-h-[70vh]'
-          }`}
-        poster={thumbnailUrl}
-        crossOrigin="anonymous"
-        onClick={togglePlay}
-        onDoubleClick={toggleFullscreen}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      />
+      {/* Video Element with Fixed Aspect Ratio */}
+      <div className={`relative w-full ${isFullscreen ? '' : 'aspect-video'}`}>
+        <video
+          ref={videoRef}
+          className={`w-full h-full object-contain ${isFullscreen ? 'h-screen' : isTheaterMode ? 'max-h-[85vh]' : 'max-h-[70vh]'}`}
+          poster={thumbnailUrl || defaultThumbnail}
+          crossOrigin="anonymous"
+          onClick={togglePlay}
+          onDoubleClick={toggleFullscreen}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        />
+      </div>
 
       {/* Buffering Loader */}
       {isBuffering && (

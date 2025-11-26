@@ -38,6 +38,9 @@ export const SOCIAL_LINKS = {
   discord: "#"
 };
 
+// Default Images
+export const DEFAULT_EPISODE_THUMBNAIL = "/src/assets/default-episode-thumbnail.jpg";
+
 // Routes
 export const ROUTES = {
   home: "/",
