@@ -19,11 +19,9 @@ if (!React || typeof React.createElement !== 'function' || typeof React.useState
 const handleError = (event: ErrorEvent | PromiseRejectionEvent) => {
   console.error('Application error:', event);
   
-  // Check if error is related to React hooks being null
+  // Log errors but don't reload automatically to prevent infinite loops
   if (event instanceof ErrorEvent && event.message?.includes('Cannot read properties of null')) {
-    console.error('React hooks error detected - reloading application');
-    window.location.reload();
-    return;
+    console.error('React hooks error detected');
   }
   
   // For resource loading errors like script/module failures
