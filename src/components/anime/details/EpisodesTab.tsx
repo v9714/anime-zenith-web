@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getImageUrl } from '@/utils/commanFunction';
+import defaultThumbnail from '@/assets/default-episode-thumbnail.jpg';
 
 interface EpisodesTabProps {
   animeId: number | string;
@@ -87,13 +88,21 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {episodes.map((ep) => (
           <Card key={ep.id} className="p-3 overflow-hidden hover-scale animate-fade-in">
-            <div className="relative aspect-video rounded-md overflow-hidden mb-3">
+            <div className="relative aspect-video rounded-md overflow-hidden mb-3 bg-muted">
               <img
-                src={getImageUrl(ep.thumbnail)}
+                src={ep.thumbnail ? getImageUrl(ep.thumbnail) : defaultThumbnail}
                 alt={`Episode ${ep.episodeNumber} thumbnail`}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src = defaultThumbnail;
+                }}
               />
+              {!ep.thumbnail && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Play className="h-12 w-12 text-white/50" />
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">

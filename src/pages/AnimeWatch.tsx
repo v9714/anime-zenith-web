@@ -11,6 +11,7 @@ import { useAudio } from "@/contexts/AudioContext";
 import { useToast } from "@/hooks/use-toast";
 import { getAnimeById, getAnimeEpisodesBySeason, Anime, Episode } from "@/services/api";
 import { BACKEND_API_Image_URL } from "@/utils/constants";
+import defaultThumbnail from "@/assets/default-episode-thumbnail.jpg";
 
 // Import components
 import { EpisodeList } from "@/components/anime/watch/EpisodeList";
@@ -150,7 +151,7 @@ export default function AnimeWatch() {
       // Update video URLs
       if (episode?.masterUrl) {
         const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
-        const newThumbnail = `${BACKEND_API_Image_URL}${episode.thumbnail}`;
+        const newThumbnail = episode.thumbnail ? `${BACKEND_API_Image_URL}${episode.thumbnail}` : defaultThumbnail;
 
         // Batch state updates to prevent multiple re-renders
         setCurrentVideoUrl(newVideoUrl);
@@ -186,7 +187,7 @@ export default function AnimeWatch() {
     if (currentEpisode?.thumbnail) {
       return `${BACKEND_API_Image_URL}${currentEpisode.thumbnail}`;
     }
-    return "";
+    return defaultThumbnail;
   };
 
   // Record watch history when component mounts
