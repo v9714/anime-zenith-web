@@ -39,32 +39,76 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 }
 
 function DefaultErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+  const handleReload = () => {
+    window.location.href = '/';
+  };
+
   return (
     <div style={{ 
-      padding: '20px', 
+      padding: '40px 20px', 
       textAlign: 'center', 
-      backgroundColor: '#f8f9fa',
-      border: '1px solid #e9ecef',
-      borderRadius: '8px',
-      margin: '20px'
+      backgroundColor: '#1a1a1a',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     }}>
-      <h2 style={{ color: '#dc3545', marginBottom: '10px' }}>Something went wrong</h2>
-      <p style={{ color: '#6c757d', marginBottom: '15px' }}>
-        {error.message || 'An unexpected error occurred'}
-      </p>
-      <button 
-        onClick={resetError}
-        style={{
-          padding: '8px 16px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        Try again
-      </button>
+      <div style={{ maxWidth: '500px' }}>
+        <h2 style={{ color: '#ef4444', marginBottom: '16px', fontSize: '24px', fontWeight: 'bold' }}>
+          Something went wrong
+        </h2>
+        <p style={{ color: '#9ca3af', marginBottom: '24px', lineHeight: '1.6' }}>
+          The application encountered an error. Please try refreshing the page or contact support if the problem persists.
+        </p>
+        <details style={{ 
+          marginBottom: '24px', 
+          textAlign: 'left', 
+          backgroundColor: '#262626',
+          padding: '12px',
+          borderRadius: '6px',
+          color: '#ef4444',
+          fontSize: '12px'
+        }}>
+          <summary style={{ cursor: 'pointer', marginBottom: '8px', color: '#9ca3af' }}>
+            Error Details
+          </summary>
+          <code style={{ wordBreak: 'break-word' }}>
+            {error.message || 'An unexpected error occurred'}
+          </code>
+        </details>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <button 
+            onClick={resetError}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Try Again
+          </button>
+          <button 
+            onClick={handleReload}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#6b7280',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
