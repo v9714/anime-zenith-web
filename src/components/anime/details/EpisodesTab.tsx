@@ -120,9 +120,7 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
               ) : null}
               <div className="flex gap-2 pt-1">
                 <Button asChild size="sm" className="rounded-full">
-                  <Link
-                    to={`/anime/${ep.animeId}/watch?videoUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.masterUrl}`)}&thumbnailUrl=${encodeURIComponent(`${BACKEND_API_Image_URL}${ep.thumbnail}`)}&episode=${ep.episodeNumber}`}
-                  >
+                  <Link to={`/anime/${ep.animeId}/watch/${ep.episodeNumber}`}>
                     <Play className="h-4 w-4 mr-1" /> Watch
                   </Link>
                 </Button>
