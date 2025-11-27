@@ -718,6 +718,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       )}
 
+      {/* Play/Pause Center Overlay */}
+      {!isBuffering && (
+        <div 
+          className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-none transition-all duration-300 ease-out ${
+            !isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+          }`}
+        >
+          <div className="bg-black/60 backdrop-blur-sm rounded-full p-5 shadow-2xl">
+            <Play className="h-12 w-12 text-white fill-white" />
+          </div>
+        </div>
+      )}
+
       {/* 2x Speed Indicator */}
       <div className={`absolute top-4 right-4 z-20 pointer-events-none transition-all duration-300 ${is2xSpeed ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
         }`}>
