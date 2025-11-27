@@ -1,8 +1,9 @@
-import * as React from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { Component, ReactNode, ComponentType, ErrorInfo } from 'react';
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
+  children: ReactNode;
+  fallback?: ComponentType<{ error: Error; resetError: () => void }>;
 }
 
 interface ErrorBoundaryState {
@@ -10,7 +11,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -20,7 +21,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
   }
 
@@ -44,9 +45,9 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
   };
 
   return (
-    <div style={{ 
-      padding: '40px 20px', 
-      textAlign: 'center', 
+    <div style={{
+      padding: '40px 20px',
+      textAlign: 'center',
       backgroundColor: '#1a1a1a',
       minHeight: '100vh',
       display: 'flex',
@@ -60,9 +61,9 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
         <p style={{ color: '#9ca3af', marginBottom: '24px', lineHeight: '1.6' }}>
           The application encountered an error. Please try refreshing the page or contact support if the problem persists.
         </p>
-        <details style={{ 
-          marginBottom: '24px', 
-          textAlign: 'left', 
+        <details style={{
+          marginBottom: '24px',
+          textAlign: 'left',
           backgroundColor: '#262626',
           padding: '12px',
           borderRadius: '6px',
@@ -77,7 +78,7 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
           </code>
         </details>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <button 
+          <button
             onClick={resetError}
             style={{
               padding: '10px 20px',
@@ -92,7 +93,7 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
           >
             Try Again
           </button>
-          <button 
+          <button
             onClick={handleReload}
             style={{
               padding: '10px 20px',

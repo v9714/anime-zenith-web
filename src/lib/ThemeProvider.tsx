@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import * as React from "react";
 import {
   createContext,
   useContext,
@@ -35,15 +34,6 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
-  // Validate React is properly loaded
-  if (!React || typeof useState !== 'function') {
-    console.error('React hooks are not available. Reloading...');
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
-    return <>{children}</>;
-  }
-
   const [theme, setTheme] = useState<Theme>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
@@ -94,9 +84,7 @@ export function ThemeProvider({
 
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
-
   if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider");
-
   return context;
 };
