@@ -33,32 +33,13 @@ const popularAnime = [
 ];
 
 export default function AnimeWatch() {
-  const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const { id, episodeNumber: episodeParam } = useParams<{ id: string; episodeNumber: string }>();
   const animeId = parseInt(id || "0");
+  const episodeNumber = parseInt(episodeParam || "1");
   const { updateWatchHistory, currentUser } = useAuth();
   const { pauseBackgroundMusic, resumeBackgroundMusic } = useAudio();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // Decode URL parameters (obfuscated for security)
-  const encParam = searchParams.get('v'); // encoded video/episode data
-  const decodeParams = (encoded: string | null): { episodeNumber: number; episodeId: number | null } => {
-    if (!encoded) return { episodeNumber: 1, episodeId: null };
-    try {
-      // Decode from base64
-      const decoded = atob(encoded);
-      const [ep, eid] = decoded.split(':');
-      return {
-        episodeNumber: parseInt(ep) || 1,
-        episodeId: eid ? parseInt(eid) : null
-      };
-    } catch {
-      return { episodeNumber: 1, episodeId: null };
-    }
-  };
-
-  const { episodeNumber, episodeId: episodeIdFromUrl } = decodeParams(encParam);
 
   // State management
   const [anime, setAnime] = useState<Anime | null>(null);
@@ -118,11 +99,8 @@ export default function AnimeWatch() {
 
     let targetIndex = 0;
 
-    // Set active episode based on URL params (prioritize episodeId, then episodeNumber)
-    if (episodeIdFromUrl) {
-      const foundIndex = episodes.findIndex((ep: Episode) => ep.id === episodeIdFromUrl);
-      targetIndex = foundIndex >= 0 ? foundIndex : 0;
-    } else if (encParam && episodeNumber) {
+    // Set active episode based on episode number from URL
+    if (episodeNumber) {
       const foundIndex = episodes.findIndex((ep: Episode) => ep.episodeNumber === episodeNumber);
       targetIndex = foundIndex >= 0 ? foundIndex : 0;
     }
@@ -158,7 +136,7 @@ export default function AnimeWatch() {
         setCurrentThumbnail(newThumbnail);
       }
     }
-  }, [episodes, encParam, episodeNumber, episodeIdFromUrl, currentUser]);
+  }, [episodes, episodeNumber, currentUser]);
 
   // Get current episode data
   const getCurrentEpisode = () => {
@@ -274,15 +252,8 @@ export default function AnimeWatch() {
       return;
     }
 
-    // Encode parameters for URL (obfuscated)
-    const encodeParams = (epNum: number, epId: number): string => {
-      const data = `${epNum}:${epId}`;
-      return btoa(data); // base64 encode
-    };
-
-    // Update URL - this will trigger the useEffect to update video
-    const encodedParam = encodeParams(episode.episodeNumber, episode.id);
-    navigate(`/anime/${id}/watch?v=${encodedParam}`, { replace: true });
+    // Update URL with clean episode number
+    navigate(`/anime/${id}/watch/${episode.episodeNumber}`, { replace: true });
 
     // Mark this episode as watched
     const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
