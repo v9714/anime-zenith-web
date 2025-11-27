@@ -473,15 +473,15 @@ export default function AnimeWatch() {
 
                 {/* Filler Episode Notice */}
                 {currentEpisode?.isFiller && (
-                  <div className="bg-red-600/20 border-2 border-red-600/50 rounded-lg p-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-                      <p className="text-red-600 font-semibold text-sm">
-                        You are watching Filler Episode {currentEpisode?.episodeNumber}
+                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                      <p className="text-amber-700 dark:text-amber-400 font-medium text-sm">
+                        Filler Episode
                       </p>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      If current server doesn't work please try other servers beside.
+                    <p className="text-xs text-amber-600/80 dark:text-amber-500/70 mt-1 ml-4">
+                      This episode is not part of the main storyline.
                     </p>
                   </div>
                 )}
@@ -539,6 +539,19 @@ export default function AnimeWatch() {
                     </Button>
                   </div>
                 </div>
+
+                {/* Episode Description */}
+                {currentEpisode?.description && (
+                  <div className="bg-card border border-border/30 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      Episode Synopsis
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {currentEpisode.description}
+                    </p>
+                  </div>
+                )}
 
                 {/* Comments Section */}
                 {/* Tmp comment */}
