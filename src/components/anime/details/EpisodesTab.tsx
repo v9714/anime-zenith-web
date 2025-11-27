@@ -10,6 +10,7 @@ import { Clock, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getImageUrl } from '@/utils/commanFunction';
 import defaultThumbnail from '@/assets/default-episode-thumbnail.jpg';
+import { generateWatchUrl } from '@/utils/urlEncoder';
 
 interface EpisodesTabProps {
   animeId: number | string;
@@ -120,7 +121,7 @@ export default function EpisodesTab({ animeId, defaultSeason }: EpisodesTabProps
               ) : null}
               <div className="flex gap-2 pt-1">
                 <Button asChild size="sm" className="rounded-full">
-                  <Link to={`/anime/${ep.animeId}/watch/${ep.episodeNumber}`}>
+                  <Link to={generateWatchUrl(ep.animeId, ep.episodeNumber)}>
                     <Play className="h-4 w-4 mr-1" /> Watch
                   </Link>
                 </Button>

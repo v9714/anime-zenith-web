@@ -19,6 +19,7 @@ import { getAnimeById, getAnimeRecommendations, Anime } from "@/services/api";
 import { getImageUrl } from "@/utils/commanFunction";
 import EpisodesTab from "@/components/anime/details/EpisodesTab";
 import CharactersTab from "@/components/anime/details/CharactersTab";
+import { generateWatchUrl } from "@/utils/urlEncoder";
 
 // Ad component placeholder (for Google AdSense)
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -129,7 +130,7 @@ export default function AnimeDetails() {
 
   const animeImage = getImageUrl(anime.bannerImage || anime.coverImage);
   const genresList = anime.genres?.map(g => g.name).join(', ') || '';
-  
+
   return (
     <Layout>
       <SEO
@@ -180,7 +181,7 @@ export default function AnimeDetails() {
 
               <div className="flex justify-center gap-2 mt-4">
                 <Button asChild className="flex-1 rounded-full">
-                  <Link to={`/anime/${anime.id}/watch/1`} className="flex items-center justify-center gap-1">
+                  <Link to={generateWatchUrl(anime.id, 1)} className="flex items-center justify-center gap-1">
                     <Play className="h-4 w-4" />
                     <span>Watch</span>
                   </Link>

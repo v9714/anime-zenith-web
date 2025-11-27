@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { SEO, BreadcrumbSchema, VideoSchema } from "@/components/SEO";
 import { Star, Play, Heart, Share, SkipBack, SkipForward, List, Info, ThumbsUp, BookmarkPlus, Search, Eye } from "lucide-react";
+import { decodeWatchUrl, generateWatchUrl } from "@/utils/urlEncoder";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +34,13 @@ const popularAnime = [
 ];
 
 export default function AnimeWatch() {
-  const { id, episodeNumber: episodeParam } = useParams<{ id: string; episodeNumber: string }>();
-  const animeId = parseInt(id || "0");
-  const episodeNumber = parseInt(episodeParam || "1");
+  const { encoded } = useParams<{ encoded: string }>();
+
+  // Decode the base64 encoded URL parameter
+  const { animeId: decodedAnimeId, episodeNumber: decodedEpisodeNumber } = decodeWatchUrl(encoded || "");
+  const animeId = parseInt(decodedAnimeId || "0");
+  const episodeNumber = parseInt(decodedEpisodeNumber || "1");
+  const id = decodedAnimeId;
   const { updateWatchHistory, currentUser } = useAuth();
   const { pauseBackgroundMusic, resumeBackgroundMusic } = useAudio();
   const navigate = useNavigate();
@@ -252,8 +257,8 @@ export default function AnimeWatch() {
       return;
     }
 
-    // Update URL with clean episode number
-    navigate(`/anime/${id}/watch/${episode.episodeNumber}`, { replace: true });
+    // Update URL with encoded episode number
+    navigate(generateWatchUrl(id!, episode.episodeNumber), { replace: true });
 
     // Mark this episode as watched
     const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
