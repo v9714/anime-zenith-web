@@ -100,9 +100,14 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
             onSuccess={onClose}
             switchToSignUp={() => handleViewChange("signup")}
             switchToForgotPassword={() => handleViewChange("forgot-password")}
+            onLoadingChange={setIsLoading}
           />
         ) : view === "signup" ? (
-          <SignUpForm onSuccess={onClose} switchToSignIn={() => handleViewChange("signin")} />
+          <SignUpForm
+            onSuccess={onClose}
+            switchToSignIn={() => handleViewChange("signin")}
+            onLoadingChange={setIsLoading}
+          />
         ) : (
           <ForgotPasswordForm
             onBack={() => handleViewChange("signin")}

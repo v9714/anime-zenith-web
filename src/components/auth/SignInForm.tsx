@@ -25,9 +25,10 @@ interface SignInFormProps {
   onSuccess: () => void;
   switchToSignUp: () => void;
   switchToForgotPassword: () => void;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-export function SignInForm({ onSuccess, switchToSignUp, switchToForgotPassword }: SignInFormProps) {
+export function SignInForm({ onSuccess, switchToSignUp, switchToForgotPassword, onLoadingChange }: SignInFormProps) {
   const { signIn } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -42,12 +43,14 @@ export function SignInForm({ onSuccess, switchToSignUp, switchToForgotPassword }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
+    onLoadingChange?.(true);
     try {
       await signIn(values.email, values.password);
       form.reset();
       onSuccess();
     } finally {
       setIsSubmitting(false);
+      onLoadingChange?.(false);
     }
   };
 

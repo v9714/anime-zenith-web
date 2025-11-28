@@ -23,9 +23,10 @@ const formSchema = z.object({
 interface SignUpFormProps {
   onSuccess: () => void;
   switchToSignIn: () => void;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-export function SignUpForm({ onSuccess, switchToSignIn }: SignUpFormProps) {
+export function SignUpForm({ onSuccess, switchToSignIn, onLoadingChange }: SignUpFormProps) {
   const { signUp } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
@@ -40,6 +41,7 @@ export function SignUpForm({ onSuccess, switchToSignIn }: SignUpFormProps) {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
+    onLoadingChange?.(true);
     try {
       await signUp(values.email, values.displayName);
       form.reset();
@@ -48,6 +50,7 @@ export function SignUpForm({ onSuccess, switchToSignIn }: SignUpFormProps) {
       // Error is already handled in AuthContext with toast
     } finally {
       setIsSubmitting(false);
+      onLoadingChange?.(false);
     }
   };
 

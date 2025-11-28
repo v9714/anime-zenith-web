@@ -70,6 +70,10 @@ export default function ResetPassword() {
                 toast.success("Password Reset Successful", {
                     description: response.message,
                 });
+                // Auto redirect to login after 4 seconds
+                setTimeout(() => {
+                    navigate("/");
+                }, 4000);
             } else {
                 setResetStatus("error");
                 setErrorMessage(response.message || "Failed to reset password");
@@ -122,6 +126,9 @@ export default function ResetPassword() {
                                 </div>
                                 <p className="text-sm text-muted-foreground">
                                     You can now sign in with your new password.
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Redirecting to login in a few seconds...
                                 </p>
                                 <Button onClick={handleGoToLogin} className="w-full">
                                     Go to Sign In
