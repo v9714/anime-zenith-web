@@ -70,6 +70,26 @@ export interface ResetPasswordResponse {
   success: boolean;
 }
 
+export interface VerifyEmailResponse {
+  statusCode: number;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      displayName: string;
+      avatarUrl: string | null;
+      isPremium: boolean;
+      isAdmin: boolean;
+      createdAt: string;
+      lastLogin: string | null;
+    };
+    accessToken: string;
+    refreshToken: string;
+  };
+  message: string;
+  success: boolean;
+}
+
 export const authService = {
   register: async (email: string, displayName: string): Promise<RegisterResponse> => {
     const response = await backendAPI.post<RegisterResponse>('/auth/register', {
@@ -103,6 +123,13 @@ export const authService = {
     const response = await backendAPI.post<ResetPasswordResponse>('/auth/reset-password', {
       token,
       newPassword
+    });
+    return response.data;
+  },
+
+  verifyEmail: async (token: string): Promise<VerifyEmailResponse> => {
+    const response = await backendAPI.post<VerifyEmailResponse>('/auth/verify-email', {
+      token
     });
     return response.data;
   },

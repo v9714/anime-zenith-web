@@ -19,6 +19,7 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModalProps) {
   const [view, setView] = useState<"signin" | "signup" | "forgot-password">(defaultView);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Update view when defaultView changes
   useEffect(() => {
@@ -27,6 +28,16 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
 
   const handleViewChange = (newView: "signin" | "signup" | "forgot-password") => {
     setView(newView);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    // Prevent closing if loading
+    if (!open && isLoading) {
+      return;
+    }
+    if (!open) {
+      onClose();
+    }
   };
 
   const getTitle = () => {
@@ -52,8 +63,20 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onPointerDownOutside={(e) => {
+          if (isLoading) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (isLoading) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {getTitle()}
@@ -64,23 +87,27 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
         </DialogHeader>
 
         <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          onClick={() => !isLoading && onClose()}
+          disabled={isLoading}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </button>
 
         {view === "signin" ? (
-          <SignInForm 
-            onSuccess={onClose} 
-            switchToSignUp={() => handleViewChange("signup")} 
+          <SignInForm
+            onSuccess={onClose}
+            switchToSignUp={() => handleViewChange("signup")}
             switchToForgotPassword={() => handleViewChange("forgot-password")}
           />
         ) : view === "signup" ? (
           <SignUpForm onSuccess={onClose} switchToSignIn={() => handleViewChange("signin")} />
         ) : (
-          <ForgotPasswordForm onBack={() => handleViewChange("signin")} />
+          <ForgotPasswordForm
+            onBack={() => handleViewChange("signin")}
+            onLoadingChange={setIsLoading}
+          />
         )}
       </DialogContent>
     </Dialog>

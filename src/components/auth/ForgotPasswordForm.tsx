@@ -14,7 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { EmailSentConfirmation } from "./EmailSentConfirmation";
 
 const formSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email address" }),
@@ -22,9 +23,10 @@ const formSchema = z.object({
 
 interface ForgotPasswordFormProps {
     onBack: () => void;
+    onLoadingChange?: (isLoading: boolean) => void;
 }
 
-export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({ onBack, onLoadingChange }: ForgotPasswordFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEmailSent, setIsEmailSent] = useState(false);
 
@@ -37,6 +39,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setIsSubmitting(true);
+        onLoadingChange?.(true);
         try {
             const response = await authService.forgotPassword(values.email);
             if (response.success) {
@@ -56,28 +59,18 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
             });
         } finally {
             setIsSubmitting(false);
+            onLoadingChange?.(false);
         }
     };
 
     if (isEmailSent) {
         return (
-            <div className="space-y-4 text-center">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold">Check your email</h3>
-                <p className="text-sm text-muted-foreground">
-                    We've sent a password reset link to your email address. Please check your inbox and follow the instructions.
-                </p>
-                <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={onBack}
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Sign In
-                </Button>
-            </div>
+            <EmailSentConfirmation
+                title="Check your email"
+                description="We've sent a password reset link to your email address. Please check your inbox and follow the instructions."
+                onBack={onBack}
+                backButtonText="Back to Sign In"
+            />
         );
     }
 
@@ -96,7 +89,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="your.email@example.com" {...field} />
+                                    <Input placeholder="your.email@example.com" {...field} disabled={isSubmitting} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -105,7 +98,14 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
 
                     <div className="flex flex-col gap-2">
                         <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            {isSubmitting ? "Sending..." : "Send Reset Link"}
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Sending...
+                                </>
+                            ) : (
+                                "Send Reset Link"
+                            )}
                         </Button>
 
                         <Button
@@ -113,6 +113,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
                             variant="ghost"
                             className="w-full"
                             onClick={onBack}
+                            disabled={isSubmitting}
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back to Sign In

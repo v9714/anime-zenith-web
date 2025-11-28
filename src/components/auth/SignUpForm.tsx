@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { EmailSentConfirmation } from "./EmailSentConfirmation";
 
 const formSchema = z.object({
   displayName: z.string().min(2, { message: "Display name must be at least 2 characters" }),
@@ -28,6 +28,7 @@ interface SignUpFormProps {
 export function SignUpForm({ onSuccess, switchToSignIn }: SignUpFormProps) {
   const { signUp } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEmailSent, setIsEmailSent] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,13 +43,24 @@ export function SignUpForm({ onSuccess, switchToSignIn }: SignUpFormProps) {
     try {
       await signUp(values.email, values.displayName);
       form.reset();
-      switchToSignIn();
+      setIsEmailSent(true);
     } catch (error) {
       // Error is already handled in AuthContext with toast
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isEmailSent) {
+    return (
+      <EmailSentConfirmation
+        title="Check your email"
+        description="We've sent a verification link to your email address. Please check your inbox and click the link to verify your account and set your password."
+        onBack={switchToSignIn}
+        backButtonText="Back to Sign In"
+      />
+    );
+  }
 
   return (
     <Form {...form}>
