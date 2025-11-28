@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import {
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { SignInForm } from "./SignInForm";
 import { SignUpForm } from "./SignUpForm";
+import { ForgotPasswordForm } from "./ForgotPasswordForm";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -18,15 +18,37 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModalProps) {
-  const [view, setView] = useState<"signin" | "signup">(defaultView);
+  const [view, setView] = useState<"signin" | "signup" | "forgot-password">(defaultView);
 
   // Update view when defaultView changes
   useEffect(() => {
     setView(defaultView);
   }, [defaultView]);
 
-  const handleViewChange = (newView: "signin" | "signup") => {
+  const handleViewChange = (newView: "signin" | "signup" | "forgot-password") => {
     setView(newView);
+  };
+
+  const getTitle = () => {
+    switch (view) {
+      case "signin":
+        return "Sign In";
+      case "signup":
+        return "Create Account";
+      case "forgot-password":
+        return "Forgot Password";
+    }
+  };
+
+  const getDescription = () => {
+    switch (view) {
+      case "signin":
+        return "Sign in to access your account";
+      case "signup":
+        return "Create a new account to track your favorite anime";
+      case "forgot-password":
+        return "Reset your password";
+    }
   };
 
   return (
@@ -34,12 +56,10 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            {view === "signin" ? "Sign In" : "Create Account"}
+            {getTitle()}
           </DialogTitle>
           <DialogDescription>
-            {view === "signin"
-              ? "Sign in to access your account"
-              : "Create a new account to track your favorite anime"}
+            {getDescription()}
           </DialogDescription>
         </DialogHeader>
 
@@ -52,9 +72,15 @@ export function AuthModal({ isOpen, onClose, defaultView = "signin" }: AuthModal
         </button>
 
         {view === "signin" ? (
-          <SignInForm onSuccess={onClose} switchToSignUp={() => handleViewChange("signup")} />
-        ) : (
+          <SignInForm 
+            onSuccess={onClose} 
+            switchToSignUp={() => handleViewChange("signup")} 
+            switchToForgotPassword={() => handleViewChange("forgot-password")}
+          />
+        ) : view === "signup" ? (
           <SignUpForm onSuccess={onClose} switchToSignIn={() => handleViewChange("signin")} />
+        ) : (
+          <ForgotPasswordForm onBack={() => handleViewChange("signin")} />
         )}
       </DialogContent>
     </Dialog>

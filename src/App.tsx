@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 import AnimeWatch from "./pages/AnimeWatch";
 import AudioSettings from "./pages/AudioSettings";
+import ResetPassword from "./pages/ResetPassword";
 
 // Import admin pages  
 import AdminDashboard from "./pages/Admin";
@@ -50,33 +51,34 @@ const App = () => {
             <AuthProvider>
               <AudioProvider>
                 <TooltipProvider>
-                  {/* Toaster components */}
-                  <Toaster />
-                  <Sonner />
-                  <DevelopmentNotice />
+                {/* Toaster components */}
+                <Toaster />
+                <Sonner />
+                <DevelopmentNotice />
 
-                  <Routes>
-                    {/* Main Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/anime" element={<AnimeList />} />
-                    <Route path="/anime/:id" element={<AnimeDetails />} />
-                    <Route path="/watch/:encoded" element={<AnimeWatch />} />
-                    <Route path="/episodes" element={<Episodes />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/audio-settings" element={<AudioSettings />} />
+                <Routes>
+                  {/* Main Routes */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/anime" element={<AnimeList />} />
+                  <Route path="/anime/:id" element={<AnimeDetails />} />
+                  <Route path="/anime/:id/watch/:episodeNumber" element={<AnimeWatch />} />
+                  <Route path="/episodes" element={<Episodes />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/profile" element={<UserProfile />} />
+                  <Route path="/audio-settings" element={<AudioSettings />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/anime" element={<AdminAnime />} />
-                    <Route path="/admin/episodes" element={<AdminEpisodes />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/genres" element={<AdminGenres />} />
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/anime" element={<AdminAnime />} />
+                  <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
+                  <Route path="/admin/genres" element={<AdminGenres />} />
 
-                    {/* Catch-all Route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  {/* Catch-all Route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
                 </TooltipProvider>
               </AudioProvider>
             </AuthProvider>

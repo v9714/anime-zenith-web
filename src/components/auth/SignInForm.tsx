@@ -24,9 +24,10 @@ const formSchema = z.object({
 interface SignInFormProps {
   onSuccess: () => void;
   switchToSignUp: () => void;
+  switchToForgotPassword: () => void;
 }
 
-export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
+export function SignInForm({ onSuccess, switchToSignUp, switchToForgotPassword }: SignInFormProps) {
   const { signIn } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -83,7 +84,16 @@ export function SignInForm({ onSuccess, switchToSignUp }: SignInFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <div className="flex items-center justify-between">
+                <FormLabel>Password</FormLabel>
+                <button
+                  type="button"
+                  onClick={switchToForgotPassword}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
               <FormControl>
                 <div className="relative">
                   <Input

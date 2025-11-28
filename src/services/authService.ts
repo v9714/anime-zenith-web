@@ -56,6 +56,20 @@ export interface RegisterResponse {
   success: boolean;
 }
 
+export interface ForgotPasswordResponse {
+  statusCode: number;
+  data: null;
+  message: string;
+  success: boolean;
+}
+
+export interface ResetPasswordResponse {
+  statusCode: number;
+  data: null;
+  message: string;
+  success: boolean;
+}
+
 export const authService = {
   register: async (email: string, displayName: string): Promise<RegisterResponse> => {
     const response = await backendAPI.post<RegisterResponse>('/auth/register', {
@@ -75,6 +89,21 @@ export const authService = {
 
   refreshToken: async (): Promise<RefreshTokenResponse> => {
     const response = await backendAPI.post<RefreshTokenResponse>('/auth/refresh-token', {});
+    return response.data;
+  },
+
+  forgotPassword: async (email: string): Promise<ForgotPasswordResponse> => {
+    const response = await backendAPI.post<ForgotPasswordResponse>('/auth/forgot-password', {
+      email
+    });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<ResetPasswordResponse> => {
+    const response = await backendAPI.post<ResetPasswordResponse>('/auth/reset-password', {
+      token,
+      newPassword
+    });
     return response.data;
   },
 
