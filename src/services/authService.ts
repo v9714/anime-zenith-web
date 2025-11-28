@@ -57,10 +57,9 @@ export interface RegisterResponse {
 }
 
 export const authService = {
-  register: async (email: string, password: string, displayName: string): Promise<RegisterResponse> => {
+  register: async (email: string, displayName: string): Promise<RegisterResponse> => {
     const response = await backendAPI.post<RegisterResponse>('/auth/register', {
       email,
-      password,
       displayName
     });
     return response.data;

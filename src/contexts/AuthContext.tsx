@@ -20,7 +20,7 @@ interface AuthContextType {
   isAdmin: boolean;
   watchHistory: WatchHistoryItem[];
   likedContent: LikedContentItem[];
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signUp: (email: string, displayName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
   refreshUserProfile: () => Promise<void>;
@@ -125,16 +125,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (email: string, displayName: string) => {
     setIsLoading(true);
     try {
-      const response = await authService.register(email, password, displayName);
+      const response = await authService.register(email, displayName);
 
       if (response.success) {
         toast({
           id: String(Date.now()),
           title: "Account created successfully",
-          description: "Please sign in with your credentials"
+          description: "Please check your email to verify your account and set your password"
         });
       }
     } catch (error: any) {
