@@ -555,9 +555,9 @@ export default function AnimeWatch() {
 
                 {/* Comments Section */}
                 {/* Tmp comment */}
-                {/* <div className="mt-8">
+                <div className="mt-8">
                   <CommentsSection comments={[]} />
-                </div> */}
+                </div>
 
                 {/* Watch More Seasons Section */}
                 {/* <SeasonsSection
