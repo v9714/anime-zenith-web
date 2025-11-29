@@ -2,12 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 
 type Toast = {
-  id: string;
+  id?: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactNode;
   duration?: number;
   onOpenChange?: (open: boolean) => void;
+  variant?: "default";
 };
 
 const TOAST_LIMIT = 3;

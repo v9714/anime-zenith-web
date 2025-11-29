@@ -55,6 +55,23 @@ export interface CreateCommentResponse {
 }
 
 // Get comments for an episode
+export const getCommentsByEpisode = async (
+    episodeId: string,
+    page = 1,
+    limit = 20
+): Promise<CommentsResponse> => {
+    try {
+        const response = await axios.get(
+            `${COMMENTS_API_BASE_URL}/episode/${episodeId}`,
+            { params: { page, limit } }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error('Error fetching comments:', error);
+        throw error.response?.data || error;
+    }
+};
+
 // Get replies for a comment
 export const getReplies = async (commentId: string): Promise<RepliesResponse> => {
     try {

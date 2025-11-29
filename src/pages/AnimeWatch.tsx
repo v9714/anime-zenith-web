@@ -554,17 +554,9 @@ export default function AnimeWatch() {
                 )}
 
                 {/* Comments Section */}
-                {/* Tmp comment */}
                 <div className="mt-8">
-                  <CommentsSection comments={[]} />
+                  <CommentsSection episodeId={currentEpisode?.id?.toString() || ''} />
                 </div>
-
-                {/* Watch More Seasons Section */}
-                {/* <SeasonsSection
-                  currentSeasonNumber={anime?.seasonNumber || 1}
-                  animeBanner={anime?.bannerImage}
-                  animeTitle={anime?.title || ''}
-                /> */}
               </div>
             </div>
 

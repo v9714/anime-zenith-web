@@ -1,40 +1,444 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, ThumbsUp, User, Send } from "lucide-react";
+import { MessageSquare, User, Send, Trash2, Edit2, Reply as ReplyIcon, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface Comment {
-  user: string;
-  avatar: string;
-  ago: string;
-  content: string;
-  likes: number;
-  isPremium?: boolean;
-}
+import { useToast } from "@/hooks/use-toast";
+import * as commentsApi from "@/services/commentsApi";
+import { getToken } from "@/services/backendApi";
 
 interface CommentsSectionProps {
-  comments: Comment[];
+  episodeId: string;
 }
 
-export function CommentsSection({ comments }: CommentsSectionProps) {
+export function CommentsSection({ episodeId }: CommentsSectionProps) {
   const { currentUser } = useAuth();
+  const { toast } = useToast();
+
+  const [comments, setComments] = useState<commentsApi.Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  
-  const handleCommentSubmit = () => {
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+  const [replies, setReplies] = useState<Map<string, commentsApi.Comment[]>>(new Map());
+
+  // Load comments
+  useEffect(() => {
+    if (episodeId) {
+      loadComments();
+    }
+  }, [episodeId]);
+
+  const loadComments = async () => {
+    try {
+      setLoading(true);
+      const response = await commentsApi.getCommentsByEpisode(episodeId);
+      if (response.success) {
+        setComments(response.data.comments);
+      }
+    } catch (error: any) {
+      console.error('Failed to load comments:', error);
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: error.message || "Failed to load comments",
+        variant: "default"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load replies for a comment
+  const loadReplies = async (commentId: string) => {
+    try {
+      const response = await commentsApi.getReplies(commentId);
+      if (response.success) {
+        setReplies(prev => new Map(prev).set(commentId, response.data.replies));
+        setExpandedReplies(prev => new Set(prev).add(commentId));
+      }
+    } catch (error: any) {
+      console.error('Failed to load replies:', error);
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: "Failed to load replies",
+        variant: "default"
+      });
+    }
+  };
+
+  // Submit new comment
+  const handleCommentSubmit = async () => {
     if (!currentUser) {
       setShowLoginPrompt(true);
       return;
     }
-    if (newComment.trim()) {
-      // TODO: Add comment submission logic
-      setNewComment("");
+
+    if (!newComment.trim()) return;
+
+    try {
+      setSubmitting(true);
+      const token = getToken('accessToken');
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please login again.",
+          variant: "default"
+        });
+        return;
+      }
+
+      const response = await commentsApi.createComment(
+        {
+          episodeId,
+          content: newComment.trim(),
+          parentId: null
+        },
+        token
+      );
+
+      if (response.success) {
+        // Add new comment to the top of the list
+        setComments(prev => [response.data, ...prev]);
+        setNewComment("");
+        toast({
+          id: String(Date.now()),
+          title: "Success",
+          description: "Comment posted successfully!"
+        });
+      }
+    } catch (error: any) {
+      console.error('Failed to post comment:', error);
+      const errorMessage = error.message || "Failed to post comment";
+
+      if (errorMessage.includes('Too many')) {
+        toast({
+          id: String(Date.now()),
+          title: "Slow Down!",
+          description: "You're posting comments too fast. Please wait a moment.",
+          variant: "default",
+          duration: 5000
+        });
+      } else {
+        toast({
+          id: String(Date.now()),
+          title: "Error",
+          description: errorMessage,
+          variant: "default"
+        });
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
-  
+
+  // Submit reply
+  const handleReplySubmit = async (parentId: string) => {
+    if (!currentUser || !replyContent.trim()) return;
+
+    try {
+      setSubmitting(true);
+      const token = getToken('accessToken');
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please login again.",
+          variant: "default"
+        });
+        return;
+      }
+
+      const response = await commentsApi.createComment(
+        {
+          episodeId,
+          content: replyContent.trim(),
+          parentId
+        },
+        token
+      );
+
+      if (response.success) {
+        // Reload replies for this comment
+        await loadReplies(parentId);
+        setReplyContent("");
+        setReplyingTo(null);
+        toast({
+          id: String(Date.now()),
+          title: "Success",
+          description: "Reply posted successfully!"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: error.message || "Failed to post reply",
+        variant: "default"
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Edit comment
+  const handleEditComment = async (commentId: string) => {
+    if (!editContent.trim()) return;
+
+    try {
+      setSubmitting(true);
+      const token = getToken('accessToken');
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please login again.",
+          variant: "default"
+        });
+        return;
+      }
+
+      const response = await commentsApi.updateComment(commentId, editContent.trim(), token);
+
+      if (response.success) {
+        // Update in local state
+        setComments(prev =>
+          prev.map(c => c.id === commentId ? { ...c, content: editContent.trim(), updatedAt: new Date().toISOString() } : c)
+        );
+        // Also update in replies if it exists there
+        setReplies(prev => {
+          const newMap = new Map(prev);
+          for (const [parentId, repliesList] of newMap.entries()) {
+            newMap.set(parentId, repliesList.map(r => r.id === commentId ? { ...r, content: editContent.trim(), updatedAt: new Date().toISOString() } : r));
+          }
+          return newMap;
+        });
+
+        setEditingCommentId(null);
+        setEditContent("");
+        toast({
+          id: String(Date.now()),
+          title: "Success",
+          description: "Comment updated successfully!"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: error.message || "Failed to update comment",
+        variant: "default"
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Delete comment
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    try {
+      const token = getToken('accessToken');
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please login again.",
+          variant: "default"
+        });
+        return;
+      }
+
+      const response = await commentsApi.deleteComment(commentId, token);
+
+      if (response.success) {
+        setComments(prev => prev.filter(c => c.id !== commentId));
+        // Also remove from replies
+        setReplies(prev => {
+          const newMap = new Map(prev);
+          for (const [parentId, repliesList] of newMap.entries()) {
+            newMap.set(parentId, repliesList.filter(r => r.id !== commentId));
+          }
+          return newMap;
+        });
+
+        toast({
+          id: String(Date.now()),
+          title: "Success",
+          description: "Comment deleted successfully!"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: error.message || "Failed to delete comment",
+        variant: "default"
+      });
+    }
+  };
+
+  // Format time ago
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d ago`;
+    return `${Math.floor(seconds / 2592000)}mo ago`;
+  };
+
+  // Render a single comment
+  const renderComment = (comment: commentsApi.Comment, isReply = false) => {
+    const isEditing = editingCommentId === comment.id;
+    const isOwnComment = currentUser?.id === comment.user.id; // Corrected user ID check
+    const commentReplies = replies.get(comment.id) || [];
+    const isExpanded = expandedReplies.has(comment.id);
+
+    return (
+      <div key={comment.id} className={`group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors ${isReply ? 'ml-12 border-l-2 border-border/50 pl-4' : ''}`}>
+        {/* Avatar */}
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0 overflow-hidden">
+          {comment.user.avatarUrl ? (
+            <img src={comment.user.avatarUrl} alt={comment.user.displayName} className="w-full h-full object-cover" />
+          ) : (
+            comment.user.displayName?.charAt(0).toUpperCase() || 'U'
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-medium text-sm">{comment.user.displayName || 'User'}</h4>
+            <span className="text-xs text-muted-foreground">{formatTimeAgo(comment.createdAt)}</span>
+            {comment.createdAt !== comment.updatedAt && (
+              <span className="text-xs text-muted-foreground italic">(edited)</span>
+            )}
+          </div>
+
+          {/* Comment Content */}
+          {isEditing ? (
+            <div className="flex gap-2 mt-2 flex-col sm:flex-row">
+              <Input
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="flex-1"
+                placeholder="Edit your comment..."
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleEditComment(comment.id)} disabled={submitting}>
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => { setEditingCommentId(null); setEditContent(''); }}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm mb-2 whitespace-pre-wrap break-words">{comment.content}</p>
+          )}
+
+          {/* Action Buttons */}
+          {!isEditing && (
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              {/* Reply Button */}
+              {!isReply && currentUser && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                >
+                  <ReplyIcon className="h-3 w-3" />
+                  Reply
+                </Button>
+              )}
+
+              {/* Show Replies Button */}
+              {!isReply && comment.replyCount && comment.replyCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => isExpanded ? setExpandedReplies(prev => { const newSet = new Set(prev); newSet.delete(comment.id); return newSet; }) : loadReplies(comment.id)}
+                >
+                  <MessageSquare className="h-3 w-3" />
+                  {isExpanded ? 'Hide' : `View ${comment.replyCount}`} {comment.replyCount === 1 ? 'reply' : 'replies'}
+                </Button>
+              )}
+
+              {/* Edit & Delete (own comments only) */}
+              {isOwnComment && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                    onClick={() => { setEditingCommentId(comment.id); setEditContent(comment.content); }}
+                  >
+                    <Edit2 className="h-3 w-3" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs gap-1 text-default hover:text-default"
+                    onClick={() => handleDeleteComment(comment.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    Delete
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Reply Input */}
+          {replyingTo === comment.id && (
+            <div className="flex gap-2 mt-3 flex-col sm:flex-row">
+              <Input
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Write a reply..."
+                className="flex-1"
+                onKeyPress={(e) => e.key === 'Enter' && handleReplySubmit(comment.id)}
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleReplySubmit(comment.id)} disabled={submitting || !replyContent.trim()}>
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => { setReplyingTo(null); setReplyContent(''); }}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Replies */}
+          {isExpanded && commentReplies.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {commentReplies.map(reply => renderComment(reply, true))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className="w-full mt-6 bg-card/90 shadow-xl border-border/50">
       <CardContent className="p-5">
@@ -44,7 +448,7 @@ export function CommentsSection({ comments }: CommentsSectionProps) {
           {currentUser && (
             <div className="flex items-center gap-2 text-sm">
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold">
-                {currentUser.displayName.charAt(0).toUpperCase()}
+                {currentUser.displayName?.charAt(0).toUpperCase() || 'U'}
               </div>
               <span className="text-muted-foreground">Logged in as {currentUser.displayName}</span>
             </div>
@@ -54,8 +458,8 @@ export function CommentsSection({ comments }: CommentsSectionProps) {
         {/* Comment Input */}
         {currentUser ? (
           <div className="mb-6 flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold">
-              {currentUser.displayName.charAt(0).toUpperCase()}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+              {currentUser.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="flex-1 flex gap-2">
               <Input
@@ -64,14 +468,16 @@ export function CommentsSection({ comments }: CommentsSectionProps) {
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
                 className="flex-1"
+                disabled={submitting}
+                maxLength={500}
               />
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={handleCommentSubmit}
-                disabled={!newComment.trim()}
+                disabled={submitting || !newComment.trim()}
                 className="gap-2"
               >
-                <Send className="h-4 w-4" />
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Post
               </Button>
             </div>
@@ -83,8 +489,8 @@ export function CommentsSection({ comments }: CommentsSectionProps) {
               <p className="text-sm text-muted-foreground flex-1">
                 Please log in to join the conversation and share your thoughts with other anime fans.
               </p>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="secondary"
                 onClick={() => setShowLoginPrompt(true)}
                 className="gap-2"
@@ -95,38 +501,28 @@ export function CommentsSection({ comments }: CommentsSectionProps) {
             </div>
           </div>
         )}
-        
+
         {showLoginPrompt && !currentUser && (
           <div className="mb-4 text-sm bg-accent/20 border border-accent/30 px-4 py-3 rounded-md">
             <p className="text-accent-foreground">Login to join the conversation! Share your thoughts with other anime fans.</p>
           </div>
         )}
-        
-        <div className="space-y-4 max-h-[320px] overflow-auto pr-1">
-          {comments.map((c, idx) => (
-            <div key={idx} className="group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg shadow-md">
-                {c.avatar}
-              </div>
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <h4 className="font-medium text-sm line-clamp-2 mb-1">{c.user}</h4>
-                <div className="text-sm mb-2">{c.content}</div>
-                <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground">
-                    <ThumbsUp className="h-3 w-3" /> {c.likes}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-foreground">
-                    <MessageSquare className="h-3 w-3" /> Reply
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <Button variant="ghost" size="sm" className="mt-3 w-full text-muted-foreground hover:text-foreground">
-          View more comments
-        </Button>
+
+        {/* Comments List */}
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No comments yet. Be the first to share your thoughts!</p>
+          </div>
+        ) : (
+          <div className="space-y-4 max-h-[500px] overflow-auto pr-1">
+            {comments.map(comment => renderComment(comment))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
