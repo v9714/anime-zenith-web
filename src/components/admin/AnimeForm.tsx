@@ -12,56 +12,63 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { X, Upload } from "lucide-react";
+import { X, Upload, Loader2 } from "lucide-react";
 import { GenreMultiSelect } from "./GenreMultiSelect";
 import { Anime } from "@/services/api";
-import dropdownOptions from "@/data/dropdown-options.json";
+import { useOptions } from "@/hooks/useOptions";
 import { useToast } from "@/hooks/use-toast";
 import backendAPI from "@/services/backendApi";
 import { getImageUrl } from "@/utils/commanFunction";
 import { genreService, Genre } from "@/services/genreService";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const animeFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  alternativeTitles: z.array(z.string()).default([]),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  genres: z.array(z.number()).min(1, "At least one genre is required"),
-  coverImageType: z.enum(["url", "upload"]).default("url"),
-  coverImageUrl: z.string().optional(),
-  coverImageFile: z.any().optional(),
-  bannerImageType: z.enum(["url", "upload"]).default("url"),
-  bannerImageUrl: z.string().optional(),
-  bannerImageFile: z.any().optional(),
-  year: z.coerce.number().min(1900, "Year is required").max(new Date().getFullYear() + 5),
-  season: z.enum(["FALL", "SPRING", "SUMMER", "WINTER"], { required_error: "Season is required" }),
-  seasonNumber: z.coerce.number().min(1, "Season number is required"),
-  status: z.enum(["ONGOING", "COMPLETED", "UPCOMING"], { required_error: "Status is required" }),
-  type: z.enum(["TV", "MOVIE", "OVA", "SPECIAL"], { required_error: "Type is required" }),
-  rating: z.coerce.number().min(0).max(10).optional(),
-  votesCount: z.coerce.number().default(0),
-  studio: z.string().min(1, "Studio is required"),
-  episodeDuration: z.string().optional(),
-  isDeleted: z.boolean().default(false),
-}).refine((data) => {
-  if (data.coverImageType === "url" && !data.coverImageUrl) {
-    return false;
-  }
-  if (data.coverImageType === "upload" && !data.coverImageFile) {
-    return false;
-  }
-  if (data.bannerImageType === "url" && !data.bannerImageUrl) {
-    return false;
-  }
-  if (data.bannerImageType === "upload" && !data.bannerImageFile) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Cover image and banner image are required",
-});
+// Schema will be created dynamically based on options
+const createAnimeFormSchema = (seasons: string[], statuses: string[], types: string[]) => {
+  return z.object({
+    title: z.string().min(1, "Title is required"),
+    alternativeTitles: z.array(z.string()).default([]),
+    description: z.string().min(10, "Description must be at least 10 characters"),
+    genres: z.array(z.number()).min(1, "At least one genre is required"),
+    coverImageType: z.enum(["url", "upload"]).default("url"),
+    coverImageUrl: z.string().optional(),
+    coverImageFile: z.any().optional(),
+    bannerImageType: z.enum(["url", "upload"]).default("url"),
+    bannerImageUrl: z.string().optional(),
+    bannerImageFile: z.any().optional(),
+    year: z.coerce.number().min(1900, "Year is required").max(new Date().getFullYear() + 5),
+    season: z.string().min(1, "Season is required"),
+    seasonNumber: z.coerce.number().min(1, "Season number is required"),
+    status: z.string().min(1, "Status is required"),
+    type: z.string().min(1, "Type is required"),
+    rating: z.coerce.number().min(0).max(10).optional(),
+    votesCount: z.coerce.number().default(0),
+    studio: z.string().min(1, "Studio is required"),
+    episodeDuration: z.string().optional(),
+    isDeleted: z.boolean().default(false),
+  }).refine((data) => {
+    if (data.coverImageType === "url" && !data.coverImageUrl) {
+      return false;
+    }
+    if (data.coverImageType === "upload" && !data.coverImageFile) {
+      return false;
+    }
+    if (data.bannerImageType === "url" && !data.bannerImageUrl) {
+      return false;
+    }
+    if (data.bannerImageType === "upload" && !data.bannerImageFile) {
+      return false;
+    }
+    return true;
+  }, {
+    message: "Cover image and banner image are required",
+  });
+};
 
-type AnimeFormValues = z.infer<typeof animeFormSchema>;
+// Default schema for initial load
+const defaultAnimeFormSchema = createAnimeFormSchema([], [], []);
+
+type AnimeFormValues = z.infer<typeof defaultAnimeFormSchema>;
 
 interface AnimeFormProps {
   anime?: Anime;
@@ -72,6 +79,8 @@ interface AnimeFormProps {
 
 export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: AnimeFormProps) {
   const { toast } = useToast();
+  const { options, isLoading: isOptionsLoading, getDropdownOptions } = useOptions();
+  
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
     anime?.coverImage ? getImageUrl(anime.coverImage) : null
   );
@@ -83,8 +92,13 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Get options from API
+  const seasonOptions = getDropdownOptions("Season");
+  const statusOptions = getDropdownOptions("AnimeStatus");
+  const typeOptions = getDropdownOptions("MediaType");
+
   const form = useForm<AnimeFormValues>({
-    resolver: zodResolver(animeFormSchema),
+    resolver: zodResolver(defaultAnimeFormSchema),
     defaultValues: {
       title: anime?.title || "",
       alternativeTitles: Array.isArray(anime?.alternativeTitles) 
@@ -93,17 +107,16 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
           ? JSON.parse(anime.alternativeTitles) 
           : []),
       description: anime?.description || "",
-      // genres: anime?.genres?.map(g => g.mal_id) || [],
       genres: Array.isArray(anime?.genres) ? anime.genres.map(g => g.mal_id) : [],
       coverImageType: "url",
       coverImageUrl: anime?.coverImage || "",
       bannerImageType: "url",
       bannerImageUrl: anime?.bannerImage || "",
       year: anime?.year || new Date().getFullYear(),
-      season: (anime?.season as "FALL" | "SPRING" | "SUMMER" | "WINTER") || "SPRING",
+      season: anime?.season || "",
       seasonNumber: anime?.seasonNumber || 1,
-      status: (anime?.status as "ONGOING" | "COMPLETED" | "UPCOMING") || "ONGOING",
-      type: "TV",
+      status: anime?.status || "",
+      type: anime?.type || "",
       rating: anime?.rating ? parseFloat(anime.rating) : undefined,
       votesCount: anime?.votesCount || 0,
       studio: anime?.studio || "",
@@ -273,11 +286,15 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {dropdownOptions.types.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
+                        {typeOptions.length > 0 ? (
+                          typeOptions.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>Loading...</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -607,11 +624,15 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {dropdownOptions.seasons.map((season) => (
-                          <SelectItem key={season.value} value={season.value}>
-                            {season.label}
-                          </SelectItem>
-                        ))}
+                        {seasonOptions.length > 0 ? (
+                          seasonOptions.map((season) => (
+                            <SelectItem key={season.value} value={season.value}>
+                              {season.label}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>Loading...</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -646,11 +667,15 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {dropdownOptions.statuses.map((status) => (
-                          <SelectItem key={status.value} value={status.value}>
-                            {status.label}
-                          </SelectItem>
-                        ))}
+                        {statusOptions.length > 0 ? (
+                          statusOptions.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>Loading...</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

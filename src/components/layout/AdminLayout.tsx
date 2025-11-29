@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook } from "lucide-react";
+import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook, Settings2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface AdminLayoutProps {
@@ -90,6 +90,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   </Link>
                 </SidebarMenuItem>
 
+                <SidebarMenuItem>
+                  <Link to="/admin/options">
+                    <SidebarMenuButton
+                      isActive={currentPath === "/admin/options"}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/options" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
+                    >
+                      <Settings2 className={`h-5 w-5 transition-colors ${currentPath === "/admin/options" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin/options" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Options</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
 
 
                 <SidebarMenuItem>
