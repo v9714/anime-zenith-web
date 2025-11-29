@@ -4,8 +4,8 @@ export const SITE_NAME = "OtakuTv";
 export const SITE_DESCRIPTION = "Your Ultimate Anime Streaming Platform";
 
 // API Endpoints
-export const BACKEND_API_BASE_URL = 'http://localhost:8081';
-export const BACKEND_API_Image_URL = 'http://localhost:8081';
+export const BACKEND_API_BASE_URL = 'http://localhost:8000';
+export const BACKEND_API_Image_URL = 'http://localhost:8000';
 
 // export const BACKEND_API_BASE_URL = "https://api.otakutv.in";
 // export const BACKEND_API_Image_URL = "https://api.otakutv.in";
