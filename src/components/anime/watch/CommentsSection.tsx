@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import * as commentsApi from "@/services/commentsApi";
 import { getToken } from "@/services/backendApi";
+
+const COMMENTS_PER_PAGE = 20;
 
 interface CommentsSectionProps {
   episodeId: string;
@@ -18,6 +20,7 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
 
   const [comments, setComments] = useState<commentsApi.Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -28,32 +31,119 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
   const [replies, setReplies] = useState<Map<string, commentsApi.Comment[]>>(new Map());
 
-  // Load comments
-  useEffect(() => {
-    if (episodeId) {
-      loadComments();
-    }
-  }, [episodeId]);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalComments, setTotalComments] = useState(0);
 
-  const loadComments = async () => {
+  // Ref for infinite scroll observer
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Load comments function
+  const loadComments = useCallback(async (page: number, isInitial = false) => {
     try {
-      setLoading(true);
-      const response = await commentsApi.getCommentsByEpisode(episodeId);
+      if (isInitial) {
+        setLoading(true);
+      }
+
+      console.log('🔍 Fetching comments - Page:', page, 'Episode:', episodeId);
+      const response = await commentsApi.getCommentsByEpisode(episodeId, page, COMMENTS_PER_PAGE);
+      console.log('📦 API Response:', response);
+
       if (response.success) {
-        setComments(response.data.comments);
+        const fetchedComments = response.data.comments || [];
+        console.log('✅ Comments fetched:', fetchedComments.length);
+
+        if (isInitial) {
+          setComments(fetchedComments);
+        } else {
+          setComments(prev => [...prev, ...fetchedComments]);
+        }
+
+        // Update pagination state with better fallback logic
+        if (response.data.pagination) {
+          console.log('📊 Pagination data:', response.data.pagination);
+          const haMoreValue = response.data.pagination.hasMore ?? (fetchedComments.length === COMMENTS_PER_PAGE);
+          setHasMore(haMoreValue);
+          setTotalComments(response.data.pagination.totalComments || 0);
+          console.log('🔄 HasMore set to:', haMoreValue);
+        } else {
+          // Fallback if pagination info not provided
+          const hasMoreFallback = fetchedComments.length === COMMENTS_PER_PAGE;
+          console.log('⚠️ No pagination data, using fallback. HasMore:', hasMoreFallback);
+          setHasMore(hasMoreFallback);
+        }
       }
     } catch (error: any) {
-      console.error('Failed to load comments:', error);
+      console.error('❌ Failed to load comments:', error);
       toast({
         id: String(Date.now()),
         title: "Error",
         description: error.message || "Failed to load comments",
         variant: "default"
       });
+      setHasMore(false);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [episodeId, toast]);
+
+  const loadMoreComments = useCallback(() => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    loadComments(nextPage, false);
+  }, [loadingMore, hasMore, currentPage, loadComments]);
+
+  // Load initial comments
+  useEffect(() => {
+    if (episodeId) {
+      // Reset state when episode changes
+      setComments([]);
+      setCurrentPage(1);
+      setHasMore(true);
+      setTotalComments(0);
+      loadComments(1, true);
+    }
+  }, [episodeId, loadComments]);
+
+  // Setup intersection observer for infinite scroll
+  useEffect(() => {
+    // Wait for scroll container to be available
+    if (!scrollContainerRef.current) return;
+
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMoreComments();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px'
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loading, loadingMore, loadMoreComments]);
 
   // Load replies for a comment
   const loadReplies = async (commentId: string) => {
@@ -108,6 +198,7 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
       if (response.success) {
         // Add new comment to the top of the list
         setComments(prev => [response.data, ...prev]);
+        setTotalComments(prev => prev + 1);
         setNewComment("");
         toast({
           id: String(Date.now()),
@@ -262,6 +353,7 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
 
       if (response.success) {
         setComments(prev => prev.filter(c => c.id !== commentId));
+        setTotalComments(prev => Math.max(0, prev - 1));
         // Also remove from replies
         setReplies(prev => {
           const newMap = new Map(prev);
@@ -444,7 +536,9 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
       <CardContent className="p-5">
         <div className="flex items-center gap-3 mb-4">
           <MessageSquare className="text-primary h-5 w-5" />
-          <h3 className="font-bold text-lg flex-1">Comments ({comments.length})</h3>
+          <h3 className="font-bold text-lg flex-1">
+            Comments {totalComments > 0 ? `(${totalComments})` : comments.length > 0 ? `(${comments.length})` : ''}
+          </h3>
           {currentUser && (
             <div className="flex items-center gap-2 text-sm">
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold">
@@ -519,8 +613,23 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
             <p>No comments yet. Be the first to share your thoughts!</p>
           </div>
         ) : (
-          <div className="space-y-4 max-h-[500px] overflow-auto pr-1">
+          <div ref={scrollContainerRef} className="space-y-4 max-h-[600px] overflow-auto pr-1">
             {comments.map(comment => renderComment(comment))}
+
+            {/* Infinite scroll trigger */}
+            <div ref={loadMoreRef} className="py-4">
+              {loadingMore && (
+                <div className="flex justify-center items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Loading more comments...</span>
+                </div>
+              )}
+              {!hasMore && comments.length > 0 && (
+                <p className="text-center text-sm text-muted-foreground">
+                  No more comments to load
+                </p>
+              )}
+            </div>
           </div>
         )}
       </CardContent>
