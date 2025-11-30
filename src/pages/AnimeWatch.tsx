@@ -59,6 +59,7 @@ export default function AnimeWatch() {
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
   const [currentThumbnail, setCurrentThumbnail] = useState<string>("");
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isEpisodeReady, setIsEpisodeReady] = useState(false);
 
   // Pause background music when entering watch page
   useEffect(() => {
@@ -100,7 +101,10 @@ export default function AnimeWatch() {
 
   // Separate effect to handle URL params and set active episode (NO API CALLS)
   useEffect(() => {
-    if (episodes.length === 0) return;
+    if (episodes.length === 0) {
+      setIsEpisodeReady(false);
+      return;
+    }
 
     let targetIndex = 0;
 
@@ -124,23 +128,26 @@ export default function AnimeWatch() {
       // Clear video URL to stop playback
       setCurrentVideoUrl("");
       setCurrentThumbnail("");
+      setActiveEpisode(targetIndex);
+      setIsEpisodeReady(true);
       return;
     }
 
-    // Only update if the episode actually changed
-    if (targetIndex !== activeEpisode || !currentVideoUrl) {
-      setActiveEpisode(targetIndex);
+    // Update active episode and video URLs
+    setActiveEpisode(targetIndex);
 
-      // Update video URLs
-      if (episode?.masterUrl) {
-        const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
-        const newThumbnail = episode.thumbnail ? `${BACKEND_API_Image_URL}${episode.thumbnail}` : defaultThumbnail;
+    // Update video URLs
+    if (episode?.masterUrl) {
+      const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
+      const newThumbnail = episode.thumbnail ? `${BACKEND_API_Image_URL}${episode.thumbnail}` : defaultThumbnail;
 
-        // Batch state updates to prevent multiple re-renders
-        setCurrentVideoUrl(newVideoUrl);
-        setCurrentThumbnail(newThumbnail);
-      }
+      // Batch state updates to prevent multiple re-renders
+      setCurrentVideoUrl(newVideoUrl);
+      setCurrentThumbnail(newThumbnail);
     }
+
+    // Mark episode as ready after setting correct episode
+    setIsEpisodeReady(true);
   }, [episodes, episodeNumber, currentUser]);
 
   // Get current episode data
@@ -553,10 +560,12 @@ export default function AnimeWatch() {
                   </div>
                 )}
 
-                {/* Comments Section */}
-                <div className="mt-8">
-                  <CommentsSection episodeId={currentEpisode?.id?.toString() || ''} />
-                </div>
+                {/* Comments Section - Only render when episode is ready to prevent duplicate API calls */}
+                {isEpisodeReady && currentEpisode?.id && (
+                  <div className="mt-8">
+                    <CommentsSection episodeId={currentEpisode.id.toString()} />
+                  </div>
+                )}
               </div>
             </div>
 
