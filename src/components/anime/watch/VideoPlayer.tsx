@@ -343,6 +343,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current) return;
 
+      // Don't trigger shortcuts when typing in input fields
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement?.getAttribute('contenteditable') === 'true';
+
+      if (isInputFocused) return;
+
       if (e.shiftKey) {
         if (e.key === '>') {
           e.preventDefault();
@@ -424,6 +432,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in input fields
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement?.getAttribute('contenteditable') === 'true';
+
+      if (isInputFocused) return;
+
       if (e.code === 'Space' && videoRef.current) {
         e.preventDefault();
 
@@ -721,10 +737,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
       {/* Play/Pause Center Overlay */}
       {!isBuffering && (
-        <div 
-          className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-none transition-all duration-300 ease-out ${
-            !isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-          }`}
+        <div
+          className={`absolute inset-0 flex items-center justify-center z-15 pointer-events-none transition-all duration-300 ease-out ${!isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+            }`}
         >
           <div className="bg-black/60 backdrop-blur-sm rounded-full p-5 shadow-2xl">
             <Play className="h-12 w-12 text-white fill-white" />
