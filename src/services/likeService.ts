@@ -18,6 +18,22 @@ interface LikeStatusResponse {
   };
 }
 
+export interface LikedEpisode {
+  episodeId: number;
+  episodeNumber: number;
+  episodeTitle: string;
+  thumbnail: string;
+  animeId: number;
+  animeTitle: string;
+  animeCover: string;
+  likedAt: string;
+}
+
+interface LikedEpisodesResponse {
+  success: boolean;
+  data: LikedEpisode[];
+}
+
 export const likeService = {
   toggleLike: async (episodeId: number, animeId: number, isLiked: boolean): Promise<LikeResponse> => {
     const response = await backendAPI.post<LikeResponse>('/api/interactions/episode/like', {
@@ -30,6 +46,11 @@ export const likeService = {
 
   getLikeStatus: async (episodeId: number): Promise<LikeStatusResponse> => {
     const response = await backendAPI.get<LikeStatusResponse>(`/api/interactions/episode/${episodeId}/like-status`);
+    return response.data;
+  },
+
+  getLikedEpisodes: async (): Promise<LikedEpisodesResponse> => {
+    const response = await backendAPI.get<LikedEpisodesResponse>('/api/interactions/episode/liked');
     return response.data;
   }
 };

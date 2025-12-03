@@ -104,12 +104,13 @@ export function LikeButton({ animeId, episodeId }: LikeButtonProps) {
         <TooltipTrigger asChild>
           <Button 
             size="sm" 
-            variant="ghost" 
-            className={`text-white hover:bg-white/10 h-8 w-8 p-0 ${isLiked ? "text-red-500" : ""}`}
+            variant={isLiked ? "default" : "outline"}
+            className={`gap-2 ${isLiked ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
             onClick={handleLike}
             disabled={isLoading}
           >
             <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+            {isLiked ? "Liked" : "Like"}
           </Button>
         </TooltipTrigger>
         <TooltipContent>{isLiked ? "Unlike" : "Like"}</TooltipContent>
