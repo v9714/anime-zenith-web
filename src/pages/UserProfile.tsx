@@ -1,25 +1,54 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
-import { Heart, Clock, Film, Video, Settings } from "lucide-react";
+import { Heart, Clock, Film, Video, Settings, Loader2 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAudio } from "@/contexts/AudioContext";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
+import { likeService, LikedEpisode } from "@/services/likeService";
+import { generateWatchUrl } from "@/utils/urlEncoder";
+import { BACKEND_API_Image_URL } from "@/utils/constants";
 
 export default function UserProfile() {
-  const { currentUser, watchHistory, likedContent, signOut, refreshUserProfile } = useAuth();
+  const { currentUser, watchHistory, signOut, refreshUserProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "history";
   const { playButtonClick } = useAudio();
+  
+  // Liked episodes state
+  const [likedEpisodes, setLikedEpisodes] = useState<LikedEpisode[]>([]);
+  const [loadingLiked, setLoadingLiked] = useState(false);
+  const [likedFetched, setLikedFetched] = useState(false);
 
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
+  };
+
+  // Fetch liked episodes only when favorites tab is selected
+  useEffect(() => {
+    if (activeTab === "favorites" && currentUser && !likedFetched) {
+      fetchLikedEpisodes();
+    }
+  }, [activeTab, currentUser, likedFetched]);
+
+  const fetchLikedEpisodes = async () => {
+    setLoadingLiked(true);
+    try {
+      const response = await likeService.getLikedEpisodes();
+      if (response.success) {
+        setLikedEpisodes(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch liked episodes:", error);
+    } finally {
+      setLoadingLiked(false);
+      setLikedFetched(true);
+    }
   };
 
   const handleProfileUpdate = async () => {
@@ -42,7 +71,7 @@ export default function UserProfile() {
   }
 
   const hasWatchHistory = watchHistory.length > 0;
-  const hasLikedContent = likedContent.length > 0;
+  const hasLikedContent = likedEpisodes.length > 0;
 
   return (
     <Layout>
@@ -122,31 +151,37 @@ export default function UserProfile() {
 
             {/* Favorites Tab */}
             <TabsContent value="favorites">
-              <h2 className="text-2xl font-semibold mb-4">Favorites</h2>
-              {hasLikedContent ? (
+              <h2 className="text-2xl font-semibold mb-4">Liked Episodes</h2>
+              {loadingLiked ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : hasLikedContent ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {likedContent.map((item) => (
+                  {likedEpisodes.map((item) => (
                     <Link
-                      to={item.type === "anime" ? `/anime/${item.id}` : `/episodes/${item.id}`}
-                      key={`${item.type}-${item.id}`}
+                      to={generateWatchUrl(String(item.animeId), item.episodeNumber)}
+                      key={`episode-${item.episodeId}`}
                     >
                       <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
                         <div className="aspect-video relative">
                           <LazyImage
-                            src={item.imageUrl}
-                            alt={item.title}
+                            src={item.thumbnail ? `${BACKEND_API_Image_URL}${item.thumbnail}` : item.animeCover ? `${BACKEND_API_Image_URL}${item.animeCover}` : ""}
+                            alt={item.episodeTitle}
                             className="object-cover"
                           />
                           <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                            {item.type === "anime" ? (
-                              <><Film className="h-3 w-3" /> Anime</>
-                            ) : (
-                              <><Video className="h-3 w-3" /> Episode</>
-                            )}
+                            <Video className="h-3 w-3" /> Ep {item.episodeNumber}
                           </div>
                         </div>
                         <CardContent className="p-3">
-                          <h3 className="font-medium line-clamp-1">{item.title}</h3>
+                          <h3 className="font-medium line-clamp-1">{item.animeTitle}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                            {item.episodeTitle}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Liked: {new Date(item.likedAt).toLocaleDateString()}
+                          </p>
                         </CardContent>
                       </Card>
                     </Link>
@@ -155,9 +190,9 @@ export default function UserProfile() {
               ) : (
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <h3 className="text-lg font-medium">No Favorites</h3>
+                  <h3 className="text-lg font-medium">No Liked Episodes</h3>
                   <p className="text-muted-foreground mt-1">
-                    Your favorite anime and episodes will appear here
+                    Episodes you like will appear here
                   </p>
                   <Link to="/anime">
                     <Button variant="outline" className="mt-4">Browse Anime</Button>
