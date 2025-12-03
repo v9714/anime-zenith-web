@@ -21,6 +21,7 @@ import { CommentsSection } from "@/components/anime/watch/CommentsSection";
 import { MostPopularSidebar } from "@/components/anime/watch/MostPopularSidebar";
 import VideoPlayer from "@/components/anime/watch/VideoPlayer";
 import { SeasonsSection } from "@/components/anime/watch/SeasonsSection";
+import { LikeButton } from "@/components/anime/watch/LikeButton";
 import { getImageUrl } from "@/utils/commanFunction";
 import { AuthModal } from "@/components/auth/AuthModal";
 
@@ -509,6 +510,9 @@ export default function AnimeWatch() {
                 {/* Interactive Video Controls */}
                 <div className="flex items-center justify-between bg-card rounded-lg p-4 border border-border/30">
                   <div className="flex items-center gap-3">
+                    {currentEpisode?.id && (
+                      <LikeButton animeId={animeId} episodeId={currentEpisode.id} />
+                    )}
                     <Button
                       size="sm"
                       variant={isSaved ? "default" : "outline"}
