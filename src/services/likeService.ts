@@ -20,7 +20,7 @@ interface LikeStatusResponse {
 
 export const likeService = {
   toggleLike: async (episodeId: number, animeId: number, isLiked: boolean): Promise<LikeResponse> => {
-    const response = await backendAPI.post<LikeResponse>('/api/episode/like', {
+    const response = await backendAPI.post<LikeResponse>('/api/interactions/episode/like', {
       episodeId,
       animeId,
       isLiked
@@ -29,7 +29,7 @@ export const likeService = {
   },
 
   getLikeStatus: async (episodeId: number): Promise<LikeStatusResponse> => {
-    const response = await backendAPI.get<LikeStatusResponse>(`/api/episode/${episodeId}/like-status`);
+    const response = await backendAPI.get<LikeStatusResponse>(`/api/interactions/episode/${episodeId}/like-status`);
     return response.data;
   }
 };
