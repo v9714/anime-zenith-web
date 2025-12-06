@@ -5,49 +5,117 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
-import { Heart, Clock, Film, Video, Settings, Loader2 } from "lucide-react";
+import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAudio } from "@/contexts/AudioContext";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
-import { likeService, LikedEpisode } from "@/services/likeService";
+import { likeService, LikedEpisode, watchlistService, WatchlistAnime } from "@/services/likeService";
 import { generateWatchUrl } from "@/utils/urlEncoder";
-import { BACKEND_API_Image_URL } from "@/utils/constants";
+import { getImageUrl } from "@/utils/commanFunction";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "@/hooks/use-toast";
+
+const LIKES_PER_PAGE = 20;
+const WATCHLIST_PER_PAGE = 50;
 
 export default function UserProfile() {
   const { currentUser, watchHistory, signOut, refreshUserProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "history";
   const { playButtonClick } = useAudio();
-  
+
   // Liked episodes state
   const [likedEpisodes, setLikedEpisodes] = useState<LikedEpisode[]>([]);
   const [loadingLiked, setLoadingLiked] = useState(false);
   const [likedFetched, setLikedFetched] = useState(false);
+  const [likedPage, setLikedPage] = useState(0);
+  const [hasMoreLiked, setHasMoreLiked] = useState(true);
+
+  // Watchlist state
+  const [watchlistAnime, setWatchlistAnime] = useState<WatchlistAnime[]>([]);
+  const [loadingWatchlist, setLoadingWatchlist] = useState(false);
+  const [watchlistFetched, setWatchlistFetched] = useState(false);
+  const [watchlistPage, setWatchlistPage] = useState(0);
+  const [hasMoreWatchlist, setHasMoreWatchlist] = useState(true);
 
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
   };
 
-  // Fetch liked episodes only when favorites tab is selected
+  // Fetch liked episodes only when likes tab is selected
   useEffect(() => {
-    if (activeTab === "favorites" && currentUser && !likedFetched) {
-      fetchLikedEpisodes();
+    if (activeTab === "likes" && currentUser && !likedFetched) {
+      fetchLikedEpisodes(0);
     }
   }, [activeTab, currentUser, likedFetched]);
 
-  const fetchLikedEpisodes = async () => {
+  // Fetch watchlist only when watchlist tab is selected
+  useEffect(() => {
+    if (activeTab === "watchlist" && currentUser && !watchlistFetched) {
+      fetchWatchlist(0);
+    }
+  }, [activeTab, currentUser, watchlistFetched]);
+
+  const fetchLikedEpisodes = async (page: number) => {
     setLoadingLiked(true);
     try {
-      const response = await likeService.getLikedEpisodes();
+      const response = await likeService.getLikedEpisodes(LIKES_PER_PAGE, page * LIKES_PER_PAGE);
       if (response.success) {
-        setLikedEpisodes(response.data);
+        if (page === 0) {
+          setLikedEpisodes(response.data);
+        } else {
+          setLikedEpisodes(prev => [...prev, ...response.data]);
+        }
+        setHasMoreLiked(response.data.length === LIKES_PER_PAGE);
+        setLikedPage(page);
       }
     } catch (error) {
       console.error("Failed to fetch liked episodes:", error);
     } finally {
       setLoadingLiked(false);
       setLikedFetched(true);
+    }
+  };
+
+  const fetchWatchlist = async (page: number) => {
+    setLoadingWatchlist(true);
+    try {
+      const response = await watchlistService.getWatchlist(WATCHLIST_PER_PAGE, page * WATCHLIST_PER_PAGE);
+      if (response.success) {
+        if (page === 0) {
+          setWatchlistAnime(response.data);
+        } else {
+          setWatchlistAnime(prev => [...prev, ...response.data]);
+        }
+        setHasMoreWatchlist(response.data.length === WATCHLIST_PER_PAGE);
+        setWatchlistPage(page);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watchlist:", error);
+    } finally {
+      setLoadingWatchlist(false);
+      setWatchlistFetched(true);
+    }
+  };
+
+  const handleRemoveFromWatchlist = async (animeId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await watchlistService.removeFromWatchlist(animeId);
+      setWatchlistAnime(prev => prev.filter(item => item.animeId !== animeId));
+      toast({
+        id: String(Date.now()),
+        title: "Removed from watchlist",
+        description: "Anime has been removed from your watchlist"
+      });
+    } catch (error) {
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: "Failed to remove from watchlist"
+      });
     }
   };
 
@@ -72,6 +140,7 @@ export default function UserProfile() {
 
   const hasWatchHistory = watchHistory.length > 0;
   const hasLikedContent = likedEpisodes.length > 0;
+  const hasWatchlistContent = watchlistAnime.length > 0;
 
   return (
     <Layout>
@@ -79,26 +148,37 @@ export default function UserProfile() {
         <div className="max-w-4xl mx-auto">
           {/* User Header */}
           <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">{currentUser.displayName}'s Profile</h1>
-              <p className="text-muted-foreground">{currentUser.email}</p>
-              {currentUser.isAdmin && (
-                <div className="mt-1">
-                  <span className="bg-primary/20 text-primary text-xs font-medium px-2 py-1 rounded">Admin</span>
-                </div>
-              )}
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-border">
+                <AvatarImage src={getImageUrl(currentUser.avatarUrl || undefined)} alt={currentUser.displayName} />
+                <AvatarFallback className="text-xl bg-primary text-primary-foreground">
+                  {currentUser.displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-3xl font-bold">{currentUser.displayName}'s Profile</h1>
+                <p className="text-muted-foreground">{currentUser.email}</p>
+                {currentUser.isAdmin && (
+                  <div className="mt-1">
+                    <span className="bg-primary/20 text-primary text-xs font-medium px-2 py-1 rounded">Admin</span>
+                  </div>
+                )}
+              </div>
             </div>
             <Button variant="outline" onClick={signOut}>Sign Out</Button>
           </div>
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid grid-cols-3 w-full max-w-2xl">
+            <TabsList className="grid grid-cols-4 w-full max-w-2xl">
               <TabsTrigger value="history" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Clock className="h-4 w-4" /> History
               </TabsTrigger>
-              <TabsTrigger value="favorites" className="flex items-center gap-2" onClick={playButtonClick}>
-                <Heart className="h-4 w-4" /> Favorites
+              <TabsTrigger value="likes" className="flex items-center gap-2" onClick={playButtonClick}>
+                <Heart className="h-4 w-4" /> Likes
+              </TabsTrigger>
+              <TabsTrigger value="watchlist" className="flex items-center gap-2" onClick={playButtonClick}>
+                <Bookmark className="h-4 w-4" /> Watchlist
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Settings className="h-4 w-4" /> Settings
@@ -115,7 +195,7 @@ export default function UserProfile() {
                       <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
                         <div className="aspect-video relative">
                           <LazyImage
-                            src={item.imageUrl}
+                            src={getImageUrl(item.imageUrl)}
                             alt={item.title}
                             className="object-cover"
                           />
@@ -149,50 +229,146 @@ export default function UserProfile() {
               )}
             </TabsContent>
 
-            {/* Favorites Tab */}
-            <TabsContent value="favorites">
+            {/* Likes Tab */}
+            <TabsContent value="likes">
               <h2 className="text-2xl font-semibold mb-4">Liked Episodes</h2>
-              {loadingLiked ? (
+              {loadingLiked && likedEpisodes.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : hasLikedContent ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {likedEpisodes.map((item) => (
-                    <Link
-                      to={generateWatchUrl(String(item.animeId), item.episodeNumber)}
-                      key={`episode-${item.episodeId}`}
-                    >
-                      <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
-                        <div className="aspect-video relative">
-                          <LazyImage
-                            src={item.thumbnail ? `${BACKEND_API_Image_URL}${item.thumbnail}` : item.animeCover ? `${BACKEND_API_Image_URL}${item.animeCover}` : ""}
-                            alt={item.episodeTitle}
-                            className="object-cover"
-                          />
-                          <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                            <Video className="h-3 w-3" /> Ep {item.episodeNumber}
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {likedEpisodes.map((item) => (
+                      <Link
+                        to={generateWatchUrl(String(item.animeId), item.episodeNumber)}
+                        key={`episode-${item.episodeId}`}
+                      >
+                        <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
+                          <div className="aspect-video relative">
+                            <LazyImage
+                              src={getImageUrl(item.thumbnail) || getImageUrl(item.animeCover)}
+                              alt={item.episodeTitle}
+                              className="object-cover"
+                            />
+                            <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                              <Video className="h-3 w-3" /> Ep {item.episodeNumber}
+                            </div>
                           </div>
-                        </div>
-                        <CardContent className="p-3">
-                          <h3 className="font-medium line-clamp-1">{item.animeTitle}</h3>
-                          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                            {item.episodeTitle}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Liked: {new Date(item.likedAt).toLocaleDateString()}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
+                          <CardContent className="p-3">
+                            <h3 className="font-medium line-clamp-1">{item.animeTitle}</h3>
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                              {item.episodeTitle}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Liked: {new Date(item.likedAt).toLocaleDateString()}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                  {/* Pagination */}
+                  {hasMoreLiked && (
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => fetchLikedEpisodes(likedPage + 1)}
+                        disabled={loadingLiked}
+                      >
+                        {loadingLiked ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Load More
+                      </Button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                   <h3 className="text-lg font-medium">No Liked Episodes</h3>
                   <p className="text-muted-foreground mt-1">
                     Episodes you like will appear here
+                  </p>
+                  <Link to="/anime">
+                    <Button variant="outline" className="mt-4">Browse Anime</Button>
+                  </Link>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Watchlist Tab */}
+            <TabsContent value="watchlist">
+              <h2 className="text-2xl font-semibold mb-4">My Watchlist</h2>
+              {loadingWatchlist && watchlistAnime.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : hasWatchlistContent ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {watchlistAnime.map((item) => (
+                      <Link
+                        to={`/anime/${item.animeId}`}
+                        key={`watchlist-${item.animeId}`}
+                      >
+                        <Card className="overflow-hidden hover:bg-accent/50 transition-colors group">
+                          <div className="aspect-[2/3] relative">
+                            <LazyImage
+                              src={getImageUrl(item.coverImage)}
+                              alt={item.title}
+                              className="object-cover"
+                            />
+                            <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                              {item.status}
+                            </div>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => handleRemoveFromWatchlist(item.animeId, e)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <CardContent className="p-3">
+                            <h3 className="font-medium line-clamp-1">{item.title}</h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <span>{item.year}</span>
+                              <span>•</span>
+                              <span>⭐ {item.rating?.toFixed(1) || 'N/A'}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Added: {new Date(item.addedAt).toLocaleDateString()}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                  {/* Pagination */}
+                  {hasMoreWatchlist && (
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => fetchWatchlist(watchlistPage + 1)}
+                        disabled={loadingWatchlist}
+                      >
+                        {loadingWatchlist ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Load More
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 bg-muted/50 rounded-lg">
+                  <Bookmark className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-lg font-medium">Empty Watchlist</h3>
+                  <p className="text-muted-foreground mt-1">
+                    Anime you save will appear here
                   </p>
                   <Link to="/anime">
                     <Button variant="outline" className="mt-4">Browse Anime</Button>
@@ -230,6 +406,6 @@ export default function UserProfile() {
           )}
         </div>
       </div>
-    </Layout >
+    </Layout>
   );
 }

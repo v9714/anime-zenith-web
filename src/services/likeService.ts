@@ -34,6 +34,28 @@ interface LikedEpisodesResponse {
   data: LikedEpisode[];
 }
 
+export interface WatchlistAnime {
+  animeId: number;
+  title: string;
+  coverImage: string;
+  year: number;
+  rating: number;
+  status: string;
+  addedAt: string;
+}
+
+interface WatchlistResponse {
+  success: boolean;
+  data: WatchlistAnime[];
+}
+
+interface WatchlistStatusResponse {
+  success: boolean;
+  data: {
+    isInWatchlist: boolean;
+  };
+}
+
 export const likeService = {
   toggleLike: async (episodeId: number, animeId: number, isLiked: boolean): Promise<LikeResponse> => {
     const response = await backendAPI.post<LikeResponse>('/api/interactions/episode/like', {
@@ -49,8 +71,25 @@ export const likeService = {
     return response.data;
   },
 
-  getLikedEpisodes: async (): Promise<LikedEpisodesResponse> => {
-    const response = await backendAPI.get<LikedEpisodesResponse>('/api/interactions/episode/liked');
+  getLikedEpisodes: async (limit: number = 20, offset: number = 0): Promise<LikedEpisodesResponse> => {
+    const response = await backendAPI.get<LikedEpisodesResponse>(`/api/interactions/episode/like?limit=${limit}&offset=${offset}`);
+    return response.data;
+  }
+};
+
+export const watchlistService = {
+  getWatchlist: async (limit: number = 50, offset: number = 0): Promise<WatchlistResponse> => {
+    const response = await backendAPI.get<WatchlistResponse>(`/api/interactions/watchlist/?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  removeFromWatchlist: async (animeId: number): Promise<{ success: boolean }> => {
+    const response = await backendAPI.delete<{ success: boolean }>(`/api/interactions/watchlist/${animeId}`);
+    return response.data;
+  },
+
+  getWatchlistStatus: async (animeId: number): Promise<WatchlistStatusResponse> => {
+    const response = await backendAPI.get<WatchlistStatusResponse>(`/api/interactions/watchlist/${animeId}/status`);
     return response.data;
   }
 };
