@@ -13,11 +13,11 @@ interface LazyImageProps {
   priority?: boolean;
 }
 
-export function LazyImage({ 
-  src, 
-  alt, 
-  width, 
-  height, 
+export function LazyImage({
+  src,
+  alt,
+  width,
+  height,
   className,
   priority = false
 }: LazyImageProps) {
@@ -27,14 +27,14 @@ export function LazyImage({
   const imgRef = useRef<HTMLImageElement>(null);
   const [imageSrc, setImageSrc] = useState(src);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  
+
   // Reset state if src changes
   useEffect(() => {
     setImageSrc(src);
     setIsLoaded(false);
     setHasError(false);
   }, [src]);
-  
+
   // Clean up observer when component unmounts
   useEffect(() => {
     return () => {
@@ -43,21 +43,21 @@ export function LazyImage({
       }
     };
   }, []);
-  
+
   useEffect(() => {
     if (priority) {
       setIsVisible(true);
       return;
     }
-    
+
     // Use intersection observer for lazy loading
     if (typeof window === 'undefined') return;
-    
+
     try {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
-      
+
       observerRef.current = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -70,7 +70,7 @@ export function LazyImage({
       }, {
         rootMargin: '200px' // Start loading images 200px before they enter the viewport
       });
-      
+
       if (imgRef.current && observerRef.current) {
         observerRef.current.observe(imgRef.current);
       }
@@ -80,7 +80,7 @@ export function LazyImage({
       setIsVisible(true);
     }
   }, [priority, imgRef.current]);
-  
+
   useEffect(() => {
     if (isVisible && imgRef.current) {
       // Apply srcset for responsive images
@@ -91,7 +91,7 @@ export function LazyImage({
       }
     }
   }, [isVisible, imageSrc]);
-  
+
   const handleLoad = () => {
     setIsLoaded(true);
   };
@@ -107,7 +107,7 @@ export function LazyImage({
   const imageHeight = typeof height === 'number' ? height : height ? height : '100%';
 
   return (
-    <div 
+    <div
       className={cn(
         "relative overflow-hidden bg-muted/30",
         className
@@ -122,16 +122,23 @@ export function LazyImage({
       {!isLoaded && (
         <Skeleton className="absolute inset-0" />
       )}
-      
+
       {isVisible && !hasError && (
         <img
-          ref={isVisible ? imgRef : undefined}
+          ref={(el) => {
+            if (el && priority) {
+              el.setAttribute(
+                "fetchpriority",
+                priority ? "high" : "auto"
+              );
+            }
+            if (isVisible) imgRef.current = el;
+          }}
           src={imageSrc}
           alt={alt}
-          width={typeof width === 'number' ? width : undefined}
-          height={typeof height === 'number' ? height : undefined}
+          width={typeof width === "number" ? width : undefined}
+          height={typeof height === "number" ? height : undefined}
           loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : "auto"}
           onLoad={handleLoad}
           onError={handleError}
           className={cn(
@@ -140,7 +147,6 @@ export function LazyImage({
           )}
         />
       )}
-      
       {/* Fallback for failed images */}
       {hasError && (
         <div className="w-full h-full flex items-center justify-center bg-muted/20 text-muted-foreground">

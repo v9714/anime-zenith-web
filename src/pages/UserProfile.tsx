@@ -337,7 +337,14 @@ export default function UserProfile() {
                             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                               <span>{item.year}</span>
                               <span>•</span>
-                              <span>⭐ {item.rating?.toFixed(1) || 'N/A'}</span>
+                              <span>
+                                ⭐ {
+                                  typeof item.rating === "number"
+                                    ? item.rating.toFixed(1)
+                                    : "N/A"
+                                }
+                              </span>
+
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
                               Added: {new Date(item.addedAt).toLocaleDateString()}
