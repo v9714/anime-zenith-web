@@ -187,9 +187,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => clearInterval(interval);
   }, [animeId, episodeId, episodeIdNumber, currentTime, duration, isLoggedIn]);
 
-  // Update watch history when video plays
+  // Update watch history when video plays (only once per episode)
+  const historyUpdatedRef = useRef(false);
+
+  useEffect(() => {
+    // Reset when episode changes
+    historyUpdatedRef.current = false;
+  }, [episodeIdNumber]);
+
   useEffect(() => {
     if (!isLoggedIn || !animeId || !episodeIdNumber || duration <= 0) return;
+    if (historyUpdatedRef.current) return; // Already updated for this episode
 
     const updateHistory = async () => {
       try {
@@ -199,16 +207,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           timestamp: Math.floor(currentTime),
           duration: Math.floor(duration)
         });
+        historyUpdatedRef.current = true;
       } catch (error) {
         console.error("Failed to update watch history:", error);
       }
     };
 
-    // Update history when video starts playing or periodically
+    // Update history when video starts playing and has played for 5+ seconds
     if (isPlaying && currentTime > 5) {
       updateHistory();
     }
-  }, [isPlaying, animeId, episodeIdNumber, isLoggedIn]);
+  }, [isPlaying, currentTime, animeId, episodeIdNumber, duration, isLoggedIn]);
 
   // Initialize HLS
   useEffect(() => {
