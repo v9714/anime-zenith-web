@@ -72,7 +72,7 @@ export const likeService = {
   },
 
   getLikedEpisodes: async (limit: number = 20, offset: number = 0): Promise<LikedEpisodesResponse> => {
-    const response = await backendAPI.get<LikedEpisodesResponse>(`/api/interactions/episode/like?limit=${limit}&offset=${offset}`);
+    const response = await backendAPI.get<LikedEpisodesResponse>(`/api/interactions/episode/liked?limit=${limit}&offset=${offset}`);
     return response.data;
   }
 };
