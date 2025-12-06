@@ -5,19 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
-import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAudio } from "@/contexts/AudioContext";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
 import { likeService, LikedEpisode, watchlistService, WatchlistAnime } from "@/services/likeService";
+import { watchedEpisodesService, WatchedAnime } from "@/services/watchedEpisodesService";
 import { generateWatchUrl } from "@/utils/urlEncoder";
 import { getImageUrl } from "@/utils/commanFunction";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 const LIKES_PER_PAGE = 20;
 const WATCHLIST_PER_PAGE = 50;
+const WATCHED_PER_PAGE = 50;
 
 export default function UserProfile() {
   const { currentUser, watchHistory, signOut, refreshUserProfile } = useAuth();
@@ -39,6 +42,13 @@ export default function UserProfile() {
   const [watchlistPage, setWatchlistPage] = useState(0);
   const [hasMoreWatchlist, setHasMoreWatchlist] = useState(true);
 
+  // Watched episodes state
+  const [watchedAnimes, setWatchedAnimes] = useState<WatchedAnime[]>([]);
+  const [loadingWatched, setLoadingWatched] = useState(false);
+  const [watchedFetched, setWatchedFetched] = useState(false);
+  const [watchedPage, setWatchedPage] = useState(0);
+  const [hasMoreWatched, setHasMoreWatched] = useState(true);
+
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
   };
@@ -56,6 +66,13 @@ export default function UserProfile() {
       fetchWatchlist(0);
     }
   }, [activeTab, currentUser, watchlistFetched]);
+
+  // Fetch watched animes only when watched tab is selected
+  useEffect(() => {
+    if (activeTab === "watched" && currentUser && !watchedFetched) {
+      fetchWatchedAnimes(0);
+    }
+  }, [activeTab, currentUser, watchedFetched]);
 
   const fetchLikedEpisodes = async (page: number) => {
     setLoadingLiked(true);
@@ -96,6 +113,27 @@ export default function UserProfile() {
     } finally {
       setLoadingWatchlist(false);
       setWatchlistFetched(true);
+    }
+  };
+
+  const fetchWatchedAnimes = async (page: number) => {
+    setLoadingWatched(true);
+    try {
+      const response = await watchedEpisodesService.getAllWatchedAnimes(WATCHED_PER_PAGE, page * WATCHED_PER_PAGE);
+      if (response.success) {
+        if (page === 0) {
+          setWatchedAnimes(response.data);
+        } else {
+          setWatchedAnimes(prev => [...prev, ...response.data]);
+        }
+        setHasMoreWatched(response.data.length === WATCHED_PER_PAGE);
+        setWatchedPage(page);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watched animes:", error);
+    } finally {
+      setLoadingWatched(false);
+      setWatchedFetched(true);
     }
   };
 
@@ -141,6 +179,7 @@ export default function UserProfile() {
   const hasWatchHistory = watchHistory.length > 0;
   const hasLikedContent = likedEpisodes.length > 0;
   const hasWatchlistContent = watchlistAnime.length > 0;
+  const hasWatchedContent = watchedAnimes.length > 0;
 
   return (
     <Layout>
@@ -170,9 +209,12 @@ export default function UserProfile() {
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="history" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+            <TabsList className="grid grid-cols-5 w-full max-w-3xl">
               <TabsTrigger value="history" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Clock className="h-4 w-4" /> History
+              </TabsTrigger>
+              <TabsTrigger value="watched" className="flex items-center gap-2" onClick={playButtonClick}>
+                <Eye className="h-4 w-4" /> Watched
               </TabsTrigger>
               <TabsTrigger value="likes" className="flex items-center gap-2" onClick={playButtonClick}>
                 <Heart className="h-4 w-4" /> Likes
@@ -221,6 +263,76 @@ export default function UserProfile() {
                   <h3 className="text-lg font-medium">No Watch History</h3>
                   <p className="text-muted-foreground mt-1">
                     Your watch history will appear here
+                  </p>
+                  <Link to="/anime">
+                    <Button variant="outline" className="mt-4">Browse Anime</Button>
+                  </Link>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Watched Tab */}
+            <TabsContent value="watched">
+              <h2 className="text-2xl font-semibold mb-4">Watched Animes</h2>
+              {loadingWatched && watchedAnimes.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : hasWatchedContent ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {watchedAnimes.map((item) => (
+                      <Link
+                        to={`/anime/${item.animeId}`}
+                        key={`watched-${item.animeId}`}
+                      >
+                        <Card className="overflow-hidden hover:bg-accent/50 transition-colors group">
+                          <div className="aspect-[2/3] relative">
+                            <LazyImage
+                              src={getImageUrl(item.coverImage)}
+                              alt={item.title}
+                              className="object-cover"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                              <div className="flex items-center justify-between text-white text-xs mb-1">
+                                <span>{item.watchedEpisodes}/{item.totalEpisodes} Episodes</span>
+                                <span>{item.percentage}%</span>
+                              </div>
+                              <Progress value={item.percentage} className="h-1.5" />
+                            </div>
+                          </div>
+                          <CardContent className="p-3">
+                            <h3 className="font-medium line-clamp-1">{item.title}</h3>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Last watched: {new Date(item.lastWatchedAt).toLocaleDateString()}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                  {/* Pagination */}
+                  {hasMoreWatched && (
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => fetchWatchedAnimes(watchedPage + 1)}
+                        disabled={loadingWatched}
+                      >
+                        {loadingWatched ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Load More
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 bg-muted/50 rounded-lg">
+                  <Eye className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-lg font-medium">No Watched Animes</h3>
+                  <p className="text-muted-foreground mt-1">
+                    Animes you watch will appear here with progress
                   </p>
                   <Link to="/anime">
                     <Button variant="outline" className="mt-4">Browse Anime</Button>

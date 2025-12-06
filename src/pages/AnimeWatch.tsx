@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getAnimeById, getAnimeEpisodesBySeason, Anime, Episode } from "@/services/api";
 import { BACKEND_API_Image_URL } from "@/utils/constants";
 import defaultThumbnail from "@/assets/default-episode-thumbnail.jpg";
+import { watchedEpisodesService } from "@/services/watchedEpisodesService";
 
 // Import components
 import { EpisodeList } from "@/components/anime/watch/EpisodeList";
@@ -181,6 +182,31 @@ export default function AnimeWatch() {
     return defaultThumbnail;
   };
 
+  // Fetch watched episodes from API
+  useEffect(() => {
+    const fetchWatchedEpisodes = async () => {
+      if (!animeId || !currentUser) return;
+
+      try {
+        const response = await watchedEpisodesService.getWatchedEpisodes(animeId);
+        if (response.success && response.data.watchedEpisodes) {
+          // Convert episode numbers to indices based on episodes array
+          const watchedIndices = response.data.watchedEpisodes.map(epNum => {
+            const index = episodes.findIndex(ep => ep.episodeNumber === epNum);
+            return index >= 0 ? index : -1;
+          }).filter(idx => idx >= 0);
+          setWatchedEpisodes(watchedIndices);
+        }
+      } catch (error) {
+        console.error("Failed to fetch watched episodes:", error);
+      }
+    };
+
+    if (episodes.length > 0) {
+      fetchWatchedEpisodes();
+    }
+  }, [animeId, currentUser, episodes]);
+
   // Record watch history when component mounts
   useEffect(() => {
     if (!animeId || !getVideoUrl()) {
@@ -199,23 +225,16 @@ export default function AnimeWatch() {
     // Load user preferences from localStorage
     if (currentUser) {
       const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
-      const userWatched = localStorage.getItem(`watched_${currentUser.id}_${animeId}`);
 
       if (userSaved) {
         const savedData = JSON.parse(userSaved);
         setIsSaved(savedData.includes(animeId));
       }
-
-
-      if (userWatched) {
-        const watchedData = JSON.parse(userWatched);
-        setWatchedEpisodes(watchedData);
-      }
     }
 
   }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, currentVideoUrl]);
 
-  const handleEpisodeSelect = useCallback((index: number) => {
+  const handleEpisodeSelect = useCallback(async (index: number) => {
     if (!episodes[index]) return;
 
     const episode = episodes[index];
@@ -235,13 +254,16 @@ export default function AnimeWatch() {
     // Update URL with encoded episode number
     navigate(generateWatchUrl(id!, episode.episodeNumber), { replace: true });
 
-    // Mark this episode as watched
-    const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
-    setWatchedEpisodes(newWatchedEpisodes);
-
-    // Update localStorage to persist watched episodes
-    if (currentUser && animeId) {
-      localStorage.setItem(`watched_${currentUser.id}_${animeId}`, JSON.stringify(newWatchedEpisodes));
+    // Mark this episode as watched via API
+    if (currentUser && animeId && episode.id) {
+      try {
+        await watchedEpisodesService.markAsWatched(animeId, episode.id, episode.episodeNumber);
+        // Update local state
+        const newWatchedEpisodes = Array.from(new Set([...watchedEpisodes, index]));
+        setWatchedEpisodes(newWatchedEpisodes);
+      } catch (error) {
+        console.error("Failed to mark episode as watched:", error);
+      }
     }
 
     toast({
