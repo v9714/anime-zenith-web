@@ -55,7 +55,7 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
     } else if (isFiller) {
       return "bg-red-600/80 text-white hover:bg-red-600 hover:scale-105 border-2 border-red-400";
     } else if (isWatched) {
-      return "bg-green-600/80 text-white hover:bg-green-600 hover:scale-105";
+      return "bg-green-500/20 text-green-400 ring-2 ring-green-500/50 hover:bg-green-500/30 hover:scale-105";
     } else {
       return "bg-muted/60 text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:scale-105";
     }
