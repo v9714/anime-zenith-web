@@ -460,11 +460,13 @@ export default function AnimeWatch() {
                   thumbnailUrl={getThumbnailUrl()}
                   animeId={animeId}
                   episodeId={currentEpisode?.id?.toString()}
+                  episodeIdNumber={currentEpisode?.id}
                   onNextEpisode={handleNextEpisode}
                   onPreviousEpisode={handlePreviousEpisode}
                   hasNextEpisode={activeEpisode < episodes.length - 1}
                   hasPreviousEpisode={activeEpisode > 0}
                   episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
+                  isLoggedIn={!!currentUser}
                 />
 
 

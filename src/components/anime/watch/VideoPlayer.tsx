@@ -15,17 +15,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import defaultThumbnail from "@/assets/default-episode-thumbnail.jpg";
+import { videoProgressService } from "@/services/videoProgressService";
+import { watchHistoryService } from "@/services/watchHistoryService";
 
 interface VideoPlayerProps {
   videoUrl: string;
   thumbnailUrl?: string;
   animeId?: number;
   episodeId?: string;
+  episodeIdNumber?: number; // Numeric episode ID for API calls
   onNextEpisode?: () => void;
   onPreviousEpisode?: () => void;
   hasNextEpisode?: boolean;
   hasPreviousEpisode?: boolean;
   episodeTitle?: string;
+  isLoggedIn?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -33,11 +37,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   thumbnailUrl,
   animeId,
   episodeId,
+  episodeIdNumber,
   onNextEpisode,
   onPreviousEpisode,
   hasNextEpisode = false,
   hasPreviousEpisode = false,
-  episodeTitle = ""
+  episodeTitle = "",
+  isLoggedIn = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,16 +78,40 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const normalSpeedRef = useRef<number>(1);
   const volumeIndicatorTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load saved progress on mount
+  // Load saved progress on mount (from API if logged in, otherwise localStorage)
   useEffect(() => {
-    if (animeId && episodeId && videoRef.current) {
-      const savedProgress = localStorage.getItem(`progress_${animeId}_${episodeId}`);
-      if (savedProgress) {
-        const progress = parseFloat(savedProgress);
-        videoRef.current.currentTime = progress;
+    const loadProgress = async () => {
+      if (!animeId || !episodeIdNumber || !videoRef.current) return;
+
+      try {
+        if (isLoggedIn) {
+          // Try to fetch from API
+          const response = await videoProgressService.getProgress(episodeIdNumber);
+          if (response.success && response.data && response.data.currentTime > 0) {
+            videoRef.current.currentTime = response.data.currentTime;
+            return;
+          }
+        }
+
+        // Fallback to localStorage
+        const savedProgress = localStorage.getItem(`progress_${animeId}_${episodeId}`);
+        if (savedProgress) {
+          const progress = parseFloat(savedProgress);
+          videoRef.current.currentTime = progress;
+        }
+      } catch (error) {
+        console.error("Failed to load progress:", error);
+        // Fallback to localStorage on error
+        const savedProgress = localStorage.getItem(`progress_${animeId}_${episodeId}`);
+        if (savedProgress && videoRef.current) {
+          const progress = parseFloat(savedProgress);
+          videoRef.current.currentTime = progress;
+        }
       }
-    }
-  }, [animeId, episodeId]);
+    };
+
+    loadProgress();
+  }, [animeId, episodeId, episodeIdNumber, isLoggedIn]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -113,23 +143,72 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [hlsInstance]);
 
-  // Save progress periodically
+  // Save progress periodically (to API if logged in, always to localStorage as backup)
   useEffect(() => {
     if (!videoRef.current || !animeId || !episodeId) return;
 
-    const saveProgress = () => {
+    const saveProgress = async () => {
       if (videoRef.current && currentTime > 0 && duration > 0) {
-        if (currentTime < duration * 0.95) {
+        const isNearEnd = currentTime >= duration * 0.95;
+
+        // Always save to localStorage as backup
+        if (!isNearEnd) {
           localStorage.setItem(`progress_${animeId}_${episodeId}`, currentTime.toString());
         } else {
           localStorage.removeItem(`progress_${animeId}_${episodeId}`);
         }
+
+        // Save to API if logged in
+        if (isLoggedIn && episodeIdNumber && !isNearEnd) {
+          try {
+            await videoProgressService.saveProgress({
+              animeId,
+              episodeId: episodeIdNumber,
+              currentTime,
+              duration
+            });
+          } catch (error) {
+            console.error("Failed to save progress to API:", error);
+          }
+        }
+
+        // Delete progress from API if near end
+        if (isLoggedIn && episodeIdNumber && isNearEnd) {
+          try {
+            await videoProgressService.deleteProgress(episodeIdNumber);
+          } catch (error) {
+            // Ignore delete errors
+          }
+        }
       }
     };
 
-    const interval = setInterval(saveProgress, 5000);
+    const interval = setInterval(saveProgress, 10000); // Save every 10 seconds
     return () => clearInterval(interval);
-  }, [animeId, episodeId, currentTime, duration]);
+  }, [animeId, episodeId, episodeIdNumber, currentTime, duration, isLoggedIn]);
+
+  // Update watch history when video plays
+  useEffect(() => {
+    if (!isLoggedIn || !animeId || !episodeIdNumber || duration <= 0) return;
+
+    const updateHistory = async () => {
+      try {
+        await watchHistoryService.addToHistory({
+          animeId,
+          episodeId: episodeIdNumber,
+          timestamp: Math.floor(currentTime),
+          duration: Math.floor(duration)
+        });
+      } catch (error) {
+        console.error("Failed to update watch history:", error);
+      }
+    };
+
+    // Update history when video starts playing or periodically
+    if (isPlaying && currentTime > 5) {
+      updateHistory();
+    }
+  }, [isPlaying, animeId, episodeIdNumber, isLoggedIn]);
 
   // Initialize HLS
   useEffect(() => {
