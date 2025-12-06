@@ -9,9 +9,7 @@ import { userService, UserProfile } from "@/services/userService";
 import { getToken, setToken, removeToken } from "@/services/backendApi";
 import {
   watchHistoryUtils,
-  likedContentUtils,
   WatchHistoryItem,
-  LikedContentItem
 } from "@/utils/localStorage";
 
 interface AuthContextType {
@@ -19,7 +17,6 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   watchHistory: WatchHistoryItem[];
-  likedContent: LikedContentItem[];
   signUp: (email: string, displayName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
@@ -31,13 +28,6 @@ interface AuthContextType {
     episodeId?: string;
     episodeNumber?: number;
   }) => void;
-  toggleLikedContent: (content: {
-    id: number;
-    type: "anime" | "episode";
-    title: string;
-    imageUrl: string;
-  }) => void;
-  isContentLiked: (id: number, type: "anime" | "episode") => boolean;
 }
 
 // Create the auth context
@@ -90,12 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = React.useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [watchHistory, setWatchHistory] = React.useState<WatchHistoryItem[]>([]);
-  const [likedContent, setLikedContent] = React.useState<LikedContentItem[]>([]);
 
   // Load localStorage data on mount
   React.useEffect(() => {
     setWatchHistory(watchHistoryUtils.get());
-    setLikedContent(likedContentUtils.get());
   }, []);
 
   // Check for existing user session on mount
@@ -185,9 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = () => {
     setCurrentUser(null);
     watchHistoryUtils.clear();
-    likedContentUtils.clear();
     setWatchHistory([]);
-    setLikedContent([]);
     removeToken('accessToken');
     removeToken('refreshToken');
     toast({
@@ -210,28 +196,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setWatchHistory(newHistory);
   };
 
-  const toggleLikedContent = (content: {
-    id: number;
-    type: "anime" | "episode";
-    title: string;
-    imageUrl: string;
-  }) => {
-    if (!currentUser) return;
-
-    const { liked, wasAdded } = likedContentUtils.toggle(content);
-    setLikedContent(liked);
-
-    toast({
-      id: String(Date.now()),
-      title: wasAdded ? "Added to favorites" : "Removed from favorites",
-      description: `${content.title} has been ${wasAdded ? "added to" : "removed from"} your favorites`
-    });
-  };
-
-  const isContentLiked = (id: number, type: "anime" | "episode") => {
-    return likedContentUtils.isLiked(id, type);
-  };
-
   const refreshUserProfile = async () => {
     const userData = await fetchUserProfile();
     if (userData) {
@@ -244,14 +208,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     isAdmin: currentUser?.isAdmin || false,
     watchHistory,
-    likedContent,
     signUp,
     signIn,
     signOut,
     refreshUserProfile,
     updateWatchHistory,
-    toggleLikedContent,
-    isContentLiked,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
