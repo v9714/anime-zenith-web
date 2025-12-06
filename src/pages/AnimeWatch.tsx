@@ -215,39 +215,6 @@ export default function AnimeWatch() {
 
   }, [animeId, updateWatchHistory, currentUser, episodeNumber, anime, currentVideoUrl]);
 
-
-  const handleSave = () => {
-    if (!currentUser) {
-      toast({
-        id: String(Date.now()),
-        title: "Login Required",
-        description: "Please login to save anime"
-      });
-      return;
-    }
-
-    setIsSaved(!isSaved);
-
-    // Save to localStorage
-    const userSaved = localStorage.getItem(`saved_${currentUser.id}`);
-    const savedData = userSaved ? JSON.parse(userSaved) : [];
-
-    if (isSaved) {
-      const index = savedData.indexOf(animeId);
-      if (index > -1) savedData.splice(index, 1);
-    } else {
-      savedData.push(animeId);
-    }
-
-    localStorage.setItem(`saved_${currentUser.id}`, JSON.stringify(savedData));
-
-    toast({
-      id: String(Date.now()),
-      title: isSaved ? "Removed from List" : "Added to List",
-      description: `${anime?.title} has been ${isSaved ? 'removed from' : 'added to'} your watchlist`
-    });
-  };
-
   const handleEpisodeSelect = useCallback((index: number) => {
     if (!episodes[index]) return;
 
@@ -513,15 +480,6 @@ export default function AnimeWatch() {
                     {currentEpisode?.id && (
                       <LikeButton animeId={animeId} episodeId={currentEpisode.id} />
                     )}
-                    <Button
-                      size="sm"
-                      variant={isSaved ? "default" : "outline"}
-                      className="gap-2"
-                      onClick={handleSave}
-                    >
-                      <BookmarkPlus className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-                      {isSaved ? 'Saved' : 'Save'}
-                    </Button>
                     <Button size="sm" variant="outline" className="gap-2" onClick={handleShare}>
                       <Share className="h-4 w-4" />
                       Share
