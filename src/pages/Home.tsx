@@ -8,6 +8,7 @@ import { HeroSlider } from "@/components/anime/HeroSlider";
 import { AnimeCarousel } from "@/components/anime/AnimeCarousel";
 import { getImageUrl } from "@/utils/commanFunction";
 import { SEO, OrganizationSchema, WebSiteSchema } from "@/components/SEO";
+import { ContinueWatching } from "@/components/anime/ContinueWatching";
 
 // Ad component placeholder (for Google AdSense) - optimized to avoid layout shifts
 const AdBanner = ({ className = "", slot = "banner" }: { className?: string, slot?: string }) => (
@@ -132,7 +133,7 @@ export default function Home() {
       />
       <OrganizationSchema />
       <WebSiteSchema />
-      
+
       {isLoading ? (
         renderSkeleton()
       ) : (
@@ -147,6 +148,8 @@ export default function Home() {
               />
             </div>
           )}
+          {/* Continue Watching Section - Only shows for logged in users with history */}
+          <ContinueWatching />
 
           {/* Top Anime Section with overflow styling */}
           <div>
