@@ -83,6 +83,13 @@ export const watchlistService = {
     return response.data;
   },
 
+  addToWatchlist: async (animeId: number): Promise<{ success: boolean; message: string }> => {
+    const response = await backendAPI.post<{ success: boolean; message: string }>('/api/interactions/watchlist', {
+      animeId
+    });
+    return response.data;
+  },
+
   removeFromWatchlist: async (animeId: number): Promise<{ success: boolean }> => {
     const response = await backendAPI.delete<{ success: boolean }>(`/api/interactions/watchlist/${animeId}`);
     return response.data;
