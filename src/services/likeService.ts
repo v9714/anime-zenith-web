@@ -18,6 +18,15 @@ interface LikeStatusResponse {
   };
 }
 
+interface LikesCountResponse {
+  success: boolean;
+  message: string;
+  data: {
+    episodeId: number;
+    totalLikes: number;
+  };
+}
+
 export interface LikedEpisode {
   episodeId: number;
   episodeNumber: number;
@@ -73,6 +82,11 @@ export const likeService = {
 
   getLikedEpisodes: async (limit: number = 20, offset: number = 0): Promise<LikedEpisodesResponse> => {
     const response = await backendAPI.get<LikedEpisodesResponse>(`/api/interactions/episode/liked?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  getLikesCount: async (episodeId: number): Promise<LikesCountResponse> => {
+    const response = await backendAPI.get<LikesCountResponse>(`/api/interactions/episode/${episodeId}/likes-count`);
     return response.data;
   }
 };

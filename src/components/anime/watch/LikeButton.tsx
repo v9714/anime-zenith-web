@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -21,15 +21,19 @@ export function LikeButton({ animeId, episodeId }: LikeButtonProps) {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authView, setAuthView] = useState<"signin" | "signup">("signin");
-  
-  // Fetch like status on mount
+
+  // Fetch like status and count on mount
   useEffect(() => {
-    if (currentUser && episodeId) {
-      fetchLikeStatus();
+    if (episodeId) {
+      fetchLikesCount();
+      if (currentUser) {
+        fetchLikeStatus();
+      }
     }
   }, [currentUser, episodeId]);
 
@@ -43,7 +47,18 @@ export function LikeButton({ animeId, episodeId }: LikeButtonProps) {
       console.error("Failed to fetch like status:", error);
     }
   };
-  
+
+  const fetchLikesCount = async () => {
+    try {
+      const response = await likeService.getLikesCount(episodeId);
+      if (response.success) {
+        setLikesCount(response.data.totalLikes);
+      }
+    } catch (error) {
+      console.error("Failed to fetch likes count:", error);
+    }
+  };
+
   const handleLike = async () => {
     if (!currentUser) {
       setShowLoginPrompt(true);
@@ -51,31 +66,35 @@ export function LikeButton({ animeId, episodeId }: LikeButtonProps) {
     }
 
     if (isLoading) return;
-    
+
     setIsLoading(true);
     const newLikeStatus = !isLiked;
-    
+
     // Optimistic update
     setIsLiked(newLikeStatus);
-    
+    setLikesCount(prev => newLikeStatus ? prev + 1 : Math.max(0, prev - 1));
+
     try {
       const response = await likeService.toggleLike(episodeId, animeId, newLikeStatus);
-      
+
       if (response.success) {
+        setLikesCount(response.data.totalLikes);
         toast({
           id: String(Date.now()),
           title: newLikeStatus ? "Liked!" : "Like removed",
-          description: newLikeStatus 
+          description: newLikeStatus
             ? "This episode has been added to your liked content"
             : "This episode has been removed from your liked content",
         });
       } else {
         // Revert on failure
         setIsLiked(!newLikeStatus);
+        setLikesCount(prev => newLikeStatus ? Math.max(0, prev - 1) : prev + 1);
       }
     } catch (error) {
       // Revert on error
       setIsLiked(!newLikeStatus);
+      setLikesCount(prev => newLikeStatus ? Math.max(0, prev - 1) : prev + 1);
       toast({
         id: String(Date.now()),
         title: "Error",
@@ -97,20 +116,20 @@ export function LikeButton({ animeId, episodeId }: LikeButtonProps) {
     setAuthView("signup");
     setShowAuthModal(true);
   };
-  
+
   return (
     <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant={isLiked ? "default" : "outline"}
             className={`gap-2 ${isLiked ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
             onClick={handleLike}
             disabled={isLoading}
           >
             <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-            {isLiked ? "Liked" : "Like"}
+            {likesCount > 0 ? likesCount : ""} {isLiked ? "Liked" : "Like"}
           </Button>
         </TooltipTrigger>
         <TooltipContent>{isLiked ? "Unlike" : "Like"}</TooltipContent>
