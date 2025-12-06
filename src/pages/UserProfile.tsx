@@ -11,7 +11,7 @@ import { useAudio } from "@/contexts/AudioContext";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
 import { likeService, LikedEpisode, watchlistService, WatchlistAnime } from "@/services/likeService";
-import { watchedEpisodesService, WatchedAnime } from "@/services/watchedEpisodesService";
+import { watchedEpisodesService, GroupedWatchedAnime } from "@/services/watchedEpisodesService";
 import { generateWatchUrl } from "@/utils/urlEncoder";
 import { getImageUrl } from "@/utils/commanFunction";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -43,7 +43,7 @@ export default function UserProfile() {
   const [hasMoreWatchlist, setHasMoreWatchlist] = useState(true);
 
   // Watched episodes state
-  const [watchedAnimes, setWatchedAnimes] = useState<WatchedAnime[]>([]);
+  const [watchedAnimes, setWatchedAnimes] = useState<GroupedWatchedAnime[]>([]);
   const [loadingWatched, setLoadingWatched] = useState(false);
   const [watchedFetched, setWatchedFetched] = useState(false);
   const [watchedPage, setWatchedPage] = useState(0);
@@ -119,16 +119,14 @@ export default function UserProfile() {
   const fetchWatchedAnimes = async (page: number) => {
     setLoadingWatched(true);
     try {
-      const response = await watchedEpisodesService.getAllWatchedAnimes(WATCHED_PER_PAGE, page * WATCHED_PER_PAGE);
-      if (response.success) {
-        if (page === 0) {
-          setWatchedAnimes(response.data);
-        } else {
-          setWatchedAnimes(prev => [...prev, ...response.data]);
-        }
-        setHasMoreWatched(response.data.length === WATCHED_PER_PAGE);
-        setWatchedPage(page);
+      const groupedAnimes = await watchedEpisodesService.getGroupedWatchedAnimes(WATCHED_PER_PAGE, page * WATCHED_PER_PAGE);
+      if (page === 0) {
+        setWatchedAnimes(groupedAnimes);
+      } else {
+        setWatchedAnimes(prev => [...prev, ...groupedAnimes]);
       }
+      setHasMoreWatched(groupedAnimes.length === WATCHED_PER_PAGE);
+      setWatchedPage(page);
     } catch (error) {
       console.error("Failed to fetch watched animes:", error);
     } finally {
@@ -280,11 +278,11 @@ export default function UserProfile() {
                 </div>
               ) : hasWatchedContent ? (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {watchedAnimes.map((item) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {watchedAnimes.map((item, index) => (
                       <Link
                         to={`/anime/${item.animeId}`}
-                        key={`watched-${item.animeId}`}
+                        key={`watched-${item.animeId}-${index}`}
                       >
                         <Card className="overflow-hidden hover:bg-accent/50 transition-colors group">
                           <div className="aspect-[2/3] relative">
@@ -294,11 +292,10 @@ export default function UserProfile() {
                               className="object-cover"
                             />
                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                              <div className="flex items-center justify-between text-white text-xs mb-1">
-                                <span>{item.watchedEpisodes}/{item.totalEpisodes} Episodes</span>
-                                <span>{item.percentage}%</span>
+                              <div className="flex items-center gap-1 text-white text-xs">
+                                <Eye className="h-3 w-3" />
+                                <span>{item.watchedEpisodesCount} Episodes Watched</span>
                               </div>
-                              <Progress value={item.percentage} className="h-1.5" />
                             </div>
                           </div>
                           <CardContent className="p-3">

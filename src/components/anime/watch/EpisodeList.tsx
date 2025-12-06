@@ -30,9 +30,19 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
     return ep.episodeNumber || index + 1;
   };
 
-  const getEpisodeDescription = (ep: Episode | string): string => {
-    if (typeof ep === 'string') return "Watch this exciting episode now!";
-    return ep.description || "Watch this exciting episode now!";
+  const getEpisodeDescription = (ep: Episode | string, index: number): { text: string; isWatched: boolean } => {
+    const isWatched = watchedEpisodes.includes(index);
+    if (typeof ep === 'string') {
+      return {
+        text: isWatched ? "You've watched this episode. Watch again!" : "Watch this exciting episode now!",
+        isWatched
+      };
+    }
+    const baseDesc = ep.description || "Watch this exciting episode now!";
+    return {
+      text: isWatched ? `✓ Watched • ${baseDesc}` : baseDesc,
+      isWatched
+    };
   };
 
   const getEpisodeStyles = (index: number, ep: Episode | string): string => {
@@ -55,7 +65,7 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
     <Card className="relative bg-gradient-to-br from-card via-card to-card/80 backdrop-blur-sm shadow-2xl overflow-hidden border border-border/30 h-[380px] group hover:shadow-primary/10 transition-shadow duration-300">
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      
+
       <CardContent className="p-4 relative z-10">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -86,43 +96,62 @@ export function EpisodeList({ episodes, active = 0, watchedEpisodes = [], onSele
             <ScrollArea className="h-[320px]">
               <div className="grid grid-cols-5 gap-2 mt-1 pr-2">
                 {episodes.map((ep, i) => {
-                const episodeTitle = getEpisodeTitle(ep, i);
-                const episodeNumber = getEpisodeNumber(ep, i);
-                const episodeViews = ep.views;
-                const episodeDescription = getEpisodeDescription(ep);
+                  const episodeTitle = getEpisodeTitle(ep, i);
+                  const episodeNumber = getEpisodeNumber(ep, i);
+                  const episodeViews = typeof ep !== 'string' ? ep.views : undefined;
+                  const { text: episodeDescription, isWatched } = getEpisodeDescription(ep, i);
 
-                return (
-                  <Tooltip key={i}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`relative w-full aspect-square rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center text-sm font-bold shadow-md hover:shadow-xl ${getEpisodeStyles(i, ep)} group/episode`}
-                        onClick={() => onSelectEpisode && onSelectEpisode(i)}
-                      >
-                        <span className="relative z-10">{episodeNumber}</span>
-                        
-                        {/* Shine effect on hover */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover/episode:opacity-100 transition-opacity duration-300 rounded-lg" />
-                        
-                        {i === active && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                            <Play className="h-2.5 w-2.5 text-primary-foreground fill-current" />
-                          </div>
-                        )}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipPortal>
-                      <TooltipContent side="right" className="max-w-[280px] z-[9999] bg-popover/95 backdrop-blur-md border-border/50 shadow-xl">
-                        <div className="space-y-2 p-1">
-                          <p className="font-bold text-sm bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{episodeTitle}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">EP {episodeNumber}</Badge>
-                            {episodeViews && <span>{episodeViews.toLocaleString()} views</span>}
-                          </div>
-                          <p className="text-xs leading-relaxed text-foreground/80">{episodeDescription}</p>
+                  return (
+                    <Tooltip key={i}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`relative w-full aspect-square rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center text-sm font-bold shadow-md hover:shadow-xl ${getEpisodeStyles(i, ep)} group/episode`}
+                          onClick={() => onSelectEpisode && onSelectEpisode(i)}
+                        >
+                          <span className="relative z-10">{episodeNumber}</span>
+
+                          {/* Watched checkmark indicator */}
+                          {isWatched && i !== active && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center shadow-md">
+                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+
+                          {/* Shine effect on hover */}
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover/episode:opacity-100 transition-opacity duration-300 rounded-lg" />
+
+                          {i === active && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                              <Play className="h-2.5 w-2.5 text-primary-foreground fill-current" />
+                            </div>
+                          )}
                         </div>
-                      </TooltipContent>
-                    </TooltipPortal>
-                  </Tooltip>
+                      </TooltipTrigger>
+                      <TooltipPortal>
+                        <TooltipContent side="right" className="max-w-[280px] z-[9999] bg-popover/95 backdrop-blur-md border-border/50 shadow-xl">
+                          <div className="space-y-2 p-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-sm bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{episodeTitle}</p>
+                              {isWatched && (
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] px-1.5 py-0">
+                                  ✓ Watched
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">EP {episodeNumber}</Badge>
+                              {episodeViews && <span>{episodeViews.toLocaleString()} views</span>}
+                            </div>
+                            <p className="text-xs leading-relaxed text-foreground/80">{episodeDescription}</p>
+                            <p className="text-xs font-medium text-primary">
+                              {isWatched ? "👆 Click to watch again" : "👆 Click to watch"}
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </TooltipPortal>
+                    </Tooltip>
                   );
                 })}
               </div>

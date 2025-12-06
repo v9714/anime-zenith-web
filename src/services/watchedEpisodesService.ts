@@ -42,20 +42,30 @@ interface WatchProgressResponse {
     };
 }
 
-export interface WatchedAnime {
+export interface WatchedEpisodeItem {
+    episodeId: number;
+    episodeNumber: number;
+    episodeTitle: string;
+    thumbnail: string | null;
+    duration: number;
+    animeId: number;
+    animeTitle: string;
+    animeCover: string;
+    watchedAt: string;
+}
+
+interface AllWatchedEpisodesResponse {
+    success: boolean;
+    message: string;
+    data: WatchedEpisodeItem[];
+}
+
+export interface GroupedWatchedAnime {
     animeId: number;
     title: string;
     coverImage: string;
-    totalEpisodes: number;
-    watchedEpisodes: number;
-    percentage: number;
+    watchedEpisodesCount: number;
     lastWatchedAt: string;
-}
-
-interface AllWatchedAnimesResponse {
-    success: boolean;
-    message: string;
-    data: WatchedAnime[];
 }
 
 export const watchedEpisodesService = {
@@ -83,8 +93,35 @@ export const watchedEpisodesService = {
         return response.data;
     },
 
-    getAllWatchedAnimes: async (limit: number = 50, offset: number = 0): Promise<AllWatchedAnimesResponse> => {
-        const response = await backendAPI.get<AllWatchedAnimesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
+    getAllWatchedEpisodes: async (limit: number = 50, offset: number = 0): Promise<AllWatchedEpisodesResponse> => {
+        const response = await backendAPI.get<AllWatchedEpisodesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
         return response.data;
+    },
+
+    getGroupedWatchedAnimes: async (limit: number = 50, offset: number = 0): Promise<GroupedWatchedAnime[]> => {
+        const response = await backendAPI.get<AllWatchedEpisodesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
+        if (!response.data.success) return [];
+
+        // Group episodes by anime
+        const animeMap = new Map<number, GroupedWatchedAnime>();
+        response.data.data.forEach(episode => {
+            const existing = animeMap.get(episode.animeId);
+            if (existing) {
+                existing.watchedEpisodesCount++;
+                if (new Date(episode.watchedAt) > new Date(existing.lastWatchedAt)) {
+                    existing.lastWatchedAt = episode.watchedAt;
+                }
+            } else {
+                animeMap.set(episode.animeId, {
+                    animeId: episode.animeId,
+                    title: episode.animeTitle,
+                    coverImage: episode.animeCover,
+                    watchedEpisodesCount: 1,
+                    lastWatchedAt: episode.watchedAt
+                });
+            }
+        });
+
+        return Array.from(animeMap.values());
     }
 };
