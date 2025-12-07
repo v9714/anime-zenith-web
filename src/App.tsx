@@ -12,27 +12,39 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DevelopmentNotice } from "@/components/DevelopmentNotice";
 import { QUERY_CONFIG } from "@/utils/constants";
 
-// Import pages
+// Import main pages directly for faster initial load
 import Home from "./pages/Home";
-import AnimeList from "./pages/AnimeList";
-import AnimeDetails from "./pages/AnimeDetails";
-import Episodes from "./pages/Episodes";
-import Search from "./pages/Search";
-import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-import UserProfile from "./pages/UserProfile";
-import AnimeWatch from "./pages/AnimeWatch";
-import AudioSettings from "./pages/AudioSettings";
-import ResetPassword from "./pages/ResetPassword";
-import VerifyEmail from "./pages/VerifyEmail";
 
-// Import admin pages
-import AdminDashboard from "./pages/Admin";
-import AdminAnime from "./pages/AdminAnime";
-import AdminEpisodes from "./pages/AdminEpisodes";
-import AdminUsers from "./pages/AdminUsers";
-import AdminGenres from "./pages/AdminGenres";
-import AdminOptions from "./pages/AdminOptions";
+// Lazy load other pages for better code splitting
+const AnimeList = React.lazy(() => import("./pages/AnimeList"));
+const AnimeDetails = React.lazy(() => import("./pages/AnimeDetails"));
+const Episodes = React.lazy(() => import("./pages/Episodes"));
+const Search = React.lazy(() => import("./pages/Search"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const UserProfile = React.lazy(() => import("./pages/UserProfile"));
+const AnimeWatch = React.lazy(() => import("./pages/AnimeWatch"));
+const AudioSettings = React.lazy(() => import("./pages/AudioSettings"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
+
+// Lazy load admin pages - only loaded when needed
+const AdminDashboard = React.lazy(() => import("./pages/Admin"));
+const AdminAnime = React.lazy(() => import("./pages/AdminAnime"));
+const AdminEpisodes = React.lazy(() => import("./pages/AdminEpisodes"));
+const AdminUsers = React.lazy(() => import("./pages/AdminUsers"));
+const AdminGenres = React.lazy(() => import("./pages/AdminGenres"));
+const AdminOptions = React.lazy(() => import("./pages/AdminOptions"));
+
+// Loading component for Suspense
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p className="mt-4 text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
 
 // Create Query Client for API requests
 const queryClient = new QueryClient({
@@ -59,31 +71,33 @@ const App = () => {
                   <Sonner />
                   <DevelopmentNotice />
 
-                  <Routes>
-                    {/* Main Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/anime" element={<AnimeList />} />
-                    <Route path="/anime/:id" element={<AnimeDetails />} />
-                    <Route path="/watch/:encoded" element={<AnimeWatch />} />
-                    <Route path="/episodes" element={<Episodes />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/audio-settings" element={<AudioSettings />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/verify-email" element={<VerifyEmail />} />
+                  <React.Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Main Routes */}
+                      <Route path="/" element={<Home />} />
+                      <Route path="/anime" element={<AnimeList />} />
+                      <Route path="/anime/:id" element={<AnimeDetails />} />
+                      <Route path="/watch/:encoded" element={<AnimeWatch />} />
+                      <Route path="/episodes" element={<Episodes />} />
+                      <Route path="/search" element={<Search />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/profile" element={<UserProfile />} />
+                      <Route path="/audio-settings" element={<AudioSettings />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/verify-email" element={<VerifyEmail />} />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/anime" element={<AdminAnime />} />
-                    <Route path="/admin/episodes" element={<AdminEpisodes />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/genres" element={<AdminGenres />} />
-                    <Route path="/admin/options" element={<AdminOptions />} />
+                      {/* Admin Routes */}
+                      <Route path="/admin" element={<AdminDashboard />} />
+                      <Route path="/admin/anime" element={<AdminAnime />} />
+                      <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                      <Route path="/admin/users" element={<AdminUsers />} />
+                      <Route path="/admin/genres" element={<AdminGenres />} />
+                      <Route path="/admin/options" element={<AdminOptions />} />
 
-                    {/* Catch-all Route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                      {/* Catch-all Route */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </React.Suspense>
                 </TooltipProvider>
               </AudioProvider>
             </AuthProvider>
