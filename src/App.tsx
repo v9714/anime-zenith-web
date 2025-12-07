@@ -10,6 +10,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioProvider } from "@/contexts/AudioContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DevelopmentNotice } from "@/components/DevelopmentNotice";
+import { QUERY_CONFIG } from "@/utils/constants";
 
 // Import pages
 import Home from "./pages/Home";
@@ -37,9 +38,9 @@ import AdminOptions from "./pages/AdminOptions";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: QUERY_CONFIG.REFETCH_ON_WINDOW_FOCUS,
+      retry: QUERY_CONFIG.RETRY_COUNT,
+      staleTime: QUERY_CONFIG.STALE_TIME,
     },
   },
 });

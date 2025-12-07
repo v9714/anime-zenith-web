@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
 import { userService, UserProfile } from "@/services/userService";
 import { getToken, setToken, removeToken } from "@/services/backendApi";
+import { STORAGE_KEYS } from "@/utils/constants";
 import {
   watchHistoryUtils,
   WatchHistoryItem,
@@ -42,8 +43,8 @@ const refreshToken = async (): Promise<UserProfile | null> => {
       const { user, accessToken, refreshToken: newRefreshToken } = response.data;
 
       // Set tokens in localStorage
-      setToken('accessToken', accessToken);
-      setToken('refreshToken', newRefreshToken);
+      setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+      setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
       return user;
     }
@@ -68,15 +69,6 @@ const fetchUserProfile = async (): Promise<UserProfile | null> => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Validate React is properly loaded
-  if (!React || typeof React.useState !== 'function') {
-    console.error('React hooks are not available in AuthProvider. Reloading...');
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
-    return <>{children}</>;
-  }
-
   const [currentUser, setCurrentUser] = React.useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [watchHistory, setWatchHistory] = React.useState<WatchHistoryItem[]>([]);
@@ -89,8 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check for existing user session on mount
   React.useEffect(() => {
     const checkAuthState = async () => {
-      const accessToken = getToken('accessToken');
-      const refreshTokenValue = getToken('refreshToken');
+      const accessToken = getToken(STORAGE_KEYS.ACCESS_TOKEN);
+      const refreshTokenValue = getToken(STORAGE_KEYS.REFRESH_TOKEN);
 
       if (accessToken) {
         // If we have access token, fetch current user profile
@@ -147,8 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { user, accessToken, refreshToken: newRefreshToken } = response.data;
 
         // Set tokens in localStorage
-        setToken('accessToken', accessToken);
-        setToken('refreshToken', newRefreshToken);
+        setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+        setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
         // Set user data in state (no localStorage for user data)
         setCurrentUser(user);
@@ -174,8 +166,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCurrentUser(null);
     watchHistoryUtils.clear();
     setWatchHistory([]);
-    removeToken('accessToken');
-    removeToken('refreshToken');
+    removeToken(STORAGE_KEYS.ACCESS_TOKEN);
+    removeToken(STORAGE_KEYS.REFRESH_TOKEN);
     toast({
       id: String(Date.now()),
       title: "Signed out",

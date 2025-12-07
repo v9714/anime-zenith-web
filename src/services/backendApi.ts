@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BACKEND_API_BASE_URL } from "@/utils/constants";
+import { BACKEND_API_BASE_URL, STORAGE_KEYS } from "@/utils/constants";
 import axios from "axios";
 
 
@@ -39,7 +39,7 @@ const backendAPI = axios.create({
 // Request interceptor to add token to headers
 backendAPI.interceptors.request.use(
   (config) => {
-    const token = getToken('accessToken');
+    const token = getToken(STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -104,8 +104,8 @@ backendAPI.interceptors.response.use(
           const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
 
           // Set new tokens in localStorage
-          setToken('accessToken', accessToken);
-          setToken('refreshToken', newRefreshToken);
+          setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+          setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
           // Update the original request with new token
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -122,8 +122,8 @@ backendAPI.interceptors.response.use(
         processQueue(refreshError, null);
 
         // Clear tokens and redirect to login
-        removeToken('accessToken');
-        removeToken('refreshToken');
+        removeToken(STORAGE_KEYS.ACCESS_TOKEN);
+        removeToken(STORAGE_KEYS.REFRESH_TOKEN);
 
         // Only redirect if we're not already on the home page
         if (window.location.pathname !== '/') {
