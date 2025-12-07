@@ -53,13 +53,8 @@ export default function AnimeDetails() {
         // Fetch recommendations
         const recsResponse = await getAnimeRecommendations(parseInt(id));
         if (recsResponse.data && Array.isArray(recsResponse.data)) {
-          // Extract the actual anime objects from recommendations
-          const recommendedAnimes = recsResponse.data
-            .slice(0, 12)
-            .map(rec => rec.entry)
-            .filter(Boolean);
-
-          setRecommendations(recommendedAnimes);
+          // Backend returns direct anime array, take first 12
+          setRecommendations(recsResponse.data.slice(0, 12));
         }
 
         setIsLoading(false);
