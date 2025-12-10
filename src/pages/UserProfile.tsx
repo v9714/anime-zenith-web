@@ -12,6 +12,7 @@ import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
 import { likeService, LikedEpisode, watchlistService, WatchlistAnime } from "@/services/likeService";
 import { watchedEpisodesService, GroupedWatchedAnime } from "@/services/watchedEpisodesService";
+import { watchHistoryService, WatchHistoryItem } from "@/services/watchHistoryService";
 import { generateWatchUrl } from "@/utils/urlEncoder";
 import { getImageUrl } from "@/utils/commanFunction";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -21,12 +22,20 @@ import { Progress } from "@/components/ui/progress";
 const LIKES_PER_PAGE = 20;
 const WATCHLIST_PER_PAGE = 50;
 const WATCHED_PER_PAGE = 50;
+const HISTORY_PER_PAGE = 20;
 
 export default function UserProfile() {
-  const { currentUser, watchHistory, signOut, refreshUserProfile } = useAuth();
+  const { currentUser, signOut, refreshUserProfile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "history";
   const { playButtonClick } = useAudio();
+
+  // Watch history state (from backend)
+  const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyFetched, setHistoryFetched] = useState(false);
+  const [historyPage, setHistoryPage] = useState(0);
+  const [hasMoreHistory, setHasMoreHistory] = useState(true);
 
   // Liked episodes state
   const [likedEpisodes, setLikedEpisodes] = useState<LikedEpisode[]>([]);
@@ -53,6 +62,13 @@ export default function UserProfile() {
     setSearchParams({ tab });
   };
 
+  // Fetch watch history only when history tab is selected
+  useEffect(() => {
+    if (activeTab === "history" && currentUser && !historyFetched) {
+      fetchWatchHistory(0);
+    }
+  }, [activeTab, currentUser, historyFetched]);
+
   // Fetch liked episodes only when likes tab is selected
   useEffect(() => {
     if (activeTab === "likes" && currentUser && !likedFetched) {
@@ -73,6 +89,27 @@ export default function UserProfile() {
       fetchWatchedAnimes(0);
     }
   }, [activeTab, currentUser, watchedFetched]);
+
+  const fetchWatchHistory = async (page: number) => {
+    setLoadingHistory(true);
+    try {
+      const response = await watchHistoryService.getWatchHistory(HISTORY_PER_PAGE, page * HISTORY_PER_PAGE);
+      if (response.success) {
+        if (page === 0) {
+          setWatchHistory(response.data);
+        } else {
+          setWatchHistory(prev => [...prev, ...response.data]);
+        }
+        setHasMoreHistory(response.data.length === HISTORY_PER_PAGE);
+        setHistoryPage(page);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watch history:", error);
+    } finally {
+      setLoadingHistory(false);
+      setHistoryFetched(true);
+    }
+  };
 
   const fetchLikedEpisodes = async (page: number) => {
     setLoadingLiked(true);
@@ -132,6 +169,26 @@ export default function UserProfile() {
     } finally {
       setLoadingWatched(false);
       setWatchedFetched(true);
+    }
+  };
+
+  const handleRemoveFromHistory = async (animeId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await watchHistoryService.deleteAnimeHistory(animeId);
+      setWatchHistory(prev => prev.filter(item => item.animeId !== animeId));
+      toast({
+        id: String(Date.now()),
+        title: "Removed from history",
+        description: "Item has been removed from your watch history"
+      });
+    } catch (error) {
+      toast({
+        id: String(Date.now()),
+        title: "Error",
+        description: "Failed to remove from history"
+      });
     }
   };
 
@@ -228,33 +285,79 @@ export default function UserProfile() {
             {/* Watch History Tab */}
             <TabsContent value="history">
               <h2 className="text-2xl font-semibold mb-4">Watch History</h2>
-              {hasWatchHistory ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {watchHistory.map((item) => (
-                    <Link to={`/anime/${item.animeId}`} key={`${item.animeId}-${item.lastWatched}`}>
-                      <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
-                        <div className="aspect-video relative">
-                          <LazyImage
-                            src={getImageUrl(item.imageUrl)}
-                            alt={item.title}
-                            className="object-cover"
-                          />
-                          {item.episodeNumber && (
-                            <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                              Episode {item.episodeNumber}
-                            </div>
-                          )}
-                        </div>
-                        <CardContent className="p-3">
-                          <h3 className="font-medium line-clamp-1">{item.title}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Watched: {new Date(item.lastWatched).toLocaleDateString()}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
+              {loadingHistory && watchHistory.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
+              ) : hasWatchHistory ? (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {watchHistory.map((item) => (
+                      <Link
+                        to={generateWatchUrl(item.animeId, item.episodeNumber)}
+                        key={`${item.animeId}-${item.lastWatched}`}
+                        className="group"
+                      >
+                        <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
+                          <div className="aspect-video relative">
+                            <LazyImage
+                              src={getImageUrl(item.episodeThumbnail || item.imageUrl)}
+                              alt={item.title}
+                              className="object-cover"
+                            />
+                            {/* Remove button */}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => handleRemoveFromHistory(item.animeId, e)}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                            {item.episodeNumber && (
+                              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                EP {item.episodeNumber}
+                              </div>
+                            )}
+                            {/* Progress bar */}
+                            {item.watchedPercentage > 0 && (
+                              <div className="absolute bottom-0 left-0 right-0">
+                                <Progress
+                                  value={item.watchedPercentage}
+                                  className="h-1 rounded-none bg-muted/50"
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <CardContent className="p-3">
+                            <h3 className="font-medium line-clamp-1">{item.title}</h3>
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                              {item.episodeTitle}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(item.lastWatched).toLocaleDateString()}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                  {/* Pagination */}
+                  {hasMoreHistory && (
+                    <div className="flex justify-center mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => fetchWatchHistory(historyPage + 1)}
+                        disabled={loadingHistory}
+                      >
+                        {loadingHistory ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : null}
+                        Load More
+                      </Button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
