@@ -116,7 +116,7 @@ export function ContinueWatching() {
                 {watchHistory.map((item) => (
                     <Link
                         key={item.animeId}
-                        to={`/anime/${encodeUrlParam(item.animeId)}/watch?ep=${item.episodeNumber}`}
+                        to={`/anime/${encodeUrlParam(item.animeId)}/watch/${item.episodeNumber}`}
                         className="group relative block rounded-lg overflow-hidden bg-card hover:ring-2 hover:ring-primary/50 transition-all"
                     >
                         {/* Thumbnail */}
