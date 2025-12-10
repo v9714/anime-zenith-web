@@ -54,15 +54,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
-      '@radix-ui/react-tooltip',
-      '@tanstack/react-query'
-    ],
+    include: ['react', 'react-dom', 'react-router-dom', '@radix-ui/react-tooltip'],
     // Force pre-bundling
     force: true,
     // Add esbuildOptions

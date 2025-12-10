@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
-import { generateWatchUrl } from "@/utils/urlEncoder";
+import { encodeUrlParam } from "@/utils/urlEncoder";
 
 export function ContinueWatching() {
     const { currentUser } = useAuth();
@@ -116,7 +116,7 @@ export function ContinueWatching() {
                 {watchHistory.map((item) => (
                     <Link
                         key={item.animeId}
-                        to={generateWatchUrl(item.animeId, item.episodeNumber)}
+                        to={`/anime/${encodeUrlParam(item.animeId)}/watch?ep=${item.episodeNumber}`}
                         className="group relative block rounded-lg overflow-hidden bg-card hover:ring-2 hover:ring-primary/50 transition-all"
                     >
                         {/* Thumbnail */}

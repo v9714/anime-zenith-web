@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -7,11 +7,6 @@ import React, {
   useMemo,
   ReactNode
 } from "react";
-
-// Validate React is properly loaded to prevent hook errors
-if (!React || typeof React.useState !== 'function') {
-  console.error('React is not properly initialized');
-}
 
 type Theme = "dark" | "light" | "system";
 

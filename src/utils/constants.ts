@@ -1,5 +1,6 @@
+
 // Site Information
-export const SITE_NAME = "OtakuTv"; // Main site name
+export const SITE_NAME = "OtakuTv";
 export const SITE_DESCRIPTION = "Your Ultimate Anime Streaming Platform";
 
 // API Endpoints
