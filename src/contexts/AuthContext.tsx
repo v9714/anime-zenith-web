@@ -157,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Sign in failed",
         description: error.response?.data?.message || error.message || "Invalid email or password"
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }

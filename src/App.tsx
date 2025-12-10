@@ -18,23 +18,23 @@ import NotFound from "./pages/NotFound";
 import AnimeDetails from "./pages/AnimeDetails";
 import AnimeWatch from "./pages/AnimeWatch";
 
-// Lazy load other pages for better code splitting
-const AnimeList = React.lazy(() => import("./pages/AnimeList"));
-const Episodes = React.lazy(() => import("./pages/Episodes"));
-const Search = React.lazy(() => import("./pages/Search"));
-const Contact = React.lazy(() => import("./pages/Contact"));
-const UserProfile = React.lazy(() => import("./pages/UserProfile"));
-const AudioSettings = React.lazy(() => import("./pages/AudioSettings"));
-const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
-const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
+// other pages
+import AnimeList from "./pages/AnimeList";
+import Episodes from "./pages/Episodes";
+import Search from "./pages/Search";
+import Contact from "./pages/Contact";
+import UserProfile from "./pages/UserProfile";
+import AudioSettings from "./pages/AudioSettings";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 
-// Lazy load admin pages - only loaded when needed
-const AdminDashboard = React.lazy(() => import("./pages/Admin"));
-const AdminAnime = React.lazy(() => import("./pages/AdminAnime"));
-const AdminEpisodes = React.lazy(() => import("./pages/AdminEpisodes"));
-const AdminUsers = React.lazy(() => import("./pages/AdminUsers"));
-const AdminGenres = React.lazy(() => import("./pages/AdminGenres"));
-const AdminOptions = React.lazy(() => import("./pages/AdminOptions"));
+// admin pages
+import AdminDashboard from "./pages/Admin";
+import AdminAnime from "./pages/AdminAnime";
+import AdminEpisodes from "./pages/AdminEpisodes";
+import AdminUsers from "./pages/AdminUsers";
+import AdminGenres from "./pages/AdminGenres";
+import AdminOptions from "./pages/AdminOptions";
 
 // Loading component for Suspense
 const PageLoader = () => (
