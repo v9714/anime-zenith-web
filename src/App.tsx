@@ -15,15 +15,15 @@ import { QUERY_CONFIG } from "@/utils/constants";
 // Import main pages directly for faster initial load
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import AnimeDetails from "./pages/AnimeDetails";
+import AnimeWatch from "./pages/AnimeWatch";
 
 // Lazy load other pages for better code splitting
 const AnimeList = React.lazy(() => import("./pages/AnimeList"));
-const AnimeDetails = React.lazy(() => import("./pages/AnimeDetails"));
 const Episodes = React.lazy(() => import("./pages/Episodes"));
 const Search = React.lazy(() => import("./pages/Search"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const UserProfile = React.lazy(() => import("./pages/UserProfile"));
-const AnimeWatch = React.lazy(() => import("./pages/AnimeWatch"));
 const AudioSettings = React.lazy(() => import("./pages/AudioSettings"));
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));

@@ -25,9 +25,11 @@ export default defineConfig(({ mode }) => ({
       // CRITICAL: Force single React instance
       'react': path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      'react-router': path.resolve(__dirname, './node_modules/react-router'),
+      'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
     },
     // Add dedupe to force single version
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },
   build: {
     minify: mode === 'production' ? "esbuild" : false,
@@ -56,6 +58,7 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'react/jsx-runtime', '@radix-ui/react-tooltip'],
     exclude: [],
+    force: true,
     esbuildOptions: {
       loader: {
         '.js': 'jsx',
