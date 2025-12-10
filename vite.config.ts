@@ -54,10 +54,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@radix-ui/react-tooltip'],
-    // Force pre-bundling
-    force: true,
-    // Add esbuildOptions
+    include: ['react', 'react-dom', 'react-router-dom', 'react/jsx-runtime', '@radix-ui/react-tooltip'],
+    exclude: [],
     esbuildOptions: {
       loader: {
         '.js': 'jsx',
