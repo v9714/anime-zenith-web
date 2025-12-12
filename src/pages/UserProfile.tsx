@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
-import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight, Eye, Info, CheckCircle2 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAudio } from "@/contexts/AudioContext";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
@@ -18,6 +18,8 @@ import { getImageUrl } from "@/utils/commanFunction";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CircularProgress } from "@/components/ui/circular-progress";
 
 const LIKES_PER_PAGE = 20;
 const WATCHLIST_PER_PAGE = 50;
@@ -284,7 +286,20 @@ export default function UserProfile() {
 
             {/* Watch History Tab */}
             <TabsContent value="history">
-              <h2 className="text-2xl font-semibold mb-4">Watch History</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-semibold">Watch History</h2>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-foreground transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">Resume episodes where you left off. Shows your recent viewing activity with progress.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               {loadingHistory && watchHistory.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -374,7 +389,20 @@ export default function UserProfile() {
 
             {/* Watched Tab */}
             <TabsContent value="watched">
-              <h2 className="text-2xl font-semibold mb-4">Watched Animes</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-semibold">Watched Episodes</h2>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-foreground transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">Track completed episodes. Episodes are marked as watched when you finish them (80%+ completion).</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               {loadingWatched && watchedAnimes.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -386,25 +414,66 @@ export default function UserProfile() {
                       <Link
                         to={`/anime/${item.animeId}`}
                         key={`watched-${item.animeId}-${index}`}
+                        className="group"
                       >
-                        <Card className="overflow-hidden hover:bg-accent/50 transition-colors group">
+                        <Card className="overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all">
                           <div className="aspect-[2/3] relative">
                             <LazyImage
                               src={getImageUrl(item.coverImage)}
                               alt={item.title}
                               className="object-cover"
                             />
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                              <div className="flex items-center gap-1 text-white text-xs">
-                                <Eye className="h-3 w-3" />
-                                <span>{item.watchedEpisodesCount} Episodes Watched</span>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+                            {/* Circular Progress Overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="bg-black/80 backdrop-blur-sm rounded-full p-2">
+                                <CircularProgress
+                                  watchedCount={item.watchedEpisodesCount}
+                                  totalEpisodes={item.totalEpisodes || 0}
+                                  size={70}
+                                  strokeWidth={5}
+                                />
                               </div>
                             </div>
                           </div>
-                          <CardContent className="p-3">
-                            <h3 className="font-medium line-clamp-1">{item.title}</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Last watched: {new Date(item.lastWatchedAt).toLocaleDateString()}
+
+                          <CardContent className="p-3 space-y-2">
+                            <h3 className="font-semibold line-clamp-1">{item.title}</h3>
+
+                            {/* Episode Count & Progress */}
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                {item.watchedEpisodesCount}/{item.totalEpisodes || '?'} eps
+                              </span>
+                              {item.totalEpisodes && (
+                                <span className={`font-medium ${item.watchedEpisodesCount === item.totalEpisodes
+                                  ? 'text-green-500 dark:text-green-400'
+                                  : 'text-primary'
+                                  }`}>
+                                  {Math.round((item.watchedEpisodesCount / item.totalEpisodes) * 100)}%
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Mini Progress Bar */}
+                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-500 ${item.watchedEpisodesCount === item.totalEpisodes
+                                  ? 'bg-green-500 dark:bg-green-400'
+                                  : 'bg-primary'
+                                  }`}
+                                style={{
+                                  width: item.totalEpisodes
+                                    ? `${(item.watchedEpisodesCount / item.totalEpisodes) * 100}%`
+                                    : '0%'
+                                }}
+                              />
+                            </div>
+
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(item.lastWatchedAt).toLocaleDateString()}
                             </p>
                           </CardContent>
                         </Card>

@@ -23,10 +23,10 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       // CRITICAL: Force single React instance
-      'react': path.resolve(__dirname, './node_modules/react'),
-      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
-      'react-router': path.resolve(__dirname, './node_modules/react-router'),
-      'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
+      // 'react': path.resolve(__dirname, './node_modules/react'),
+      // 'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      // 'react-router': path.resolve(__dirname, './node_modules/react-router'),
+      // 'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
     },
     // Add dedupe to force single version
     dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],

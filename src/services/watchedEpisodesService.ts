@@ -52,6 +52,7 @@ export interface WatchedEpisodeItem {
     animeTitle: string;
     animeCover: string;
     watchedAt: string;
+    totalEpisodes: number;
 }
 
 interface AllWatchedEpisodesResponse {
@@ -66,6 +67,7 @@ export interface GroupedWatchedAnime {
     coverImage: string;
     watchedEpisodesCount: number;
     lastWatchedAt: string;
+    totalEpisodes: number;
 }
 
 export const watchedEpisodesService = {
@@ -117,7 +119,8 @@ export const watchedEpisodesService = {
                     title: episode.animeTitle,
                     coverImage: episode.animeCover,
                     watchedEpisodesCount: 1,
-                    lastWatchedAt: episode.watchedAt
+                    lastWatchedAt: episode.watchedAt,
+                    totalEpisodes: episode.totalEpisodes || 0
                 });
             }
         });
