@@ -20,8 +20,8 @@ import { getImageUrl } from "@/utils/commanFunction";
 import { useToast } from "@/components/ui/use-toast";
 import backendAPI from "@/services/backendApi";
 
-// Schema for form validation
-const episodeFormSchema = z.object({
+// Dynamic Schema Creation
+const createEpisodeFormSchema = (isUpdate: boolean) => z.object({
   animeId: z.number().min(1, "Please select an anime"),
   animeTitle: z.string().min(1, "Anime title is required"),
   episodeNumber: z.coerce.number().min(1, "Episode number must be at least 1"),
@@ -43,6 +43,8 @@ const episodeFormSchema = z.object({
   if (data.thumbnailType === "url") {
     return data.thumbnailUrl && data.thumbnailUrl.length > 0;
   } else {
+    // If update, file is optional (keep existing)
+    if (isUpdate) return true;
     return data.thumbnailFile;
   }
 }, {
@@ -50,8 +52,11 @@ const episodeFormSchema = z.object({
   path: ["thumbnailUrl"],
 }).refine((data) => {
   if (data.videoSourceType === "url") {
+    // If URL mode, check masterUrl
     return data.masterUrl && data.masterUrl.length > 0;
   } else {
+    // If Upload mode
+    if (isUpdate) return true; // Optional on update
     return data.sourceFile;
   }
 }, {
@@ -59,7 +64,7 @@ const episodeFormSchema = z.object({
   path: ["masterUrl"],
 });
 
-type EpisodeFormData = z.infer<typeof episodeFormSchema>;
+type EpisodeFormData = z.infer<ReturnType<typeof createEpisodeFormSchema>>;
 
 interface AnimeOption {
   id: number;
@@ -78,10 +83,11 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
     episode?.thumbnail ? getImageUrl(episode.thumbnail) : null
   );
   const [deleteImageLoading, setDeleteImageLoading] = useState<boolean>(false);
+  const isUpdate = !!episode;
 
-  // Form setup with react-hook-form
+  // Form setup with dynamic schema
   const form = useForm<EpisodeFormData>({
-    resolver: zodResolver(episodeFormSchema),
+    resolver: zodResolver(createEpisodeFormSchema(isUpdate)),
     defaultValues: {
       animeId: episode?.anime?.id || episode?.animeId || 0,
       animeTitle: episode?.anime?.title || episode?.animeTitle || "",
@@ -517,7 +523,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
               </FormItem>
             )}
           />
-          
+
           {/* Settings */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-foreground">Episode Settings</h3>

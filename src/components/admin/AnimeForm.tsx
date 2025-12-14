@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Schema will be created dynamically based on options
-const createAnimeFormSchema = (seasons: string[], statuses: string[], types: string[]) => {
+const createAnimeFormSchema = (seasons: string[], statuses: string[], types: string[], isUpdate: boolean = false) => {
   return z.object({
     title: z.string().min(1, "Title is required"),
     alternativeTitles: z.array(z.string()).default([]),
@@ -50,23 +50,34 @@ const createAnimeFormSchema = (seasons: string[], statuses: string[], types: str
     if (data.coverImageType === "url" && !data.coverImageUrl) {
       return false;
     }
-    if (data.coverImageType === "upload" && !data.coverImageFile) {
-      return false;
-    }
-    if (data.bannerImageType === "url" && !data.bannerImageUrl) {
-      return false;
-    }
-    if (data.bannerImageType === "upload" && !data.bannerImageFile) {
-      return false;
+    if (data.coverImageType === "upload") {
+      // If upload, file is required ONLY if NOT updating (or if user explicitly wants to change it)
+      // But Zod doesn't know context here easily without pass-in.
+      // logic: if isUpdate is true, file is optional (implies keep existing).
+      if (isUpdate && !data.coverImageFile) return true;
+      if (!data.coverImageFile) return false;
     }
     return true;
   }, {
-    message: "Cover image and banner image are required",
+    message: "Cover image is required",
+    path: ["coverImageUrl"], // highlight url field as fallback
+  }).refine((data) => {
+    if (data.bannerImageType === "url" && !data.bannerImageUrl) {
+      return false;
+    }
+    if (data.bannerImageType === "upload") {
+      if (isUpdate && !data.bannerImageFile) return true;
+      if (!data.bannerImageFile) return false;
+    }
+    return true;
+  }, {
+    message: "Banner image is required",
+    path: ["bannerImageUrl"]
   });
 };
 
 // Default schema for initial load
-const defaultAnimeFormSchema = createAnimeFormSchema([], [], []);
+const defaultAnimeFormSchema = createAnimeFormSchema([], [], [], false);
 
 type AnimeFormValues = z.infer<typeof defaultAnimeFormSchema>;
 
@@ -80,7 +91,7 @@ interface AnimeFormProps {
 export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: AnimeFormProps) {
   const { toast } = useToast();
   const { options, isLoading: isOptionsLoading, getDropdownOptions } = useOptions();
-  
+
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
     anime?.coverImage ? getImageUrl(anime.coverImage) : null
   );
@@ -97,21 +108,35 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   const statusOptions = getDropdownOptions("AnimeStatus");
   const typeOptions = getDropdownOptions("MediaType");
 
+  const isUpdate = !!anime;
+
+  // Helper to determine initial type (local file = upload, http/external = url)
+  const getInitialImageType = (path?: string | null) => {
+    if (!path) return "url";
+    // If it's a local path (starts with /uploads or uploads), treat as "upload" mode (existing file)
+    if (path.startsWith("/uploads") || path.startsWith("uploads")) return "upload";
+    return "url";
+  };
+
   const form = useForm<AnimeFormValues>({
-    resolver: zodResolver(defaultAnimeFormSchema),
+    resolver: zodResolver(createAnimeFormSchema([], [], [], isUpdate)),
     defaultValues: {
       title: anime?.title || "",
-      alternativeTitles: Array.isArray(anime?.alternativeTitles) 
-        ? anime.alternativeTitles 
-        : (typeof anime?.alternativeTitles === 'string' 
-          ? JSON.parse(anime.alternativeTitles) 
+      alternativeTitles: Array.isArray(anime?.alternativeTitles)
+        ? anime.alternativeTitles
+        : (typeof anime?.alternativeTitles === 'string'
+          ? JSON.parse(anime.alternativeTitles)
           : []),
       description: anime?.description || "",
       genres: Array.isArray(anime?.genres) ? anime.genres.map(g => g.mal_id) : [],
-      coverImageType: "url",
-      coverImageUrl: anime?.coverImage || "",
-      bannerImageType: "url",
-      bannerImageUrl: anime?.bannerImage || "",
+
+      // Smart default for Image Types
+      coverImageType: getInitialImageType(anime?.coverImage),
+      coverImageUrl: getInitialImageType(anime?.coverImage) === "url" ? anime?.coverImage || "" : "",
+
+      bannerImageType: getInitialImageType(anime?.bannerImage),
+      bannerImageUrl: getInitialImageType(anime?.bannerImage) === "url" ? anime?.bannerImage || "" : "",
+
       year: anime?.year || new Date().getFullYear(),
       season: anime?.season || "",
       seasonNumber: anime?.seasonNumber || 1,
@@ -286,8 +311,8 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {typeOptions.length > 0 ? (
-                          typeOptions.map((type) => (
+                        {typeOptions?.length > 0 ? (
+                          typeOptions?.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               {type.label}
                             </SelectItem>
@@ -624,7 +649,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {seasonOptions.length > 0 ? (
+                        {seasonOptions?.length > 0 ? (
                           seasonOptions.map((season) => (
                             <SelectItem key={season.value} value={season.value}>
                               {season.label}
@@ -667,7 +692,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {statusOptions.length > 0 ? (
+                        {statusOptions?.length > 0 ? (
                           statusOptions.map((status) => (
                             <SelectItem key={status.value} value={status.value}>
                               {status.label}

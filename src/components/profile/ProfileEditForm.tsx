@@ -35,9 +35,12 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
 
     // Update form when currentUser changes (after refresh)
     useEffect(() => {
+        const isLocal = currentUser.avatarUrl?.startsWith("/uploads") || currentUser.avatarUrl?.startsWith("uploads");
+        setUploadMethod(isLocal ? "upload" : "url");
+
         form.reset({
             displayName: currentUser.displayName,
-            avatarUrl: "" // Don't populate URL field with uploaded image paths
+            avatarUrl: isLocal ? "" : currentUser.avatarUrl || "" // Only populate URL field if it's NOT a local file
         });
         setAvatarPreview(getImageUrl(currentUser.avatarUrl || undefined));
     }, [currentUser]);
