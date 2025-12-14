@@ -87,8 +87,16 @@ export const episodeService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     } : {};
 
-    const response = await backendAPI.post('/api/admin/episode', episodeData, config);
-    return response.data;
+    try {
+      const response = await backendAPI.post('/api/admin/episode', episodeData, config);
+      return response.data;
+    } catch (error: any) {
+      // If server returns a structured error (e.g., 400 Bad Request), return it
+      if (error.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
   },
 
   // Update existing episode
