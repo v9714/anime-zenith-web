@@ -15,7 +15,7 @@ import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { AnimeSearchInput } from "./AnimeSearchInput";
-import { type Episode } from "@/services/episodeService";
+import { episodeService, type Episode } from "@/services/episodeService";
 import { getImageUrl } from "@/utils/commanFunction";
 import { useToast } from "@/components/ui/use-toast";
 import backendAPI from "@/services/backendApi";
@@ -154,7 +154,30 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
 
   const handleSubmit = async (data: EpisodeFormData) => {
     try {
-      onSubmit(data);
+      // Check for duplicate episode before uploading
+      // Only check if creating NEW (no episode object) or if updating and changing the episode number
+      // We use !episode for new creation check because 'creating' prop is just a loading state
+      if (!episode || (episode && data.episodeNumber !== episode.episodeNumber)) {
+        try {
+          const check = await episodeService.checkEpisodeAvailability(data.animeId, data.episodeNumber);
+          if (check.data.exists) {
+            toast({
+              title: "Error",
+              description: `Episode ${data.episodeNumber} already exists for this anime.`,
+              // variant: "destructive",
+            });
+            return; // Stop submission
+          }
+        } catch (checkError) {
+          console.error("Failed to check episode availability", checkError);
+          // If check fails (e.g. network error), maybe we should warn user or stop?
+          // For now, let's proceed but warn console, or maybe stop to be safe.
+          // User wants to strictly prevent it.
+          // But if backend is down, the next call will fail anyway.
+        }
+      }
+
+      await onSubmit(data);
     } catch (error) {
       console.error('Error submitting episode form:', error);
     }

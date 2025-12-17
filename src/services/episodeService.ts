@@ -113,5 +113,16 @@ export const episodeService = {
   deleteEpisode: async (id: string | number) => {
     const response = await backendAPI.delete(`/api/admin/episode/${id}/permanent`);
     return response.data;
+  },
+
+  // Check if episode exists
+  checkEpisodeAvailability: async (animeId: number, episodeNumber: number) => {
+    const response = await backendAPI.get<{
+      statusCode: number;
+      data: { exists: boolean };
+      message: string;
+      success: boolean;
+    }>(`/api/admin/episode/check-availability?animeId=${animeId}&episodeNumber=${episodeNumber}`);
+    return response.data;
   }
 };

@@ -123,14 +123,23 @@ const AdminEpisodes = () => {
       });
 
       if (selectedEpisode?.id) {
-        await episodeService.updateEpisode(selectedEpisode.id, formData);
+        const response = await episodeService.updateEpisode(selectedEpisode.id, formData);
+        // updateEpisode currently throws on error (no try-catch in service), so we don't need to check response here if consistent, 
+        // but if we want to be safe in case service changes:
+        // However, looking at service, it returns response.data directly without wrapping in try-catch for update.
+        // So axios will throw.
         toast({
           title: "Success",
           description: "Episode updated successfully",
           id: Date.now().toString(),
         });
       } else {
-        await episodeService.createEpisode(formData);
+        const response = await episodeService.createEpisode(formData);
+        // createEpisode CATCHES error and returns it, so we MUST check success.
+        if (response && response.success === false) {
+          throw new Error(response.message || "Failed to create episode");
+        }
+
         toast({
           title: "Success",
           description: "Episode created successfully",
@@ -141,11 +150,12 @@ const AdminEpisodes = () => {
       setDialogOpen(false);
       setSelectedEpisode(undefined);
       fetchEpisodes();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving episode:', error);
       toast({
         title: "Error",
-        description: "Failed to save episode. Please try again.",
+        description: error.message || error.response?.data?.message || "Failed to save episode. Please try again.",
+        // variant: "destructive",
         id: Date.now().toString(),
       });
     } finally {
