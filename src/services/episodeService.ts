@@ -82,9 +82,15 @@ export const episodeService = {
   },
 
   // Create new episode
-  createEpisode: async (episodeData: FormData | Partial<Episode>) => {
+  createEpisode: async (episodeData: FormData | Partial<Episode>, onProgress?: (progress: number) => void) => {
     const config = episodeData instanceof FormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent: any) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(progress);
+        }
+      }
     } : {};
 
     try {
@@ -100,9 +106,15 @@ export const episodeService = {
   },
 
   // Update existing episode
-  updateEpisode: async (id: string | number, episodeData: FormData | Partial<Episode>) => {
+  updateEpisode: async (id: string | number, episodeData: FormData | Partial<Episode>, onProgress?: (progress: number) => void) => {
     const config = episodeData instanceof FormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent: any) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(progress);
+        }
+      }
     } : {};
 
     const response = await backendAPI.patch(`/api/admin/episode/${id}`, episodeData, config);

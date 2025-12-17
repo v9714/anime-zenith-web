@@ -26,6 +26,7 @@ const AdminEpisodes = () => {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
@@ -123,7 +124,12 @@ const AdminEpisodes = () => {
       });
 
       if (selectedEpisode?.id) {
-        const response = await episodeService.updateEpisode(selectedEpisode.id, formData);
+        setUploadProgress(0);
+        const response = await episodeService.updateEpisode(
+          selectedEpisode.id,
+          formData,
+          (progress) => setUploadProgress(progress)
+        );
         // updateEpisode currently throws on error (no try-catch in service), so we don't need to check response here if consistent, 
         // but if we want to be safe in case service changes:
         // However, looking at service, it returns response.data directly without wrapping in try-catch for update.
@@ -134,7 +140,11 @@ const AdminEpisodes = () => {
           id: Date.now().toString(),
         });
       } else {
-        const response = await episodeService.createEpisode(formData);
+        setUploadProgress(0);
+        const response = await episodeService.createEpisode(
+          formData,
+          (progress) => setUploadProgress(progress)
+        );
         // createEpisode CATCHES error and returns it, so we MUST check success.
         if (response && response.success === false) {
           throw new Error(response.message || "Failed to create episode");
@@ -160,6 +170,7 @@ const AdminEpisodes = () => {
       });
     } finally {
       setCreating(false);
+      setUploadProgress(0);
     }
   };
 
@@ -222,6 +233,7 @@ const AdminEpisodes = () => {
                 episode={selectedEpisode}
                 onSubmit={handleAddEpisode}
                 creating={creating}
+                uploadProgress={uploadProgress}
               />
             </DialogContent>
           </Dialog>

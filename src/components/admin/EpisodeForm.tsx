@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -75,9 +76,10 @@ interface EpisodeFormProps {
   episode?: Episode;
   onSubmit: (data: EpisodeFormData) => void;
   creating?: boolean;
+  uploadProgress?: number;
 }
 
-export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeFormProps) {
+export function EpisodeForm({ episode, onSubmit, creating = false, uploadProgress = 0 }: EpisodeFormProps) {
   const { toast } = useToast();
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
     episode?.thumbnail ? getImageUrl(episode.thumbnail) : null
@@ -643,6 +645,16 @@ export function EpisodeForm({ episode, onSubmit, creating = false }: EpisodeForm
               )}
             />
           </div>
+
+          {creating && uploadProgress > 0 && (
+            <div className="space-y-2 mb-4">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Uploading Video...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <Progress value={uploadProgress} className="h-2" />
+            </div>
+          )}
 
           <Button type="submit" disabled={creating} className="w-full">
             {creating ? "Creating Episode..." : episode ? "Update Episode" : "Create Episode"}
