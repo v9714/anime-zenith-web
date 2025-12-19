@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { X, Upload, Loader2 } from "lucide-react";
 import { GenreMultiSelect } from "./GenreMultiSelect";
+import { DurationInput } from "./DurationInput";
 import { Anime } from "@/services/api";
 import { useOptions } from "@/hooks/useOptions";
 import { useToast } from "@/hooks/use-toast";
@@ -752,9 +753,12 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 name="episodeDuration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Episode Duration</FormLabel>
                     <FormControl>
-                      <Input placeholder="24 min per ep" {...field} />
+                      <DurationInput
+                        value={parseFloat(field.value || "0")}
+                        onChange={(minutes) => field.onChange(minutes.toString())}
+                        label="Episode Duration"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
