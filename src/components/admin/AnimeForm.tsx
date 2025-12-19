@@ -304,24 +304,24 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {typeOptions?.length > 0 ? (
-                          typeOptions?.map((type) => (
+                    {isOptionsLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {typeOptions?.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               {type.label}
                             </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="" disabled>Loading...</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -642,24 +642,24 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Season *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select season" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {seasonOptions?.length > 0 ? (
-                          seasonOptions.map((season) => (
+                    {isOptionsLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select season" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {seasonOptions?.map((season) => (
                             <SelectItem key={season.value} value={season.value}>
                               {season.label}
                             </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="" disabled>Loading...</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -685,24 +685,24 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {statusOptions?.length > 0 ? (
-                          statusOptions.map((status) => (
+                    {isOptionsLoading ? (
+                      <Skeleton className="h-10 w-full" />
+                    ) : (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {statusOptions?.map((status) => (
                             <SelectItem key={status.value} value={status.value}>
                               {status.label}
                             </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="" disabled>Loading...</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
