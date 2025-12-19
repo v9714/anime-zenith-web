@@ -8,7 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioProvider } from "@/contexts/AudioContext";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 import { DevelopmentNotice } from "@/components/DevelopmentNotice";
 import { QUERY_CONFIG } from "@/utils/constants";
 
@@ -59,52 +59,50 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider defaultTheme="dark">
-            <AuthProvider>
-              <AudioProvider>
-                <TooltipProvider>
-                  {/* Toaster components */}
-                  <Toaster />
-                  <Sonner />
-                  <DevelopmentNotice />
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark">
+          <AuthProvider>
+            <AudioProvider>
+              <TooltipProvider>
+                {/* Toaster components */}
+                <Toaster />
+                <Sonner />
+                <DevelopmentNotice />
 
-                  <React.Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      {/* Main Routes */}
-                      <Route path="/" element={<Home />} />
-                      <Route path="/anime" element={<AnimeList />} />
-                      <Route path="/anime/:id" element={<AnimeDetails />} />
-                      <Route path="/watch/:encoded" element={<AnimeWatch />} />
-                      <Route path="/episodes" element={<Episodes />} />
-                      <Route path="/search" element={<Search />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/profile" element={<UserProfile />} />
-                      <Route path="/audio-settings" element={<AudioSettings />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/verify-email" element={<VerifyEmail />} />
+                <React.Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Main Routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/anime" element={<AnimeList />} />
+                    <Route path="/anime/:id" element={<AnimeDetails />} />
+                    <Route path="/watch/:encoded" element={<AnimeWatch />} />
+                    <Route path="/episodes" element={<Episodes />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/profile" element={<UserProfile />} />
+                    <Route path="/audio-settings" element={<AudioSettings />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
 
-                      {/* Admin Routes */}
-                      <Route path="/admin" element={<AdminDashboard />} />
-                      <Route path="/admin/anime" element={<AdminAnime />} />
-                      <Route path="/admin/episodes" element={<AdminEpisodes />} />
-                      <Route path="/admin/users" element={<AdminUsers />} />
-                      <Route path="/admin/genres" element={<AdminGenres />} />
-                      <Route path="/admin/options" element={<AdminOptions />} />
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/anime" element={<AdminAnime />} />
+                    <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                    <Route path="/admin/users" element={<AdminUsers />} />
+                    <Route path="/admin/genres" element={<AdminGenres />} />
+                    <Route path="/admin/options" element={<AdminOptions />} />
 
-                      {/* Catch-all Route */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </React.Suspense>
-                </TooltipProvider>
-              </AudioProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
+                    {/* Catch-all Route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </React.Suspense>
+              </TooltipProvider>
+            </AudioProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
