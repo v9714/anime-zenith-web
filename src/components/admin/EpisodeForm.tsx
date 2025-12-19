@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { AnimeSearchInput } from "./AnimeSearchInput";
+import { DurationInput } from "./DurationInput";
 import { episodeService, type Episode } from "@/services/episodeService";
 import { getImageUrl } from "@/utils/commanFunction";
 import { useToast } from "@/components/ui/use-toast";
@@ -461,19 +462,14 @@ export function EpisodeForm({ episode, onSubmit, creating = false, uploadProgres
             name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Duration (minutes) <span className="text-red-500">*</span>
-                </FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="23"
-                    {...field}
+                  <DurationInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    label="Duration"
+                    required
                   />
                 </FormControl>
-                <FormDescription className="text-xs text-muted-foreground">
-                  Enter duration in minutes
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
