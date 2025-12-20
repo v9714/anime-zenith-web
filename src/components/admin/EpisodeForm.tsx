@@ -20,7 +20,6 @@ import { DurationInput } from "./DurationInput";
 import { episodeService, type Episode } from "@/services/episodeService";
 import { getImageUrl } from "@/utils/commanFunction";
 import { useToast } from "@/components/ui/use-toast";
-import backendAPI from "@/services/backendApi";
 
 // Dynamic Schema Creation
 const createEpisodeFormSchema = (isUpdate: boolean) => z.object({
@@ -130,10 +129,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false, uploadProgres
     try {
       const isDbImage = episode.thumbnail.includes("/uploads/");
 
-      const response = await backendAPI.post(`/api/admin/episode/${episode.id}/delete-image`, {
-        imagePath: episode.thumbnail,
-        isDbImage: isDbImage
-      });
+      const response = await episodeService.deleteImage(episode.id, episode.thumbnail, isDbImage);
 
       if (response.data.success) {
         setThumbnailPreview(null);

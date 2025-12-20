@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Clock, Film, Star, Calendar } from "lucide-react";
-import backendAPI from "@/services/backendApi";
+import { searchAnime, Anime } from "@/services/api";
 import { LazyImage } from "./LazyImage";
 import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/utils/commanFunction";
-import { Anime } from "@/services/api";
 
 interface SearchDropdownProps {
   searchQuery: string;
@@ -27,16 +26,8 @@ export function SearchDropdown({ searchQuery, onClose, inputRef }: SearchDropdow
 
       setIsLoading(true);
       try {
-        const response = await backendAPI.get('/api/anime/search', {
-          params: {
-            title: searchQuery,
-            page: 1,
-            limit: 8
-          }
-        });
-
-        const animeData = response.data?.data || [];
-        setResults(animeData);
+        const response = await searchAnime(searchQuery, 1, 8);
+        setResults(response.data);
       } catch (error) {
         console.error('Search error:', error);
         setResults([]);

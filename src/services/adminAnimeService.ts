@@ -79,5 +79,15 @@ export const adminAnimeService = {
     deleteAnime: async (id: string | number) => {
         const response = await contentApi.delete(`/api/admin/anime/${id}/permanent`);
         return response.data;
+    },
+
+    // Delete anime image (cover or banner)
+    deleteImage: async (id: string | number, imageType: 'cover' | 'banner', imagePath: string, isDbImage: boolean) => {
+        const response = await contentApi.post(`/api/admin/anime/${id}/delete-image`, {
+            imageType,
+            imagePath,
+            isDbImage
+        });
+        return response.data;
     }
 };

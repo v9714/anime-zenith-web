@@ -18,9 +18,9 @@ import { DurationInput } from "./DurationInput";
 import { Anime } from "@/services/api";
 import { useOptions } from "@/hooks/useOptions";
 import { useToast } from "@/hooks/use-toast";
-import backendAPI from "@/services/backendApi";
-import { getImageUrl } from "@/utils/commanFunction";
 import { genreService, Genre } from "@/services/genreService";
+import { adminAnimeService } from "@/services/adminAnimeService";
+import { getImageUrl } from "@/utils/commanFunction";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -245,11 +245,7 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
 
       const isDbImage = imagePath.startsWith('/uploads/');
 
-      const response = await backendAPI.post(`/api/admin/anime/${anime.id}/delete-image`, {
-        imageType,
-        imagePath,
-        isDbImage
-      });
+      const response = await adminAnimeService.deleteImage(anime.id, imageType, imagePath, isDbImage);
 
       if (response.data.success) {
         toast({

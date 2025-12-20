@@ -59,7 +59,7 @@ export const getCommentsByEpisode = async (
 ): Promise<CommentsResponse> => {
     try {
         const response = await commentsApi.get(
-            `/episode/${episodeId}`,
+            `/api/comments/episode/${episodeId}`,
             { params: { page, limit } }
         );
         return response.data;
@@ -72,7 +72,7 @@ export const getCommentsByEpisode = async (
 // Get replies for a comment
 export const getReplies = async (commentId: string): Promise<RepliesResponse> => {
     try {
-        const response = await commentsApi.get(`/${commentId}/replies`);
+        const response = await commentsApi.get(`/api/comments/${commentId}/replies`);
         return response.data;
     } catch (error: any) {
         console.error('Error fetching replies:', error);
@@ -86,7 +86,7 @@ export const createComment = async (
 ): Promise<CreateCommentResponse> => {
     try {
         const response = await commentsApi.post(
-            '',
+            '/api/comments',
             payload
         );
         return response.data;
@@ -103,7 +103,7 @@ export const updateComment = async (
 ): Promise<CreateCommentResponse> => {
     try {
         const response = await commentsApi.patch(
-            `/${commentId}`,
+            `/api/comments/${commentId}`,
             { content }
         );
         return response.data;
@@ -119,7 +119,7 @@ export const deleteComment = async (
 ): Promise<{ success: boolean; message: string }> => {
     try {
         const response = await commentsApi.delete(
-            `/${commentId}`
+            `/api/comments/${commentId}`
         );
         return response.data;
     } catch (error: any) {

@@ -136,5 +136,14 @@ export const episodeService = {
       success: boolean;
     }>(`/api/admin/episode/check-availability?animeId=${animeId}&episodeNumber=${episodeNumber}`);
     return response.data;
+  },
+
+  // Delete episode image (thumbnail)
+  deleteImage: async (id: string | number, imagePath: string, isDbImage: boolean) => {
+    const response = await contentApi.post(`/api/admin/episode/${id}/delete-image`, {
+      imagePath,
+      isDbImage
+    });
+    return response.data;
   }
 };

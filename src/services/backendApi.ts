@@ -88,6 +88,7 @@ const attachInterceptors = (instance: AxiosInstance) => {
 
         try {
           // IMPORTANT: Root refresh MUST happen via Auth Service (Port 8000)
+          // Since withCredentials is true, the browser will automatically send the refresh cookie
           const refreshResponse = await axios.post(
             `${AUTH_API_URL}/auth/refresh-token`,
             {},
@@ -99,11 +100,19 @@ const attachInterceptors = (instance: AxiosInstance) => {
 
           if (refreshResponse.data.success) {
             const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
-            setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-            setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            processQueue(null, accessToken);
+            // Still update localStorage for UI compatibility, but security is now in cookies
+            if (accessToken) setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+            if (newRefreshToken) setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+
+            // Re-run the original request
+            // If the browser supports cross-port cookies, the new cookie will be sent automatically
+            if (accessToken) {
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+              processQueue(null, accessToken);
+            } else {
+              processQueue(null, null);
+            }
             return instance(originalRequest);
           } else {
             throw new Error('Refresh token failed');
