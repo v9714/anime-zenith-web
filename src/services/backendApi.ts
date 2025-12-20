@@ -1,7 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BACKEND_API_BASE_URL, STORAGE_KEYS } from "@/utils/constants";
-import axios from "axios";
-
+import {
+  AUTH_API_URL,
+  CONTENT_API_URL,
+  USER_API_URL,
+  INTERACTION_API_URL,
+  COMMENTS_API_URL,
+  STORAGE_KEYS
+} from "@/utils/constants";
+import axios, { AxiosInstance } from "axios";
 
 // LocalStorage utility functions for tokens
 export const getToken = (name: string): string | null => {
@@ -29,26 +34,7 @@ export const removeToken = (name: string) => {
   }
 };
 
-// Create unified axios instance for backend API
-const backendAPI = axios.create({
-  baseURL: BACKEND_API_BASE_URL,
-  withCredentials: true,
-  // timeout: 10000,
-});
-
-// Request interceptor to add token to headers
-backendAPI.interceptors.request.use(
-  (config) => {
-    const token = getToken(STORAGE_KEYS.ACCESS_TOKEN);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Track refresh token state to prevent infinite loops
+// Track refresh token state globally to prevent loops
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: any) => void;
@@ -67,77 +53,84 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Response interceptor to handle token refresh
-backendAPI.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // If refresh is already in progress, queue this request
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return backendAPI(originalRequest);
-        }).catch(err => Promise.reject(err));
+// Function to attach interceptors to an instance
+const attachInterceptors = (instance: AxiosInstance) => {
+  // Request interceptor
+  instance.interceptors.request.use(
+    (config) => {
+      const token = getToken(STORAGE_KEYS.ACCESS_TOKEN);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+  // Response interceptor
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
 
-      try {
-        // Use a separate axios instance to avoid interceptor loops
-        const refreshResponse = await axios.post(
-          `${BACKEND_API_BASE_URL}/auth/refresh-token`,
-          {},
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json'
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          }).then(token => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return instance(originalRequest);
+          }).catch(err => Promise.reject(err));
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          // IMPORTANT: Root refresh MUST happen via Auth Service (Port 8000)
+          const refreshResponse = await axios.post(
+            `${AUTH_API_URL}/auth/refresh-token`,
+            {},
+            {
+              withCredentials: true,
+              headers: { 'Content-Type': 'application/json' }
             }
+          );
+
+          if (refreshResponse.data.success) {
+            const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
+            setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+            setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            processQueue(null, accessToken);
+            return instance(originalRequest);
+          } else {
+            throw new Error('Refresh token failed');
           }
-        );
-
-        if (refreshResponse.data.success) {
-          const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
-
-          // Set new tokens in localStorage
-          setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-          setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
-
-          // Update the original request with new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-          // Process the queued requests
-          processQueue(null, accessToken);
-
-          return backendAPI(originalRequest);
-        } else {
-          throw new Error('Refresh token failed');
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          removeToken(STORAGE_KEYS.ACCESS_TOKEN);
+          removeToken(STORAGE_KEYS.REFRESH_TOKEN);
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          }
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
         }
-      } catch (refreshError) {
-        // Process queue with error
-        processQueue(refreshError, null);
-
-        // Clear tokens and redirect to login
-        removeToken(STORAGE_KEYS.ACCESS_TOKEN);
-        removeToken(STORAGE_KEYS.REFRESH_TOKEN);
-
-        // Only redirect if we're not already on the home page
-        if (window.location.pathname !== '/') {
-          window.location.href = '/';
-        }
-
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
+      return Promise.reject(error);
     }
+  );
+};
 
-    return Promise.reject(error);
-  }
-);
+// Create specialized Axios instances
+export const authApi = axios.create({ baseURL: AUTH_API_URL, withCredentials: true });
+export const contentApi = axios.create({ baseURL: CONTENT_API_URL, withCredentials: true });
+export const userApi = axios.create({ baseURL: USER_API_URL, withCredentials: true });
+export const interactionApi = axios.create({ baseURL: INTERACTION_API_URL, withCredentials: true });
+export const commentsApi = axios.create({ baseURL: COMMENTS_API_URL, withCredentials: true });
 
-export default backendAPI;
+// Attach interceptors to all instances
+[authApi, contentApi, userApi, interactionApi, commentsApi].forEach(attachInterceptors);

@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { userApi } from "./backendApi";
 
 export interface UserProfile {
   id: string;
@@ -70,22 +70,22 @@ export interface DeleteAccountResponse {
 
 export const userService = {
   getProfile: async (): Promise<UserProfileResponse> => {
-    const response = await backendAPI.get<UserProfileResponse>('auth/me');
+    const response = await userApi.get<UserProfileResponse>('/api/users/profile');
     return response.data;
   },
 
   getAllUsers: async (): Promise<AdminUsersResponse> => {
-    const response = await backendAPI.get<AdminUsersResponse>('/api/admin/users/');
+    const response = await userApi.get<AdminUsersResponse>('/api/admin/users/');
     return response.data;
   },
 
   updateUser: async (userId: string, updates: UpdateUserRequest): Promise<UpdateUserResponse> => {
-    const response = await backendAPI.patch<UpdateUserResponse>(`/api/admin/users/${userId}`, updates);
+    const response = await userApi.patch<UpdateUserResponse>(`/api/admin/users/${userId}`, updates);
     return response.data;
   },
 
   updateProfile: async (userId: string, updates: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
-    const response = await backendAPI.patch<UpdateProfileResponse>(`/api/users/${userId}`, updates);
+    const response = await userApi.patch<UpdateProfileResponse>(`/api/users/${userId}`, updates);
     return response.data;
   },
 
@@ -100,7 +100,7 @@ export const userService = {
       formData.append('avatar', updates.avatarFile);
     }
 
-    const response = await backendAPI.patch<UpdateProfileResponse>(`/api/users/${userId}`, formData, {
+    const response = await userApi.patch<UpdateProfileResponse>(`/api/users/avatar`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -109,7 +109,7 @@ export const userService = {
   },
 
   deleteAccount: async (userId: string): Promise<DeleteAccountResponse> => {
-    const response = await backendAPI.delete<DeleteAccountResponse>(`/api/users/${userId}`);
+    const response = await userApi.delete<DeleteAccountResponse>(`/api/users/${userId}`);
     return response.data;
   }
 };

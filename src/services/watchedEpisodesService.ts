@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { interactionApi } from "./backendApi";
 
 interface WatchedEpisodeDetail {
     episodeNumber: number;
@@ -72,7 +72,7 @@ export interface GroupedWatchedAnime {
 
 export const watchedEpisodesService = {
     markAsWatched: async (animeId: number, episodeId: number, episodeNumber: number): Promise<MarkWatchedResponse> => {
-        const response = await backendAPI.post<MarkWatchedResponse>('/api/interactions/watched-episodes', {
+        const response = await interactionApi.post<MarkWatchedResponse>('/api/interactions/watched-episodes', {
             animeId,
             episodeId,
             episodeNumber
@@ -81,27 +81,27 @@ export const watchedEpisodesService = {
     },
 
     getWatchedEpisodes: async (animeId: number): Promise<WatchedEpisodesResponse> => {
-        const response = await backendAPI.get<WatchedEpisodesResponse>(`/api/interactions/watched-episodes/${animeId}`);
+        const response = await interactionApi.get<WatchedEpisodesResponse>(`/api/interactions/watched-episodes/${animeId}`);
         return response.data;
     },
 
     unmarkAsWatched: async (episodeId: number): Promise<UnmarkWatchedResponse> => {
-        const response = await backendAPI.delete<UnmarkWatchedResponse>(`/api/interactions/watched-episodes/${episodeId}`);
+        const response = await interactionApi.delete<UnmarkWatchedResponse>(`/api/interactions/watched-episodes/${episodeId}`);
         return response.data;
     },
 
     getWatchProgress: async (animeId: number): Promise<WatchProgressResponse> => {
-        const response = await backendAPI.get<WatchProgressResponse>(`/api/interactions/watched-episodes/${animeId}/progress`);
+        const response = await interactionApi.get<WatchProgressResponse>(`/api/interactions/watched-episodes/${animeId}/progress`);
         return response.data;
     },
 
     getAllWatchedEpisodes: async (limit: number = 50, offset: number = 0): Promise<AllWatchedEpisodesResponse> => {
-        const response = await backendAPI.get<AllWatchedEpisodesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
+        const response = await interactionApi.get<AllWatchedEpisodesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
         return response.data;
     },
 
     getGroupedWatchedAnimes: async (limit: number = 50, offset: number = 0): Promise<GroupedWatchedAnime[]> => {
-        const response = await backendAPI.get<AllWatchedEpisodesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
+        const response = await interactionApi.get<AllWatchedEpisodesResponse>(`/api/interactions/watched-episodes?limit=${limit}&offset=${offset}`);
         if (!response.data.success) return [];
 
         // Group episodes by anime

@@ -4,9 +4,17 @@ export const SITE_NAME = "OtakuTv";
 export const SITE_DESCRIPTION = "Your Ultimate Anime Streaming Platform";
 
 // API Endpoints
-export const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8000";
-export const BACKEND_API_Image_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:8000";
-export const COMMENTS_API_BASE_URL = import.meta.env.VITE_COMMENTS_API_URL || "http://localhost:8001/api/comments";
+export const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || "http://localhost:8000";
+export const CONTENT_API_URL = import.meta.env.VITE_CONTENT_API_URL || "http://localhost:8001";
+export const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:8002";
+export const INTERACTION_API_URL = import.meta.env.VITE_INTERACTION_API_URL || "http://localhost:8003";
+export const COMMENTS_API_URL = import.meta.env.VITE_COMMENTS_API_URL || "http://localhost:8004";
+
+// Legacy fallback for generic backend calls (pointing to Content Service Port 8001 by default)
+export const BACKEND_API_BASE_URL = CONTENT_API_URL;
+
+// Legacy fallback for images (pointing to Content Service as it handles primary media)
+export const BACKEND_API_Image_URL = CONTENT_API_URL;
 export const OPEN_CHAR_API_BASE_URL = "https://api.jikan.moe/v4";
 
 // React Query Configuration

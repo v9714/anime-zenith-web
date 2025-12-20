@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { interactionApi } from "./backendApi";
 
 interface VideoProgressData {
     animeId: number;
@@ -61,13 +61,13 @@ interface DeleteProgressResponse {
 export const videoProgressService = {
     // Save current playback position
     saveProgress: async (data: VideoProgressData): Promise<VideoProgressResponse> => {
-        const response = await backendAPI.post<VideoProgressResponse>('/api/interactions/video-progress', data);
+        const response = await interactionApi.post<VideoProgressResponse>('/api/interactions/video-progress', data);
         return response.data;
     },
 
     // Save multiple progress entries at once
     saveBatchProgress: async (progressData: VideoProgressData[]): Promise<BatchProgressResponse> => {
-        const response = await backendAPI.post<BatchProgressResponse>('/api/interactions/video-progress/batch', {
+        const response = await interactionApi.post<BatchProgressResponse>('/api/interactions/video-progress/batch', {
             progressData
         });
         return response.data;
@@ -76,7 +76,7 @@ export const videoProgressService = {
     // Get saved playback position for an episode
     getProgress: async (episodeId: number): Promise<GetProgressResponse> => {
         try {
-            const response = await backendAPI.get<GetProgressResponse>(`/api/interactions/video-progress/${episodeId}`);
+            const response = await interactionApi.get<GetProgressResponse>(`/api/interactions/video-progress/${episodeId}`);
             return response.data;
         } catch (error) {
             // Return null data if no progress found
@@ -90,13 +90,13 @@ export const videoProgressService = {
 
     // Get all progress for an anime
     getAnimeProgress: async (animeId: number): Promise<AnimeProgressResponse> => {
-        const response = await backendAPI.get<AnimeProgressResponse>(`/api/interactions/video-progress/anime/${animeId}`);
+        const response = await interactionApi.get<AnimeProgressResponse>(`/api/interactions/video-progress/anime/${animeId}`);
         return response.data;
     },
 
     // Delete progress for an episode
     deleteProgress: async (episodeId: number): Promise<DeleteProgressResponse> => {
-        const response = await backendAPI.delete<DeleteProgressResponse>(`/api/interactions/video-progress/${episodeId}`);
+        const response = await interactionApi.delete<DeleteProgressResponse>(`/api/interactions/video-progress/${episodeId}`);
         return response.data;
     }
 };

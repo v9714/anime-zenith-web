@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { interactionApi } from "./backendApi";
 
 interface WatchHistoryData {
     animeId: number;
@@ -65,20 +65,20 @@ interface ClearWatchHistoryResponse {
 export const watchHistoryService = {
     // Add to watch history
     addToHistory: async (data: WatchHistoryData): Promise<WatchHistoryUpdateResponse> => {
-        const response = await backendAPI.post<WatchHistoryUpdateResponse>('/api/interactions/watch-history', data);
+        const response = await interactionApi.post<WatchHistoryUpdateResponse>('/api/interactions/watch-history', data);
         return response.data;
     },
 
     // Get user's watch history
     getWatchHistory: async (limit: number = 20, offset: number = 0): Promise<WatchHistoryListResponse> => {
-        const response = await backendAPI.get<WatchHistoryListResponse>(`/api/interactions/watch-history?limit=${limit}&offset=${offset}`);
+        const response = await interactionApi.get<WatchHistoryListResponse>(`/api/interactions/watch-history?limit=${limit}&offset=${offset}`);
         return response.data;
     },
 
     // Get watch history for specific anime
     getAnimeWatchHistory: async (animeId: number): Promise<AnimeWatchHistoryResponse> => {
         try {
-            const response = await backendAPI.get<AnimeWatchHistoryResponse>(`/api/interactions/watch-history/${animeId}`);
+            const response = await interactionApi.get<AnimeWatchHistoryResponse>(`/api/interactions/watch-history/${animeId}`);
             return response.data;
         } catch (error) {
             return {
@@ -91,13 +91,13 @@ export const watchHistoryService = {
 
     // Delete watch history entry for an anime
     deleteAnimeHistory: async (animeId: number): Promise<DeleteWatchHistoryResponse> => {
-        const response = await backendAPI.delete<DeleteWatchHistoryResponse>(`/api/interactions/watch-history/${animeId}`);
+        const response = await interactionApi.delete<DeleteWatchHistoryResponse>(`/api/interactions/watch-history/${animeId}`);
         return response.data;
     },
 
     // Clear all watch history
     clearAllHistory: async (): Promise<ClearWatchHistoryResponse> => {
-        const response = await backendAPI.delete<ClearWatchHistoryResponse>('/api/interactions/watch-history');
+        const response = await interactionApi.delete<ClearWatchHistoryResponse>('/api/interactions/watch-history');
         return response.data;
     }
 };

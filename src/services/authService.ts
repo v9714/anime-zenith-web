@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { authApi } from "./backendApi";
 
 export interface LoginResponse {
   statusCode: number;
@@ -92,7 +92,7 @@ export interface VerifyEmailResponse {
 
 export const authService = {
   register: async (email: string, displayName: string): Promise<RegisterResponse> => {
-    const response = await backendAPI.post<RegisterResponse>('/auth/register', {
+    const response = await authApi.post<RegisterResponse>('/auth/register', {
       email,
       displayName
     });
@@ -100,7 +100,7 @@ export const authService = {
   },
 
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await backendAPI.post<LoginResponse>('/auth/login', {
+    const response = await authApi.post<LoginResponse>('/auth/login', {
       email,
       password
     });
@@ -108,19 +108,19 @@ export const authService = {
   },
 
   refreshToken: async (): Promise<RefreshTokenResponse> => {
-    const response = await backendAPI.post<RefreshTokenResponse>('/auth/refresh-token', {});
+    const response = await authApi.post<RefreshTokenResponse>('/auth/refresh-token', {});
     return response.data;
   },
 
   forgotPassword: async (email: string): Promise<ForgotPasswordResponse> => {
-    const response = await backendAPI.post<ForgotPasswordResponse>('/auth/forgot-password', {
+    const response = await authApi.post<ForgotPasswordResponse>('/auth/forgot-password', {
       email
     });
     return response.data;
   },
 
   resetPassword: async (token: string, newPassword: string): Promise<ResetPasswordResponse> => {
-    const response = await backendAPI.post<ResetPasswordResponse>('/auth/reset-password', {
+    const response = await authApi.post<ResetPasswordResponse>('/auth/reset-password', {
       token,
       newPassword
     });
@@ -128,7 +128,7 @@ export const authService = {
   },
 
   verifyEmail: async (token: string): Promise<VerifyEmailResponse> => {
-    const response = await backendAPI.post<VerifyEmailResponse>('/auth/verify-email', {
+    const response = await authApi.post<VerifyEmailResponse>('/auth/verify-email', {
       token
     });
     return response.data;
@@ -136,9 +136,8 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     try {
-      await backendAPI.post('/auth/logout', {});
+      await authApi.post('/auth/logout', {});
     } catch (error) {
-      // Even if logout fails on server, we should clear local tokens
       console.error('Logout error:', error);
     } finally {
       const { removeToken } = await import('./backendApi');
@@ -147,5 +146,3 @@ export const authService = {
     }
   }
 };
-
-export default backendAPI;

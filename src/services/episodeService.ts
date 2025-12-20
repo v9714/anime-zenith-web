@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { contentApi } from "./backendApi";
 
 export interface Episode {
   id?: number;
@@ -70,14 +70,14 @@ export const episodeService = {
     if (filters?.status) params.append('status', filters.status);
     if (filters?.search) params.append('search', filters.search);
 
-    const response = await backendAPI.get<PaginatedEpisodeResponse>(`/api/admin/episode?${params.toString()}`);
+    const response = await contentApi.get<PaginatedEpisodeResponse>(`/api/admin/episode?${params.toString()}`);
     return response.data;
   },
 
   // Search anime for episode form
   searchAnime: async (query: string): Promise<AnimeSearchResponse> => {
     const params = new URLSearchParams({ q: query });
-    const response = await backendAPI.get<AnimeSearchResponse>(`/api/admin/anime/search?${params.toString()}`);
+    const response = await contentApi.get<AnimeSearchResponse>(`/api/admin/anime/search?${params.toString()}`);
     return response.data;
   },
 
@@ -94,7 +94,7 @@ export const episodeService = {
     } : {};
 
     try {
-      const response = await backendAPI.post('/api/admin/episode', episodeData, config);
+      const response = await contentApi.post('/api/admin/episode', episodeData, config);
       return response.data;
     } catch (error: any) {
       // If server returns a structured error (e.g., 400 Bad Request), return it
@@ -117,19 +117,19 @@ export const episodeService = {
       }
     } : {};
 
-    const response = await backendAPI.patch(`/api/admin/episode/${id}`, episodeData, config);
+    const response = await contentApi.patch(`/api/admin/episode/${id}`, episodeData, config);
     return response.data;
   },
 
   // Delete episode
   deleteEpisode: async (id: string | number) => {
-    const response = await backendAPI.delete(`/api/admin/episode/${id}/permanent`);
+    const response = await contentApi.delete(`/api/admin/episode/${id}/permanent`);
     return response.data;
   },
 
   // Check if episode exists
   checkEpisodeAvailability: async (animeId: number, episodeNumber: number) => {
-    const response = await backendAPI.get<{
+    const response = await contentApi.get<{
       statusCode: number;
       data: { exists: boolean };
       message: string;

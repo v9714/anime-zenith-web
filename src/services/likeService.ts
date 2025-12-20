@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { interactionApi } from "./backendApi";
 
 interface LikeResponse {
   success: boolean;
@@ -67,7 +67,7 @@ interface WatchlistStatusResponse {
 
 export const likeService = {
   toggleLike: async (episodeId: number, animeId: number, isLiked: boolean): Promise<LikeResponse> => {
-    const response = await backendAPI.post<LikeResponse>('/api/interactions/episode/like', {
+    const response = await interactionApi.post<LikeResponse>('/api/interactions/episode/like', {
       episodeId,
       animeId,
       isLiked
@@ -76,41 +76,41 @@ export const likeService = {
   },
 
   getLikeStatus: async (episodeId: number): Promise<LikeStatusResponse> => {
-    const response = await backendAPI.get<LikeStatusResponse>(`/api/interactions/episode/${episodeId}/like-status`);
+    const response = await interactionApi.get<LikeStatusResponse>(`/api/interactions/episode/${episodeId}/like-status`);
     return response.data;
   },
 
   getLikedEpisodes: async (limit: number = 20, offset: number = 0): Promise<LikedEpisodesResponse> => {
-    const response = await backendAPI.get<LikedEpisodesResponse>(`/api/interactions/episode/liked?limit=${limit}&offset=${offset}`);
+    const response = await interactionApi.get<LikedEpisodesResponse>(`/api/interactions/episode/liked?limit=${limit}&offset=${offset}`);
     return response.data;
   },
 
   getLikesCount: async (episodeId: number): Promise<LikesCountResponse> => {
-    const response = await backendAPI.get<LikesCountResponse>(`/api/interactions/episode/${episodeId}/likes-count`);
+    const response = await interactionApi.get<LikesCountResponse>(`/api/interactions/episode/${episodeId}/likes-count`);
     return response.data;
   }
 };
 
 export const watchlistService = {
   getWatchlist: async (limit: number = 50, offset: number = 0): Promise<WatchlistResponse> => {
-    const response = await backendAPI.get<WatchlistResponse>(`/api/interactions/watchlist/?limit=${limit}&offset=${offset}`);
+    const response = await interactionApi.get<WatchlistResponse>(`/api/interactions/watchlist/?limit=${limit}&offset=${offset}`);
     return response.data;
   },
 
   addToWatchlist: async (animeId: number): Promise<{ success: boolean; message: string }> => {
-    const response = await backendAPI.post<{ success: boolean; message: string }>('/api/interactions/watchlist', {
+    const response = await interactionApi.post<{ success: boolean; message: string }>('/api/interactions/watchlist', {
       animeId
     });
     return response.data;
   },
 
   removeFromWatchlist: async (animeId: number): Promise<{ success: boolean }> => {
-    const response = await backendAPI.delete<{ success: boolean }>(`/api/interactions/watchlist/${animeId}`);
+    const response = await interactionApi.delete<{ success: boolean }>(`/api/interactions/watchlist/${animeId}`);
     return response.data;
   },
 
   getWatchlistStatus: async (animeId: number): Promise<WatchlistStatusResponse> => {
-    const response = await backendAPI.get<WatchlistStatusResponse>(`/api/interactions/watchlist/${animeId}/status`);
+    const response = await interactionApi.get<WatchlistStatusResponse>(`/api/interactions/watchlist/${animeId}/status`);
     return response.data;
   }
 };

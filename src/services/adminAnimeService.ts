@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { contentApi } from "./backendApi";
 import { Anime } from "./api";
 
 export interface AdminAnimeResponse {
@@ -31,7 +31,7 @@ export interface AnimeFilters {
 
 export const adminAnimeService = {
     getAllAnime: async (): Promise<AdminAnimeResponse> => {
-        const response = await backendAPI.get<AdminAnimeResponse>('/api/admin/anime');
+        const response = await contentApi.get<AdminAnimeResponse>('/api/admin/anime');
         return response.data;
     },
 
@@ -51,7 +51,7 @@ export const adminAnimeService = {
         if (filters?.genre) params.append('genre', filters.genre);
         if (filters?.year) params.append('year', filters.year.toString());
 
-        const response = await backendAPI.get<PaginatedAnimeResponse>(`/api/admin/anime?${params.toString()}`);
+        const response = await contentApi.get<PaginatedAnimeResponse>(`/api/admin/anime?${params.toString()}`);
         return response.data;
     },
 
@@ -61,7 +61,7 @@ export const adminAnimeService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         } : {};
 
-        const response = await backendAPI.post('/api/admin/anime/', animeData, config);
+        const response = await contentApi.post('/api/admin/anime/', animeData, config);
         return response.data;
     },
 
@@ -71,13 +71,13 @@ export const adminAnimeService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         } : {};
 
-        const response = await backendAPI.patch(`/api/admin/anime/${id}`, animeData, config);
+        const response = await contentApi.patch(`/api/admin/anime/${id}`, animeData, config);
         return response.data;
     },
 
     // Delete anime
     deleteAnime: async (id: string | number) => {
-        const response = await backendAPI.delete(`/api/admin/anime/${id}/permanent`);
+        const response = await contentApi.delete(`/api/admin/anime/${id}/permanent`);
         return response.data;
     }
 };

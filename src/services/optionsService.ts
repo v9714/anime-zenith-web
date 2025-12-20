@@ -1,4 +1,4 @@
-import backendAPI from "./backendApi";
+import { contentApi } from "./backendApi";
 
 export interface OptionsData {
   AnimeStatus: string[];
@@ -34,19 +34,19 @@ export interface OptionActionResponse {
 export const optionsService = {
   // Get all options
   getOptions: async (): Promise<OptionsResponse> => {
-    const response = await backendAPI.get<OptionsResponse>('/api/options');
+    const response = await contentApi.get<OptionsResponse>('/api/options');
     return response.data;
   },
 
   // Add new option
   addOption: async (payload: AddOptionPayload): Promise<OptionActionResponse> => {
-    const response = await backendAPI.post<OptionActionResponse>('/api/options', payload);
+    const response = await contentApi.post<OptionActionResponse>('/api/options', payload);
     return response.data;
   },
 
   // Delete option
   deleteOption: async (payload: DeleteOptionPayload): Promise<OptionActionResponse> => {
-    const response = await backendAPI.delete<OptionActionResponse>('/api/options', { data: payload });
+    const response = await contentApi.delete<OptionActionResponse>('/api/options', { data: payload });
     return response.data;
   },
 };

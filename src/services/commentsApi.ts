@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { COMMENTS_API_BASE_URL } from '@/utils/constants';
-
-// Comments API Base URL
+import { commentsApi } from './backendApi';
 
 // Comment interface matching backend response
 export interface Comment {
@@ -61,8 +58,8 @@ export const getCommentsByEpisode = async (
     limit = 20
 ): Promise<CommentsResponse> => {
     try {
-        const response = await axios.get(
-            `${COMMENTS_API_BASE_URL}/episode/${episodeId}`,
+        const response = await commentsApi.get(
+            `/episode/${episodeId}`,
             { params: { page, limit } }
         );
         return response.data;
@@ -75,7 +72,7 @@ export const getCommentsByEpisode = async (
 // Get replies for a comment
 export const getReplies = async (commentId: string): Promise<RepliesResponse> => {
     try {
-        const response = await axios.get(`${COMMENTS_API_BASE_URL}/${commentId}/replies`);
+        const response = await commentsApi.get(`/${commentId}/replies`);
         return response.data;
     } catch (error: any) {
         console.error('Error fetching replies:', error);
@@ -85,19 +82,12 @@ export const getReplies = async (commentId: string): Promise<RepliesResponse> =>
 
 // Create a new comment or reply
 export const createComment = async (
-    payload: CreateCommentPayload,
-    accessToken: string
+    payload: CreateCommentPayload
 ): Promise<CreateCommentResponse> => {
     try {
-        const response = await axios.post(
-            COMMENTS_API_BASE_URL,
-            payload,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }
+        const response = await commentsApi.post(
+            '',
+            payload
         );
         return response.data;
     } catch (error: any) {
@@ -109,19 +99,12 @@ export const createComment = async (
 // Update a comment
 export const updateComment = async (
     commentId: string,
-    content: string,
-    accessToken: string
+    content: string
 ): Promise<CreateCommentResponse> => {
     try {
-        const response = await axios.patch(
-            `${COMMENTS_API_BASE_URL}/${commentId}`,
-            { content },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }
+        const response = await commentsApi.patch(
+            `/${commentId}`,
+            { content }
         );
         return response.data;
     } catch (error: any) {
@@ -132,17 +115,11 @@ export const updateComment = async (
 
 // Delete a comment
 export const deleteComment = async (
-    commentId: string,
-    accessToken: string
+    commentId: string
 ): Promise<{ success: boolean; message: string }> => {
     try {
-        const response = await axios.delete(
-            `${COMMENTS_API_BASE_URL}/${commentId}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            }
+        const response = await commentsApi.delete(
+            `/${commentId}`
         );
         return response.data;
     } catch (error: any) {
@@ -150,3 +127,4 @@ export const deleteComment = async (
         throw error.response?.data || error;
     }
 };
+
