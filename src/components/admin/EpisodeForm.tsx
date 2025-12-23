@@ -470,7 +470,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false, uploadProgres
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
-                    Max file size based on server limits (standard 50MB for content).
+                    Max file size based on server limits (standard 15Gb for content).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
