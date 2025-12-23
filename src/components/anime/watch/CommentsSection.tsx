@@ -186,14 +186,11 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
         return;
       }
 
-      const response = await commentsApi.createComment(
-        {
-          episodeId,
-          content: newComment.trim(),
-          parentId: null
-        },
-        token
-      );
+      const response = await commentsApi.createComment({
+        episodeId,
+        content: newComment.trim(),
+        parentId: null
+      });
 
       if (response.success) {
         // Add new comment to the top of the list
@@ -248,14 +245,11 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
         return;
       }
 
-      const response = await commentsApi.createComment(
-        {
-          episodeId,
-          content: replyContent.trim(),
-          parentId
-        },
-        token
-      );
+      const response = await commentsApi.createComment({
+        episodeId,
+        content: replyContent.trim(),
+        parentId
+      });
 
       if (response.success) {
         // Reload replies for this comment
@@ -297,7 +291,7 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
         return;
       }
 
-      const response = await commentsApi.updateComment(commentId, editContent.trim(), token);
+      const response = await commentsApi.updateComment(commentId, editContent.trim());
 
       if (response.success) {
         // Update in local state
@@ -349,7 +343,7 @@ export function CommentsSection({ episodeId }: CommentsSectionProps) {
         return;
       }
 
-      const response = await commentsApi.deleteComment(commentId, token);
+      const response = await commentsApi.deleteComment(commentId);
 
       if (response.success) {
         setComments(prev => prev.filter(c => c.id !== commentId));

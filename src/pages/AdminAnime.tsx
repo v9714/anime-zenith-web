@@ -161,7 +161,7 @@ const AdminAnime = () => {
                 Add New Anime
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
                 <DialogTitle>{editingAnime ? 'Edit Anime' : 'Add New Anime'}</DialogTitle>
                 <DialogDescription>

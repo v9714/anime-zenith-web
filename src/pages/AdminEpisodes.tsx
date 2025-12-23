@@ -217,7 +217,7 @@ const AdminEpisodes = () => {
                 {creating ? "Creating..." : "Add New Episode"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
                 <DialogTitle>
                   {selectedEpisode ? "Edit Episode" : "Add New Episode"}

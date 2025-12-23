@@ -185,7 +185,7 @@ export function EpisodeForm({ episode, onSubmit, creating = false, uploadProgres
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 p-1">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
           {/* Anime Selection */}
           <FormField
             control={form.control}

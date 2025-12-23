@@ -65,56 +65,56 @@ export function DurationInput({ value, onChange, label = "Duration", required = 
         {label} {required && <span className="text-destructive">*</span>}
       </Label>
       
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Hours */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center min-w-[50px]">
           <Input
             type="number"
             min={0}
             max={99}
             value={hours}
             onChange={(e) => handleHoursChange(e.target.value)}
-            className="w-16 text-center"
+            className="w-14 text-center text-sm"
             placeholder="0"
           />
-          <span className="text-xs text-muted-foreground mt-1">Hours</span>
+          <span className="text-xs text-muted-foreground mt-1">Hrs</span>
         </div>
 
-        <span className="text-xl font-bold text-muted-foreground pb-5">:</span>
+        <span className="text-lg font-bold text-muted-foreground pb-5">:</span>
 
         {/* Minutes */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center min-w-[50px]">
           <Input
             type="number"
             min={0}
             max={59}
             value={minutes}
             onChange={(e) => handleMinutesChange(e.target.value)}
-            className="w-16 text-center"
+            className="w-14 text-center text-sm"
             placeholder="0"
           />
-          <span className="text-xs text-muted-foreground mt-1">Minutes</span>
+          <span className="text-xs text-muted-foreground mt-1">Min</span>
         </div>
 
-        <span className="text-xl font-bold text-muted-foreground pb-5">:</span>
+        <span className="text-lg font-bold text-muted-foreground pb-5">:</span>
 
         {/* Seconds */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center min-w-[50px]">
           <Input
             type="number"
             min={0}
             max={59}
             value={seconds}
             onChange={(e) => handleSecondsChange(e.target.value)}
-            className="w-16 text-center"
+            className="w-14 text-center text-sm"
             placeholder="0"
           />
-          <span className="text-xs text-muted-foreground mt-1">Seconds</span>
+          <span className="text-xs text-muted-foreground mt-1">Sec</span>
         </div>
 
         {/* Total display */}
-        <div className="ml-4 px-3 py-2 bg-muted rounded-md">
-          <span className="text-sm font-medium">{formatTotal()}</span>
+        <div className="px-2 py-1.5 bg-muted rounded-md">
+          <span className="text-xs font-medium">{formatTotal()}</span>
         </div>
       </div>
 
