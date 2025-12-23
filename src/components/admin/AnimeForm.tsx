@@ -112,11 +112,19 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   const isUpdate = !!anime;
 
   // Helper to determine initial type (local file = upload, http/external = url)
-  const getInitialImageType = (path?: string | null) => {
+  const getInitialImageType = (path?: string | null): "url" | "upload" => {
     if (!path) return "url";
+    // If it's an external URL (http/https), treat as "url" mode
+    if (path.startsWith("http://") || path.startsWith("https://")) return "url";
     // If it's a local path (starts with /uploads or uploads), treat as "upload" mode (existing file)
-    if (path.startsWith("/uploads") || path.startsWith("uploads")) return "upload";
-    return "url";
+    return "upload";
+  };
+
+  // Get initial URL value - only return URL for http/https paths
+  const getInitialImageUrl = (path?: string | null): string => {
+    if (!path) return "";
+    if (path.startsWith("http://") || path.startsWith("https://")) return path;
+    return "";
   };
 
   const form = useForm<AnimeFormValues>({
@@ -133,10 +141,10 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
 
       // Smart default for Image Types
       coverImageType: getInitialImageType(anime?.coverImage),
-      coverImageUrl: getInitialImageType(anime?.coverImage) === "url" ? anime?.coverImage || "" : "",
+      coverImageUrl: getInitialImageUrl(anime?.coverImage),
 
       bannerImageType: getInitialImageType(anime?.bannerImage),
-      bannerImageUrl: getInitialImageType(anime?.bannerImage) === "url" ? anime?.bannerImage || "" : "",
+      bannerImageUrl: getInitialImageUrl(anime?.bannerImage),
 
       year: anime?.year || new Date().getFullYear(),
       season: anime?.season || "",
@@ -150,6 +158,61 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
       isDeleted: anime?.isDeleted,
     }
   });
+
+  // Reset form when anime prop changes (switching between add/edit)
+  useEffect(() => {
+    if (anime) {
+      form.reset({
+        title: anime.title || "",
+        alternativeTitles: Array.isArray(anime.alternativeTitles)
+          ? anime.alternativeTitles
+          : (typeof anime.alternativeTitles === 'string'
+            ? JSON.parse(anime.alternativeTitles)
+            : []),
+        description: anime.description || "",
+        genres: Array.isArray(anime.genres) ? anime.genres.map(g => g.mal_id) : [],
+        coverImageType: getInitialImageType(anime.coverImage),
+        coverImageUrl: getInitialImageUrl(anime.coverImage),
+        bannerImageType: getInitialImageType(anime.bannerImage),
+        bannerImageUrl: getInitialImageUrl(anime.bannerImage),
+        year: anime.year || new Date().getFullYear(),
+        season: anime.season || "",
+        seasonNumber: anime.seasonNumber || 1,
+        status: anime.status || "",
+        type: anime.type || "",
+        rating: anime.rating ? parseFloat(anime.rating) : undefined,
+        votesCount: anime.votesCount || 0,
+        studio: anime.studio || "",
+        episodeDuration: anime.episodeDuration || "",
+        isDeleted: anime.isDeleted,
+      });
+      setCoverImagePreview(anime.coverImage ? getImageUrl(anime.coverImage) : null);
+      setBannerImagePreview(anime.bannerImage ? getImageUrl(anime.bannerImage) : null);
+    } else {
+      form.reset({
+        title: "",
+        alternativeTitles: [],
+        description: "",
+        genres: [],
+        coverImageType: "url",
+        coverImageUrl: "",
+        bannerImageType: "url",
+        bannerImageUrl: "",
+        year: new Date().getFullYear(),
+        season: "",
+        seasonNumber: 1,
+        status: "",
+        type: "",
+        rating: undefined,
+        votesCount: 0,
+        studio: "",
+        episodeDuration: "",
+        isDeleted: false,
+      });
+      setCoverImagePreview(null);
+      setBannerImagePreview(null);
+    }
+  }, [anime]);
 
   const handleSubmit = async (data: AnimeFormValues) => {
     // Create FormData for file uploads
