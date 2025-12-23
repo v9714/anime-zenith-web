@@ -275,12 +275,11 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto pt-3">
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="w-full">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <FormField
                 control={form.control}
                 name="title"
@@ -799,7 +798,6 @@ export function AnimeForm({ anime, onSubmit, onCancel, isLoading = false }: Anim
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
