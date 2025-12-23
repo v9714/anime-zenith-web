@@ -384,73 +384,99 @@ export function EpisodeForm({ episode, onSubmit, creating = false, uploadProgres
           )}
 
           {/* Video Source */}
-          <div className="space-y-4">
+          {/* Current Video Info (Only on Update) */}
+          {isUpdate && episode?.masterUrl && (
+            <div className="bg-muted/30 p-3 rounded-md border border-dashed text-xs space-y-1">
+              <p className="font-semibold text-muted-foreground flex items-center gap-1">
+                🎥 Current Video Status:
+              </p>
+              <code className="block p-1 bg-background rounded truncate">
+                {episode.masterUrl}
+              </code>
+              {episode.masterUrl === "PROCESSING" && (
+                <p className="text-amber-500 animate-pulse font-medium">
+                  ⚠️ Video is currently being processed...
+                </p>
+              )}
+            </div>
+          )}
+
+          <FormField
+            control={form.control}
+            name="videoSourceType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">Video Source Selection <span className="text-red-500">*</span></FormLabel>
+                <div className="flex items-center space-x-3 bg-secondary/20 p-2 rounded-md w-fit">
+                  <span className={cn("text-xs transition-colors", field.value === "upload" ? "text-primary font-bold" : "text-muted-foreground")}>
+                    Upload File
+                  </span>
+                  <Switch
+                    checked={field.value === "url"}
+                    onCheckedChange={(checked) => {
+                      const newType = checked ? "url" : "upload";
+                      field.onChange(newType);
+                      // Clear opposite field when switching
+                      if (newType === "upload") {
+                        form.setValue("masterUrl", "");
+                      } else {
+                        form.setValue("sourceFile", undefined);
+                      }
+                    }}
+                  />
+                  <span className={cn("text-xs transition-colors", field.value === "url" ? "text-primary font-bold" : "text-muted-foreground")}>
+                    Paste URL / m3u8
+                  </span>
+                </div>
+                <FormDescription className="text-xs">
+                  {field.value === "url"
+                    ? "Paste a direct .m3u8 link or a local path."
+                    : "Upload a raw video file for server-side transcoding."}
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+
+          {form.watch("videoSourceType") === "url" ? (
             <FormField
               control={form.control}
-              name="videoSourceType"
+              name="masterUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Video Source *</FormLabel>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={field.value === "upload"}
-                      onCheckedChange={(checked) => {
-                        const newType = checked ? "upload" : "url";
-                        field.onChange(newType);
-                        // Clear opposite field when switching
-                        if (newType === "upload") {
-                          form.setValue("masterUrl", "");
-                        } else {
-                          form.setValue("sourceFile", undefined);
-                        }
-                      }}
-                    />
-                    <span className="text-sm">
-                      {field.value === "upload" ? "Upload File" : "Use URL"}
-                    </span>
-                  </div>
+                  <FormLabel className="text-sm font-medium">Master URL / m3u8 Path</FormLabel>
+                  <FormControl>
+                    <Input placeholder="eg: /uploads/Anime/ep1/master.m3u8 or https://..." {...field} />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
-
-            {form.watch("videoSourceType") === "url" ? (
-              <FormField
-                control={form.control}
-                name="masterUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">Master URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/video.mp4" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ) : (
-              <FormField
-                control={form.control}
-                name="sourceFile"
-                render={({ field: { onChange, value, ...field } }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">Source File</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="video/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          onChange(file);
-                        }}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
+          ) : (
+            <FormField
+              control={form.control}
+              name="sourceFile"
+              render={({ field: { onChange, value, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Upload Source Video</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        onChange(file);
+                      }}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    Max file size based on server limits (standard 50MB for content).
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           {/* Duration */}
           <FormField
