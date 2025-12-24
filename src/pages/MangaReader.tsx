@@ -3,10 +3,10 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { mangaService, Chapter, MangaDetails } from "@/services/mangaService";
 import { MANGA_API_URL } from "@/utils/constants";
 import { Button } from "@/components/ui/button";
-import { 
-    Loader2, ChevronLeft, ChevronRight, Maximize2, Settings, List, 
+import {
+    Loader2, ChevronLeft, ChevronRight, Maximize2, Settings, List,
     Moon, Sun, BookOpen, X, Palette, ZoomIn, ZoomOut, RotateCcw,
-    Monitor, Coffee
+    Monitor, Coffee, Download
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -18,6 +18,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
+import PdfViewer from "@/components/manga/PdfViewer";
 
 type ReadingMode = 'default' | 'night' | 'sepia' | 'paper' | 'contrast';
 
@@ -168,6 +169,30 @@ const MangaReader = () => {
         return `${MANGA_API_URL}/${path.replace(/\\/g, '/')}`;
     };
 
+    const handleDownloadPdf = async () => {
+        if (!chapter?.pdfUrl) return;
+        const url = getPdfUrl(chapter.pdfUrl);
+        try {
+            toast.loading('Preparing download...');
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `${manga?.title || 'Manga'}-Chapter-${chapter.chapterNumber}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+            toast.dismiss();
+            toast.success('Download started!');
+        } catch (err) {
+            toast.dismiss();
+            toast.error('Failed to download PDF');
+            console.error('Download error:', err);
+        }
+    };
+
     const currentModeConfig = readingModes[readingMode];
     const currentChapterIndex = manga?.chapters.findIndex(c => c.id === chapter?.id) ?? -1;
     const hasPrev = currentChapterIndex > 0;
@@ -188,8 +213,8 @@ const MangaReader = () => {
     if (!chapter) return <div className="text-center py-20 text-muted-foreground">Chapter not found.</div>;
 
     return (
-        <div 
-            ref={readerRef} 
+        <div
+            ref={readerRef}
             className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${currentModeConfig.bgClass}`}
             onMouseMove={handleMouseMove}
         >
@@ -204,9 +229,9 @@ const MangaReader = () => {
                             {/* Left Side - Back & Title */}
                             <div className="flex items-center gap-4">
                                 <Link to={`/manga/${mangaId}`}>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         className="text-muted-foreground hover:text-manga-neon-pink hover:bg-manga-neon-pink/10 rounded-xl transition-all"
                                     >
                                         <ChevronLeft className="w-6 h-6" />
@@ -224,26 +249,26 @@ const MangaReader = () => {
                             <div className="flex items-center gap-1 sm:gap-2">
                                 {/* Zoom Controls */}
                                 <div className="hidden md:flex items-center gap-1 px-2 py-1 rounded-xl bg-manga-glass/50 border border-manga-neon-purple/10">
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={handleZoomOut}
                                         className="w-8 h-8 text-muted-foreground hover:text-manga-neon-cyan"
                                     >
                                         <ZoomOut className="w-4 h-4" />
                                     </Button>
                                     <span className="text-xs font-medium text-muted-foreground w-12 text-center">{zoom}%</span>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={handleZoomIn}
                                         className="w-8 h-8 text-muted-foreground hover:text-manga-neon-cyan"
                                     >
                                         <ZoomIn className="w-4 h-4" />
                                     </Button>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={handleZoomReset}
                                         className="w-8 h-8 text-muted-foreground hover:text-manga-neon-cyan"
                                     >
@@ -254,28 +279,28 @@ const MangaReader = () => {
                                 {/* Reading Mode Dropdown */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             className="text-muted-foreground hover:text-manga-neon-purple hover:bg-manga-neon-purple/10 rounded-xl"
                                         >
                                             <Palette className="w-5 h-5" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent 
+                                    <DropdownMenuContent
                                         className="backdrop-blur-xl bg-manga-glass/95 border border-manga-neon-purple/20 rounded-xl shadow-2xl min-w-[180px]"
                                         align="end"
                                     >
                                         <DropdownMenuLabel className="text-muted-foreground text-xs">Reading Mode</DropdownMenuLabel>
                                         <DropdownMenuSeparator className="bg-manga-neon-purple/10" />
                                         {Object.entries(readingModes).map(([key, config]) => (
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 key={key}
                                                 onClick={() => setReadingMode(key as ReadingMode)}
                                                 className={`
                                                     flex items-center gap-3 cursor-pointer rounded-lg
-                                                    ${readingMode === key 
-                                                        ? 'bg-manga-neon-purple/20 text-manga-neon-purple' 
+                                                    ${readingMode === key
+                                                        ? 'bg-manga-neon-purple/20 text-manga-neon-purple'
                                                         : 'text-foreground hover:bg-manga-glass/50'
                                                     }
                                                 `}
@@ -290,10 +315,21 @@ const MangaReader = () => {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
+                                {/* Download Button */}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleDownloadPdf}
+                                    className="text-muted-foreground hover:text-manga-neon-cyan hover:bg-manga-neon-cyan/10 rounded-xl"
+                                    title="Download PDF"
+                                >
+                                    <Download className="w-5 h-5" />
+                                </Button>
+
                                 {/* Chapter List Button */}
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() => setShowChapterList(!showChapterList)}
                                     className={`
                                         text-muted-foreground hover:text-manga-neon-pink hover:bg-manga-neon-pink/10 rounded-xl
@@ -304,9 +340,9 @@ const MangaReader = () => {
                                 </Button>
 
                                 {/* Fullscreen */}
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={toggleFullscreen}
                                     className="text-muted-foreground hover:text-manga-neon-cyan hover:bg-manga-neon-cyan/10 rounded-xl"
                                 >
@@ -326,9 +362,9 @@ const MangaReader = () => {
                 <div className="h-full backdrop-blur-xl bg-manga-glass/95 border-l border-manga-neon-purple/20 shadow-2xl">
                     <div className="flex items-center justify-between p-4 border-b border-manga-neon-purple/10">
                         <h3 className="font-bold text-foreground">Chapters</h3>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setShowChapterList(false)}
                             className="text-muted-foreground hover:text-manga-neon-pink"
                         >
@@ -345,8 +381,8 @@ const MangaReader = () => {
                                 }}
                                 className={`
                                     w-full text-left p-3 rounded-xl mb-1 transition-all
-                                    ${ch.id === chapter.id 
-                                        ? 'bg-gradient-to-r from-manga-neon-purple/30 to-manga-neon-pink/30 border border-manga-neon-purple/30' 
+                                    ${ch.id === chapter.id
+                                        ? 'bg-gradient-to-r from-manga-neon-purple/30 to-manga-neon-pink/30 border border-manga-neon-purple/30'
                                         : 'hover:bg-manga-glass/50'
                                     }
                                 `}
@@ -364,16 +400,13 @@ const MangaReader = () => {
             </div>
 
             {/* Reader Area */}
-            <div className={`flex-1 relative overflow-hidden flex items-center justify-center ${currentModeConfig.overlayClass}`}>
-                <iframe
-                    src={`${getPdfUrl(chapter.pdfUrl)}#toolbar=0&navpanes=0&view=FitH`}
-                    className="border-none shadow-2xl transition-transform duration-300"
-                    style={{ 
-                        width: `${zoom}%`, 
-                        height: '100%',
-                        maxWidth: '100%'
-                    }}
-                    title="Manga Viewer"
+            <div className={`flex-1 relative overflow-hidden ${currentModeConfig.overlayClass}`}>
+                <PdfViewer
+                    pdfUrl={getPdfUrl(chapter.pdfUrl)}
+                    title={`${manga?.title || 'Manga'} - Chapter ${chapter.chapterNumber}`}
+                    zoom={zoom}
+                    onZoomChange={setZoom}
+                    overlayClass={currentModeConfig.overlayClass}
                 />
 
                 {/* Side Navigation Overlays */}
@@ -381,20 +414,20 @@ const MangaReader = () => {
                     onClick={handlePrevChapter}
                     disabled={!hasPrev}
                     className={`
-                        absolute inset-y-0 left-0 w-20 md:w-32 
-                        flex items-center justify-start pl-4
-                        transition-all group
+                        absolute top-1/2 -translate-y-1/2 left-0 w-12 md:w-16 h-24
+                        flex items-center justify-center
+                        transition-all group z-20
                         ${hasPrev ? 'hover:bg-gradient-to-r hover:from-manga-dark/60 to-transparent cursor-pointer' : 'cursor-not-allowed opacity-50'}
                     `}
                 >
                     <div className={`
                         opacity-0 group-hover:opacity-100 transition-all
-                        w-12 h-12 rounded-full bg-manga-glass/80 backdrop-blur-sm
+                        w-10 h-10 rounded-full bg-manga-glass/80 backdrop-blur-sm
                         flex items-center justify-center
                         border border-manga-neon-purple/30 shadow-lg
                         ${hasPrev ? 'group-hover:scale-110' : ''}
                     `}>
-                        <ChevronLeft className="w-6 h-6 text-manga-neon-purple" />
+                        <ChevronLeft className="w-5 h-5 text-manga-neon-purple" />
                     </div>
                 </button>
 
@@ -402,20 +435,20 @@ const MangaReader = () => {
                     onClick={handleNextChapter}
                     disabled={!hasNext}
                     className={`
-                        absolute inset-y-0 right-0 w-20 md:w-32 
-                        flex items-center justify-end pr-4
-                        transition-all group
+                        absolute top-1/2 -translate-y-1/2 right-0 w-12 md:w-16 h-24
+                        flex items-center justify-center
+                        transition-all group z-20
                         ${hasNext ? 'hover:bg-gradient-to-l hover:from-manga-dark/60 to-transparent cursor-pointer' : 'cursor-not-allowed opacity-50'}
                     `}
                 >
                     <div className={`
                         opacity-0 group-hover:opacity-100 transition-all
-                        w-12 h-12 rounded-full bg-manga-glass/80 backdrop-blur-sm
+                        w-10 h-10 rounded-full bg-manga-glass/80 backdrop-blur-sm
                         flex items-center justify-center
                         border border-manga-neon-pink/30 shadow-lg
                         ${hasNext ? 'group-hover:scale-110' : ''}
                     `}>
-                        <ChevronRight className="w-6 h-6 text-manga-neon-pink" />
+                        <ChevronRight className="w-5 h-5 text-manga-neon-pink" />
                     </div>
                 </button>
             </div>
@@ -479,8 +512,8 @@ const MangaReader = () => {
 
             {/* Click to show controls overlay */}
             {!showControls && (
-                <button 
-                    className="absolute inset-0 z-20" 
+                <button
+                    className="absolute inset-0 z-20"
                     onClick={() => setShowControls(true)}
                     aria-label="Show controls"
                 />
