@@ -63,6 +63,17 @@ All colors MUST be HSL.
     --anime-dark: 240 10% 10%;
     --anime-light: 0 0% 98%;
     --anime-highlight: 45 100% 60%;
+
+    /* Manga Cyberpunk Theme */
+    --manga-primary: 280 100% 65%;
+    --manga-secondary: 320 100% 60%;
+    --manga-accent: 190 100% 50%;
+    --manga-neon-purple: 280 100% 70%;
+    --manga-neon-pink: 330 100% 65%;
+    --manga-neon-cyan: 180 100% 50%;
+    --manga-dark: 240 20% 6%;
+    --manga-glass: 240 20% 12%;
+    --manga-glow: 280 100% 65%;
   }
 
   .dark {
@@ -112,6 +123,17 @@ All colors MUST be HSL.
     --anime-dark: 240 10% 8%;
     --anime-light: 0 0% 98%;
     --anime-highlight: 45 100% 65%;
+
+    /* Manga Cyberpunk Theme - Dark mode */
+    --manga-primary: 280 100% 70%;
+    --manga-secondary: 320 100% 65%;
+    --manga-accent: 190 100% 55%;
+    --manga-neon-purple: 280 100% 75%;
+    --manga-neon-pink: 330 100% 70%;
+    --manga-neon-cyan: 180 100% 55%;
+    --manga-dark: 240 20% 4%;
+    --manga-glass: 240 20% 10%;
+    --manga-glow: 280 100% 70%;
   }
 }
 

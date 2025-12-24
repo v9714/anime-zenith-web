@@ -69,6 +69,17 @@ export default {
 					dark: 'hsl(var(--anime-dark))',
 					light: 'hsl(var(--anime-light))',
 					highlight: 'hsl(var(--anime-highlight))'
+				},
+				manga: {
+					primary: 'hsl(var(--manga-primary))',
+					secondary: 'hsl(var(--manga-secondary))',
+					accent: 'hsl(var(--manga-accent))',
+					'neon-purple': 'hsl(var(--manga-neon-purple))',
+					'neon-pink': 'hsl(var(--manga-neon-pink))',
+					'neon-cyan': 'hsl(var(--manga-neon-cyan))',
+					dark: 'hsl(var(--manga-dark))',
+					glass: 'hsl(var(--manga-glass))',
+					glow: 'hsl(var(--manga-glow))'
 				}
 			},
 			borderRadius: {
@@ -138,6 +149,30 @@ export default {
 					'100%': {
 						backgroundPosition: '200% 0'
 					}
+				},
+				'glow-pulse': {
+					'0%, 100%': {
+						boxShadow: '0 0 20px hsl(var(--manga-glow) / 0.4), 0 0 40px hsl(var(--manga-glow) / 0.2)'
+					},
+					'50%': {
+						boxShadow: '0 0 30px hsl(var(--manga-glow) / 0.6), 0 0 60px hsl(var(--manga-glow) / 0.3)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'neon-flicker': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.85'
+					}
 				}
 			},
 			animation: {
@@ -147,7 +182,10 @@ export default {
 				'fade-out': 'fade-out 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',
 				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
-				'shimmer': 'shimmer 2s infinite linear'
+				'shimmer': 'shimmer 2s infinite linear',
+				'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'neon-flicker': 'neon-flicker 3s ease-in-out infinite'
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
