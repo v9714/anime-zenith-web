@@ -4,6 +4,7 @@ import {
   USER_API_URL,
   INTERACTION_API_URL,
   COMMENTS_API_URL,
+  MANGA_API_URL,
   STORAGE_KEYS
 } from "@/utils/constants";
 import axios, { AxiosInstance } from "axios";
@@ -140,6 +141,7 @@ export const contentApi = axios.create({ baseURL: CONTENT_API_URL, withCredentia
 export const userApi = axios.create({ baseURL: USER_API_URL, withCredentials: true });
 export const interactionApi = axios.create({ baseURL: INTERACTION_API_URL, withCredentials: true });
 export const commentsApi = axios.create({ baseURL: COMMENTS_API_URL, withCredentials: true });
+export const mangaApi = axios.create({ baseURL: MANGA_API_URL, withCredentials: true });
 
 // Attach interceptors to all instances
-[authApi, contentApi, userApi, interactionApi, commentsApi].forEach(attachInterceptors);
+[authApi, contentApi, userApi, interactionApi, commentsApi, mangaApi].forEach(attachInterceptors);

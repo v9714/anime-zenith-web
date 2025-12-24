@@ -9,6 +9,7 @@ export const CONTENT_API_URL = import.meta.env.VITE_CONTENT_API_URL || "http://l
 export const USER_API_URL = import.meta.env.VITE_USER_API_URL || "http://localhost:8002";
 export const INTERACTION_API_URL = import.meta.env.VITE_INTERACTION_API_URL || "http://localhost:8003";
 export const COMMENTS_API_URL = import.meta.env.VITE_COMMENTS_API_URL || "http://localhost:8004";
+export const MANGA_API_URL = import.meta.env.VITE_MANGA_API_URL || "http://localhost:8005";
 
 // Legacy fallback for generic backend calls (pointing to Content Service Port 8001 by default)
 export const BACKEND_API_BASE_URL = CONTENT_API_URL;
