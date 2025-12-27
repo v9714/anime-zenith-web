@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { MANGA_API_URL } from "@/utils/constants";
 import { Search, Loader2, BookOpen, Sparkles, TrendingUp, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { MangaPagination } from "@/components/admin/MangaPagination";
 
 const MangaList = () => {
     const [mangas, setMangas] = useState<Manga[]>([]);
@@ -12,12 +13,20 @@ const MangaList = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [hoveredId, setHoveredId] = useState<number | null>(null);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 20;
+
     useEffect(() => {
         const fetchManga = async () => {
             try {
-                const response = await mangaService.getAllManga();
+                setLoading(true);
+                const response = await mangaService.getAllManga(currentPage, itemsPerPage);
                 if (response.success) {
-                    setMangas(response.data);
+                    // Backend ab { data: { data: [...], meta: {...} } } format me response bhej raha hai
+                    setMangas(response.data.data || []);
+                    setTotalPages(response.data.meta.totalPages);
                 }
             } catch (error) {
                 console.error("Error fetching manga:", error);
@@ -26,9 +35,9 @@ const MangaList = () => {
             }
         };
         fetchManga();
-    }, []);
+    }, [currentPage]);
 
-    const filteredManga = mangas.filter(m =>
+    const filteredManga = mangas?.filter(m =>
         m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         m.author?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -57,20 +66,20 @@ const MangaList = () => {
                 {/* Animated Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-manga-dark via-manga-glass to-manga-dark" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-manga-primary/20 via-transparent to-transparent" />
-                
+
                 {/* Grid Pattern */}
-                <div className="absolute inset-0 opacity-20" 
+                <div className="absolute inset-0 opacity-20"
                     style={{
                         backgroundImage: `linear-gradient(hsl(var(--manga-neon-purple) / 0.3) 1px, transparent 1px),
                                          linear-gradient(90deg, hsl(var(--manga-neon-purple) / 0.3) 1px, transparent 1px)`,
                         backgroundSize: '50px 50px'
-                    }} 
+                    }}
                 />
-                
+
                 {/* Floating Orbs */}
                 <div className="absolute top-20 left-1/4 w-64 h-64 bg-manga-neon-purple/30 rounded-full blur-[100px] animate-float" />
                 <div className="absolute bottom-10 right-1/4 w-48 h-48 bg-manga-neon-pink/20 rounded-full blur-[80px] animate-float" style={{ animationDelay: '1s' }} />
-                
+
                 <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
                     <div className="flex items-center gap-3 mb-4">
                         <Sparkles className="w-6 h-6 text-manga-neon-pink animate-neon-flicker" />
@@ -132,9 +141,9 @@ const MangaList = () => {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                         {filteredManga.map((manga, index) => (
-                            <Link 
-                                key={manga.id} 
-                                to={`/manga/${manga.id}`} 
+                            <Link
+                                key={manga.id}
+                                to={`/manga/${manga.id}`}
                                 className="group"
                                 onMouseEnter={() => setHoveredId(manga.id)}
                                 onMouseLeave={() => setHoveredId(null)}
@@ -152,7 +161,7 @@ const MangaList = () => {
                                         bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan
                                         transition-opacity duration-300 blur-sm
                                     `} />
-                                    
+
                                     {/* Card Content */}
                                     <div className="relative backdrop-blur-sm bg-manga-glass/60 rounded-2xl overflow-hidden border border-manga-neon-purple/10 group-hover:border-transparent">
                                         {/* Cover Image */}
@@ -162,10 +171,10 @@ const MangaList = () => {
                                                 alt={manga.title}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
-                                            
+
                                             {/* Overlay Gradient */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-manga-dark via-manga-dark/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                                            
+
                                             {/* Hover Read Button */}
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                                                 <div className="px-4 py-2 bg-manga-neon-purple/90 backdrop-blur-sm rounded-full flex items-center gap-2 text-white font-medium shadow-lg shadow-manga-neon-purple/30 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
@@ -173,7 +182,7 @@ const MangaList = () => {
                                                     Read Now
                                                 </div>
                                             </div>
-                                            
+
                                             {/* Status Badge */}
                                             {manga.status && (
                                                 <Badge className={`
@@ -186,7 +195,7 @@ const MangaList = () => {
                                                 </Badge>
                                             )}
                                         </div>
-                                        
+
                                         {/* Card Info */}
                                         <div className="p-4 bg-gradient-to-t from-manga-dark to-manga-glass/80">
                                             <h3 className="font-bold text-sm line-clamp-1 text-foreground group-hover:text-manga-neon-pink transition-colors duration-300">
@@ -211,6 +220,15 @@ const MangaList = () => {
                         </div>
                         <p className="text-muted-foreground text-lg">No manga found matching your search.</p>
                     </div>
+                )}
+
+                {/* Pagination Controls */}
+                {!loading && mangas.length > 0 && (
+                    <MangaPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </div>
         </div>

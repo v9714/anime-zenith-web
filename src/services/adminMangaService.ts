@@ -7,9 +7,29 @@ interface ApiResponse<T> {
     data: T;
 }
 
+// Paginated admin manga response
+export interface PaginatedAdminMangaResponse {
+    manga: Manga[];
+    currentPage: number;
+    totalPages: number;
+    total: number;
+}
+
+// Manga admin filters
+export interface MangaFilters {
+    search?: string;
+    status?: string;
+}
+
 export const adminMangaService = {
-    getMangaForAdmin: async (): Promise<ApiResponse<Manga[]>> => {
-        const response = await mangaApi.get<ApiResponse<Manga[]>>('/api/admin/manga');
+    getMangaForAdmin: async (page: number = 1, limit: number = 15, filters: MangaFilters = {}): Promise<ApiResponse<PaginatedAdminMangaResponse>> => {
+        const response = await mangaApi.get<ApiResponse<PaginatedAdminMangaResponse>>('/api/admin/manga', {
+            params: {
+                page,
+                limit,
+                ...filters
+            }
+        });
         return response.data;
     },
 

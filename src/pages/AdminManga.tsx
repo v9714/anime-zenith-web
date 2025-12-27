@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { adminMangaService } from "@/services/adminMangaService";
 import { Manga } from "@/services/mangaService";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, LayoutGrid, List, Upload, X, Loader2, BookOpen } from "lucide-react";
+import { Plus, Edit, Trash2, LayoutGrid, List, Upload, X, Loader2, BookOpen, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MANGA_API_URL } from "@/utils/constants";
+import { MangaPagination } from "@/components/admin/MangaPagination";
 
 const AdminManga = () => {
     const [manga, setManga] = useState<Manga[]>([]);
@@ -18,6 +19,14 @@ const AdminManga = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentManga, setCurrentManga] = useState<Manga | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string | undefined>();
+    const itemsPerPage = 15;
 
     // Form states
     const [formData, setFormData] = useState({
@@ -29,21 +38,32 @@ const AdminManga = () => {
     });
     const [files, setFiles] = useState<{ cover?: File; banner?: File }>({});
 
-    useEffect(() => {
-        fetchManga();
-    }, []);
-
-    const fetchManga = async () => {
+    const fetchManga = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await adminMangaService.getMangaForAdmin();
-            if (res.success) setManga(res.data);
+            const res = await adminMangaService.getMangaForAdmin(
+                currentPage,
+                itemsPerPage,
+                {
+                    search: searchQuery || undefined,
+                    status: statusFilter
+                }
+            );
+            if (res.success) {
+                setManga(res.data.manga);
+                setTotalPages(res.data.totalPages);
+                setTotalCount(res.data.total);
+            }
         } catch (error) {
             toast.error("Failed to fetch manga list");
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, searchQuery, statusFilter]);
+
+    useEffect(() => {
+        fetchManga();
+    }, [fetchManga]);
 
     const handleEdit = (m: Manga) => {
         setCurrentManga(m);
@@ -240,6 +260,44 @@ const AdminManga = () => {
                     </Dialog>
                 </div>
 
+                {/* Search and Filters */}
+                <Card className="bg-[#1a1a20] border-white/10 mb-6">
+                    <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search manga by title..."
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        setCurrentPage(1);
+                                    }}
+                                    className="pl-10 bg-black/20 border-white/10"
+                                />
+                            </div>
+                            <select
+                                value={statusFilter || ""}
+                                onChange={(e) => {
+                                    setStatusFilter(e.target.value || undefined);
+                                    setCurrentPage(1);
+                                }}
+                                className="bg-black/20 border border-white/10 rounded-md px-3 py-2 text-sm min-w-[150px]"
+                            >
+                                <option value="">All Status</option>
+                                <option value="Ongoing">Ongoing</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Hiatus">Hiatus</option>
+                            </select>
+                        </div>
+                        {totalCount > 0 && (
+                            <p className="text-xs text-muted-foreground mt-3">
+                                Showing {manga.length} of {totalCount} manga
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
                         <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
@@ -309,6 +367,15 @@ const AdminManga = () => {
                             </Card>
                         ))}
                     </div>
+                )}
+
+                {/* Pagination Controls */}
+                {!loading && manga.length > 0 && (
+                    <MangaPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </div>
         </div>

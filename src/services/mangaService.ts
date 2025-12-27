@@ -45,9 +45,27 @@ interface ApiResponse<T> {
     data: T;
 }
 
+// Pagination metadata interface
+export interface PaginationMeta {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+// Paginated manga response (matches backend structure)
+export interface PaginatedMangaResponse {
+    data: Manga[];
+    meta: PaginationMeta;
+}
+
 export const mangaService = {
-    getAllManga: async (): Promise<ApiResponse<Manga[]>> => {
-        const response = await mangaApi.get<ApiResponse<Manga[]>>('/api/manga');
+    getAllManga: async (page: number = 1, limit: number = 20): Promise<ApiResponse<PaginatedMangaResponse>> => {
+        const response = await mangaApi.get<ApiResponse<PaginatedMangaResponse>>('/api/manga', {
+            params: { page, limit }
+        });
         return response.data;
     },
 
