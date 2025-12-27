@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { adminMangaService } from "@/services/adminMangaService";
 import { Manga } from "@/services/mangaService";
+import { genreService, Genre } from "@/services/genreService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,8 +36,11 @@ const AdminManga = () => {
         status: "Ongoing",
         author: "",
         artist: "",
+        releaseYear: ""
     });
     const [files, setFiles] = useState<{ cover?: File; banner?: File }>({});
+    const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+    const [availableGenres, setAvailableGenres] = useState<Genre[]>([]);
 
     const fetchManga = useCallback(async () => {
         setLoading(true);
@@ -63,7 +67,17 @@ const AdminManga = () => {
 
     useEffect(() => {
         fetchManga();
+        fetchGenres();
     }, [fetchManga]);
+
+    const fetchGenres = async () => {
+        try {
+            const res = await genreService.getAllGenres();
+            if (res.success) setAvailableGenres(res.data);
+        } catch (error) {
+            console.error("Error fetching genres:", error);
+        }
+    };
 
     const handleEdit = (m: Manga) => {
         setCurrentManga(m);
@@ -73,7 +87,11 @@ const AdminManga = () => {
             status: m.status || "Ongoing",
             author: m.author || "",
             artist: m.artist || "",
+            releaseYear: m.releaseYear?.toString() || ""
         });
+        // Extract genre IDs from manga if genres exist
+        const genreIds = m.genres?.map(g => g.genre?.id || g.genreId) || [];
+        setSelectedGenres(genreIds.filter(id => id !== undefined));
         setIsDialogOpen(true);
     };
 
@@ -122,7 +140,15 @@ const AdminManga = () => {
         setIsSubmitting(true);
 
         const data = new FormData();
-        Object.entries(formData).forEach(([key, value]) => data.append(key, value));
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value) data.append(key, value);
+        });
+
+        // Add genres as JSON array
+        if (selectedGenres.length > 0) {
+            data.append('genres', JSON.stringify(selectedGenres));
+        }
+
         if (files.cover) data.append("coverImage", files.cover);
         if (files.banner) data.append("bannerImage", files.banner);
 
@@ -149,8 +175,9 @@ const AdminManga = () => {
 
     const resetForm = () => {
         setCurrentManga(null);
-        setFormData({ title: "", description: "", status: "Ongoing", author: "", artist: "" });
+        setFormData({ title: "", description: "", status: "Ongoing", author: "", artist: "", releaseYear: "" });
         setFiles({});
+        setSelectedGenres([]);
     };
 
     return (
@@ -196,6 +223,18 @@ const AdminManga = () => {
                                             <option value="Completed">Completed</option>
                                             <option value="Hiatus">Hiatus</option>
                                         </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Release Year</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="2024"
+                                            value={formData.releaseYear}
+                                            onChange={(e) => setFormData({ ...formData, releaseYear: e.target.value })}
+                                            className="bg-black/20 border-white/10"
+                                            min="1900"
+                                            max="2100"
+                                        />
                                     </div>
                                 </div>
 
@@ -246,6 +285,43 @@ const AdminManga = () => {
                                             accept="image/*"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Genres Selection */}
+                                <div className="space-y-2">
+                                    <Label>Genres (Select multiple)</Label>
+                                    <div className="bg-black/20 border border-white/10 rounded-md p-3 max-h-48 overflow-y-auto">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {availableGenres.map((genre) => (
+                                                <label
+                                                    key={genre.id}
+                                                    className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-2 rounded transition-colors"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedGenres.includes(genre.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setSelectedGenres([...selectedGenres, genre.id]);
+                                                            } else {
+                                                                setSelectedGenres(selectedGenres.filter(id => id !== genre.id));
+                                                            }
+                                                        }}
+                                                        className="w-4 h-4 rounded border-white/20 bg-black/30 text-purple-600 focus:ring-purple-500"
+                                                    />
+                                                    <span className="text-sm text-foreground">{genre.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        {availableGenres.length === 0 && (
+                                            <p className="text-xs text-muted-foreground text-center py-4">No genres available</p>
+                                        )}
+                                    </div>
+                                    {selectedGenres.length > 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            {selectedGenres.length} genre(s) selected
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="flex justify-end gap-3 mt-6">

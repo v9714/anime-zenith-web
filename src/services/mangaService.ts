@@ -1,5 +1,16 @@
 import { mangaApi } from "./backendApi";
 
+export interface Genre {
+    id: number;
+    name: string;
+}
+
+export interface MangaGenre {
+    mangaId: number;
+    genreId: number;
+    genre: Genre;
+}
+
 export interface Manga {
     id: number;
     title: string;
@@ -12,8 +23,10 @@ export interface Manga {
     artist: string;
     rating: string;
     votesCount: number;
+    releaseYear?: number;  // NEW
     isDeleted: boolean;
     updatedAt: string;
+    genres?: MangaGenre[];  // NEW
 }
 
 export interface Chapter {

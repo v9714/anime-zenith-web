@@ -55,18 +55,18 @@ const MangaDetailsPage = () => {
                     alt={manga.title}
                     className="w-full h-full object-cover scale-105"
                 />
-                
+
                 {/* Multiple Overlay Layers */}
                 <div className="absolute inset-0 bg-manga-dark/60" />
                 <div className="absolute inset-0 bg-gradient-to-t from-manga-dark via-manga-dark/40 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-manga-dark/80 via-transparent to-manga-dark/80" />
-                
+
                 {/* Neon Accent Lines */}
                 <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-manga-neon-purple to-transparent opacity-60" />
-                
+
                 {/* Back Button */}
-                <Link 
-                    to="/manga" 
+                <Link
+                    to="/manga"
                     className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-manga-glass/50 backdrop-blur-md border border-manga-neon-purple/20 text-foreground hover:bg-manga-glass/80 hover:border-manga-neon-purple/40 transition-all group"
                 >
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -81,7 +81,7 @@ const MangaDetailsPage = () => {
                         <div className="relative group">
                             {/* Glow Effect */}
                             <div className="absolute -inset-2 bg-gradient-to-br from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
-                            
+
                             {/* Cover Container */}
                             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-manga-neon-purple/30 shadow-2xl shadow-manga-neon-purple/20">
                                 <img
@@ -91,22 +91,22 @@ const MangaDetailsPage = () => {
                                 />
                             </div>
                         </div>
-                        
+
                         {/* CTA Button with Pulsating Glow */}
                         <div className="mt-6 relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-manga-neon-purple to-manga-neon-pink rounded-xl blur-lg opacity-50 animate-glow-pulse" />
-                            <Button 
+                            <Button
                                 className="relative w-full h-14 bg-gradient-to-r from-manga-neon-purple to-manga-neon-pink hover:from-manga-neon-pink hover:to-manga-neon-purple text-white rounded-xl font-bold text-base shadow-lg transition-all duration-300 border-none"
                                 asChild
                             >
                                 {lastReadChapter ? (
                                     <Link to={`/read/${manga.id}/chapter/${progress?.chapterId}`} className="flex items-center justify-center gap-3">
-                                        <Play className="w-5 h-5 fill-current" /> 
+                                        <Play className="w-5 h-5 fill-current" />
                                         Continue Ch. {lastReadChapter}
                                     </Link>
                                 ) : (
                                     <Link to={firstChapterId ? `/read/${manga.id}/chapter/${firstChapterId}` : "#"} className="flex items-center justify-center gap-3">
-                                        <BookOpen className="w-5 h-5" /> 
+                                        <BookOpen className="w-5 h-5" />
                                         Start Reading
                                     </Link>
                                 )}
@@ -136,8 +136,8 @@ const MangaDetailsPage = () => {
                                 <Sparkles className="w-3 h-3 mr-1" />
                                 Manga
                             </Badge>
-                            <Badge 
-                                variant="outline" 
+                            <Badge
+                                variant="outline"
                                 className={`
                                     border-manga-neon-cyan/50 text-manga-neon-cyan
                                     ${manga.status?.toLowerCase() === 'ongoing' ? 'border-manga-neon-pink/50 text-manga-neon-pink' : ''}
@@ -153,13 +153,28 @@ const MangaDetailsPage = () => {
                             )}
                         </div>
 
+                        {/* Genres */}
+                        {manga.genres && manga.genres.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-6 justify-center lg:justify-start">
+                                {manga.genres.map((mg) => (
+                                    <Badge
+                                        key={mg.genre.id}
+                                        variant="outline"
+                                        className="border-manga-neon-purple/30 text-manga-neon-purple hover:bg-manga-neon-purple/10 transition-colors"
+                                    >
+                                        {mg.genre.name}
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Title */}
                         <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 tracking-tight text-center lg:text-left">
                             <span className="bg-gradient-to-r from-foreground via-foreground to-manga-neon-purple bg-clip-text">
                                 {manga.title}
                             </span>
                         </h1>
-                        
+
                         {/* Alternative Titles */}
                         {manga.alternativeTitles.length > 0 && (
                             <p className="text-lg text-muted-foreground mb-8 text-center lg:text-left font-medium">
@@ -174,6 +189,13 @@ const MangaDetailsPage = () => {
                                 <span className="text-muted-foreground">Author:</span>
                                 <span className="text-foreground font-medium">{manga.author || "Unknown"}</span>
                             </div>
+                            {manga.releaseYear && (
+                                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-manga-glass/30 border border-manga-neon-purple/10">
+                                    <Sparkles className="w-4 h-4 text-manga-neon-cyan" />
+                                    <span className="text-muted-foreground">Year:</span>
+                                    <span className="text-foreground font-medium">{manga.releaseYear}</span>
+                                </div>
+                            )}
                             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-manga-glass/30 border border-manga-neon-purple/10">
                                 <Calendar className="w-4 h-4 text-manga-neon-pink" />
                                 <span className="text-muted-foreground">Updated:</span>
@@ -225,7 +247,7 @@ const MangaDetailsPage = () => {
                                 >
                                     {/* Hover Glow */}
                                     <div className="absolute -inset-[1px] bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
-                                    
+
                                     {/* Chapter Row - Glassmorphism */}
                                     <div className={`
                                         relative flex items-center justify-between p-4 rounded-xl
@@ -238,14 +260,14 @@ const MangaDetailsPage = () => {
                                             <div className={`
                                                 w-14 h-14 rounded-xl flex items-center justify-center font-bold text-lg
                                                 transition-all duration-300
-                                                ${isRead 
-                                                    ? 'bg-gradient-to-br from-manga-neon-purple/30 to-manga-neon-pink/30 text-manga-neon-pink border border-manga-neon-pink/30' 
+                                                ${isRead
+                                                    ? 'bg-gradient-to-br from-manga-neon-purple/30 to-manga-neon-pink/30 text-manga-neon-pink border border-manga-neon-pink/30'
                                                     : 'bg-manga-glass/50 text-muted-foreground border border-manga-neon-purple/10 group-hover:bg-manga-neon-purple/20 group-hover:text-manga-neon-purple group-hover:border-manga-neon-purple/30'
                                                 }
                                             `}>
                                                 {chapter.chapterNumber}
                                             </div>
-                                            
+
                                             <div>
                                                 <div className="font-semibold text-foreground group-hover:text-manga-neon-pink transition-colors duration-300">
                                                     {chapter.title || `Chapter ${chapter.chapterNumber}`}
@@ -263,7 +285,7 @@ const MangaDetailsPage = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex items-center gap-4">
                                             {isRead && (
                                                 <Badge className="hidden sm:flex bg-manga-neon-purple/20 text-manga-neon-purple border border-manga-neon-purple/30 font-medium">
