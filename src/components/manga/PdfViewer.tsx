@@ -66,11 +66,9 @@ const PdfViewer: React.FC<PdfViewerProps> = ({
     }
 
     return (
-        <div className={`flex flex-col h-full ${overlayClass}`}>
-            {/* PDF Content - No duplicate toolbar */}
-
+        <div className={`flex flex-col min-h-full ${overlayClass}`}>
             {/* PDF Content */}
-            <div className="flex-1 overflow-auto p-4 flex justify-center">
+            <div className="flex-1 p-4 pb-24 flex justify-center">
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="relative">

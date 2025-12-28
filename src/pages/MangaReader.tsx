@@ -370,7 +370,7 @@ const MangaReader = () => {
             </div>
 
             {/* Reader Area */}
-            <div className={`flex-1 relative overflow-hidden ${currentModeConfig.overlayClass}`}>
+            <div className={`flex-1 relative overflow-auto ${currentModeConfig.overlayClass}`}>
                 {isPdfFile(chapter.pdfUrl) ? (
                     <PdfViewer
                         pdfUrl={getPathUrl(chapter.pdfUrl)}
@@ -488,13 +488,15 @@ const MangaReader = () => {
                 </div>
             </div>
 
-            {/* Click to show controls overlay */}
+            {/* Click to show controls - positioned outside scroll area */}
             {!showControls && (
                 <button
-                    className="absolute inset-0 z-20"
+                    className="absolute top-4 left-4 z-20 w-12 h-12 rounded-full bg-manga-glass/60 backdrop-blur-sm border border-manga-neon-purple/20 flex items-center justify-center hover:bg-manga-glass/80 transition-all"
                     onClick={() => setShowControls(true)}
                     aria-label="Show controls"
-                />
+                >
+                    <Settings className="w-5 h-5 text-manga-neon-purple" />
+                </button>
             )}
         </div>
     );
