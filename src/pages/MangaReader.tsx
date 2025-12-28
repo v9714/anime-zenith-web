@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
     Loader2, ChevronLeft, ChevronRight, Maximize2, Settings, List,
     Moon, Sun, BookOpen, X, Palette, ZoomIn, ZoomOut, RotateCcw,
-    Monitor, Coffee, Download
+    Monitor, Coffee
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -174,30 +174,6 @@ const MangaReader = () => {
         return path?.toLowerCase().endsWith('.pdf');
     };
 
-    const handleDownloadPdf = async () => {
-        if (!chapter?.pdfUrl) return;
-        const url = getPathUrl(chapter.pdfUrl);
-        try {
-            toast.loading('Preparing download...');
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `${manga?.title || 'Manga'}-Chapter-${chapter.chapterNumber}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(downloadUrl);
-            toast.dismiss();
-            toast.success('Download started!');
-        } catch (err) {
-            toast.dismiss();
-            toast.error('Failed to download PDF');
-            console.error('Download error:', err);
-        }
-    };
-
     const currentModeConfig = readingModes[readingMode];
     const currentChapterIndex = manga?.chapters.findIndex(c => c.id === chapter?.id) ?? -1;
     const hasPrev = currentChapterIndex > 0;
@@ -320,17 +296,6 @@ const MangaReader = () => {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
-                                {/* Download Button */}
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleDownloadPdf}
-                                    className="text-muted-foreground hover:text-manga-neon-cyan hover:bg-manga-neon-cyan/10 rounded-xl"
-                                    title="Download PDF"
-                                >
-                                    <Download className="w-5 h-5" />
-                                </Button>
-
                                 {/* Chapter List Button */}
                                 <Button
                                     variant="ghost"
@@ -409,7 +374,6 @@ const MangaReader = () => {
                 {isPdfFile(chapter.pdfUrl) ? (
                     <PdfViewer
                         pdfUrl={getPathUrl(chapter.pdfUrl)}
-                        title={`${manga?.title || 'Manga'} - Chapter ${chapter.chapterNumber}`}
                         zoom={zoom}
                         onZoomChange={setZoom}
                         overlayClass={currentModeConfig.overlayClass}

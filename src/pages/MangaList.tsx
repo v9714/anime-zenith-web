@@ -12,7 +12,7 @@ const MangaList = () => {
     const [mangas, setMangas] = useState<Manga[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [hoveredId, setHoveredId] = useState<number | null>(null);
+
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -144,22 +144,12 @@ const MangaList = () => {
                                 key={manga.id}
                                 to={`/manga/${manga.id}`}
                                 className="group"
-                                onMouseEnter={() => setHoveredId(manga.id)}
-                                onMouseLeave={() => setHoveredId(null)}
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >
                                 {/* Glassmorphism Card */}
-                                <div className={`
-                                    relative overflow-hidden rounded-2xl
-                                    transition-all duration-500 ease-out
-                                    ${hoveredId === manga.id ? 'scale-105 z-10' : 'scale-100'}
-                                `}>
+                                <div className="relative overflow-hidden rounded-2xl transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                                     {/* Glowing Border Effect */}
-                                    <div className={`
-                                        absolute -inset-[1px] rounded-2xl opacity-0 group-hover:opacity-100
-                                        bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan
-                                        transition-opacity duration-300 blur-sm
-                                    `} />
+                                    <div className="absolute -inset-[1px] rounded-2xl opacity-0 group-hover:opacity-100 bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan transition-opacity duration-300 blur-sm" />
 
                                     {/* Card Content */}
                                     <div className="relative backdrop-blur-sm bg-manga-glass/60 rounded-2xl overflow-hidden border border-manga-neon-purple/10 group-hover:border-transparent">

@@ -60,8 +60,8 @@ const MangaDetailsPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-manga-dark via-manga-dark/40 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-manga-dark/80 via-transparent to-manga-dark/80" />
 
-                {/* Neon Accent Lines */}
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-manga-neon-purple to-transparent opacity-60" />
+                {/* Subtle Bottom Fade */}
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-manga-dark to-transparent" />
 
                 {/* Back Button */}
                 <Link
@@ -182,23 +182,23 @@ const MangaDetailsPage = () => {
                         )}
 
                         {/* Meta Info */}
-                        <div className="flex flex-wrap gap-6 justify-center lg:justify-start text-sm mb-8">
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-manga-glass/30 border border-manga-neon-purple/10">
-                                <User className="w-4 h-4 text-manga-neon-purple" />
-                                <span className="text-muted-foreground">Author:</span>
-                                <span className="text-foreground font-medium">{manga.author || "Unknown"}</span>
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start text-sm mb-8">
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-manga-glass/30 border border-manga-neon-purple/10 w-full sm:w-auto">
+                                <User className="w-4 h-4 text-manga-neon-purple flex-shrink-0" />
+                                <span className="text-muted-foreground text-xs">Author:</span>
+                                <span className="text-foreground font-medium text-xs truncate">{manga.author || "Unknown"}</span>
                             </div>
                             {manga.releaseYear && (
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-manga-glass/30 border border-manga-neon-purple/10">
-                                    <Sparkles className="w-4 h-4 text-manga-neon-cyan" />
-                                    <span className="text-muted-foreground">Year:</span>
-                                    <span className="text-foreground font-medium">{manga.releaseYear}</span>
+                                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-manga-glass/30 border border-manga-neon-purple/10 w-full sm:w-auto">
+                                    <Sparkles className="w-4 h-4 text-manga-neon-cyan flex-shrink-0" />
+                                    <span className="text-muted-foreground text-xs">Year:</span>
+                                    <span className="text-foreground font-medium text-xs">{manga.releaseYear}</span>
                                 </div>
                             )}
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-manga-glass/30 border border-manga-neon-purple/10">
-                                <Calendar className="w-4 h-4 text-manga-neon-pink" />
-                                <span className="text-muted-foreground">Updated:</span>
-                                <span className="text-foreground font-medium">{new Date(manga.updatedAt).toLocaleDateString()}</span>
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-manga-glass/30 border border-manga-neon-purple/10 w-full sm:w-auto">
+                                <Calendar className="w-4 h-4 text-manga-neon-pink flex-shrink-0" />
+                                <span className="text-muted-foreground text-xs">Updated:</span>
+                                <span className="text-foreground font-medium text-xs">{new Date(manga.updatedAt).toLocaleDateString()}</span>
                             </div>
                         </div>
 
