@@ -3,6 +3,7 @@ import { mangaService, Manga } from "@/services/mangaService";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { MANGA_API_URL } from "@/utils/constants";
+import { getImageUrl as getSharedImageUrl } from "@/utils/commanFunction";
 import { Search, Loader2, BookOpen, Sparkles, TrendingUp, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MangaPagination } from "@/components/admin/MangaPagination";
@@ -43,9 +44,7 @@ const MangaList = () => {
     );
 
     const getImageUrl = (path: string | null) => {
-        if (!path) return "/placeholder-manga.jpg";
-        if (path.startsWith('http')) return path;
-        return `${MANGA_API_URL}/${path.replace(/\\/g, '/')}`;
+        return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
     };
 
     const getStatusGradient = (status: string) => {

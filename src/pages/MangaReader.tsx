@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { mangaService, Chapter, MangaDetails } from "@/services/mangaService";
 import { MANGA_API_URL } from "@/utils/constants";
+import { getImageUrl } from "@/utils/commanFunction";
 import { Button } from "@/components/ui/button";
 import {
     Loader2, ChevronLeft, ChevronRight, Maximize2, Settings, List,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import PdfViewer from "@/components/manga/PdfViewer";
+import ChapterImagesViewer from "@/components/manga/ChapterImagesViewer";
 
 type ReadingMode = 'default' | 'night' | 'sepia' | 'paper' | 'contrast';
 
@@ -164,14 +166,17 @@ const MangaReader = () => {
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 10, 50));
     const handleZoomReset = () => setZoom(100);
 
-    const getPdfUrl = (path: string | null) => {
-        if (!path) return "";
-        return `${MANGA_API_URL}/${path.replace(/\\/g, '/')}`;
+    const getPathUrl = (path: string | null) => {
+        return getImageUrl(path || undefined, MANGA_API_URL) || "";
+    };
+
+    const isPdfFile = (path: string | null) => {
+        return path?.toLowerCase().endsWith('.pdf');
     };
 
     const handleDownloadPdf = async () => {
         if (!chapter?.pdfUrl) return;
-        const url = getPdfUrl(chapter.pdfUrl);
+        const url = getPathUrl(chapter.pdfUrl);
         try {
             toast.loading('Preparing download...');
             const response = await fetch(url);
@@ -401,13 +406,22 @@ const MangaReader = () => {
 
             {/* Reader Area */}
             <div className={`flex-1 relative overflow-hidden ${currentModeConfig.overlayClass}`}>
-                <PdfViewer
-                    pdfUrl={getPdfUrl(chapter.pdfUrl)}
-                    title={`${manga?.title || 'Manga'} - Chapter ${chapter.chapterNumber}`}
-                    zoom={zoom}
-                    onZoomChange={setZoom}
-                    overlayClass={currentModeConfig.overlayClass}
-                />
+                {isPdfFile(chapter.pdfUrl) ? (
+                    <PdfViewer
+                        pdfUrl={getPathUrl(chapter.pdfUrl)}
+                        title={`${manga?.title || 'Manga'} - Chapter ${chapter.chapterNumber}`}
+                        zoom={zoom}
+                        onZoomChange={setZoom}
+                        overlayClass={currentModeConfig.overlayClass}
+                    />
+                ) : (
+                    <ChapterImagesViewer
+                        imagesUrl={getPathUrl(chapter.pdfUrl)}
+                        pagesCount={chapter.pagesCount || 0}
+                        zoom={zoom}
+                        overlayClass={currentModeConfig.overlayClass}
+                    />
+                )}
 
                 {/* Side Navigation Overlays */}
                 <button

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { mangaService, MangaDetails, MangaProgress } from "@/services/mangaService";
 import { MANGA_API_URL } from "@/utils/constants";
+import { getImageUrl as getSharedImageUrl } from "@/utils/commanFunction";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,9 +35,7 @@ const MangaDetailsPage = () => {
     }, [id]);
 
     const getImageUrl = (path: string | null) => {
-        if (!path) return "/placeholder-manga.jpg";
-        if (path.startsWith('http')) return path;
-        return `${MANGA_API_URL}/${path.replace(/\\/g, '/')}`;
+        return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
     };
 
     if (loading) return <DetailsSkeleton />;
