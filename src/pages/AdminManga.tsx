@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Plus, Edit, Trash2, LayoutGrid, List, Upload, X, Loader2, BookOpen, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import { MANGA_API_URL } from "@/utils/constants";
 import { MangaPagination } from "@/components/admin/MangaPagination";
 
@@ -181,8 +182,9 @@ const AdminManga = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0f0f12] text-white p-6">
-            <div className="max-w-7xl mx-auto">
+        <AdminLayout>
+            <div className="min-h-screen bg-[#0f0f12] text-white p-6">
+                <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
@@ -197,12 +199,12 @@ const AdminManga = () => {
                                 <Plus className="w-4 h-4 mr-2" /> Add Manga
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-[#1a1a20] border-white/10 text-white max-w-2xl">
+                        <DialogContent className="bg-[#1a1a20] border-white/10 text-white w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>{currentManga ? "Edit Manga" : "Add New Manga"}</DialogTitle>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Title</Label>
                                         <Input
@@ -238,7 +240,7 @@ const AdminManga = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Author</Label>
                                         <Input
@@ -266,7 +268,7 @@ const AdminManga = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label>Cover Image</Label>
                                         <Input
@@ -291,7 +293,7 @@ const AdminManga = () => {
                                 <div className="space-y-2">
                                     <Label>Genres (Select multiple)</Label>
                                     <div className="bg-black/20 border border-white/10 rounded-md p-3 max-h-48 overflow-y-auto">
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {availableGenres.map((genre) => (
                                                 <label
                                                     key={genre.id}
@@ -324,7 +326,7 @@ const AdminManga = () => {
                                     )}
                                 </div>
 
-                                <div className="flex justify-end gap-3 mt-6">
+                                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
                                     <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
                                     <Button type="submit" className="bg-purple-600 hover:bg-purple-700" disabled={isSubmitting}>
                                         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -453,8 +455,9 @@ const AdminManga = () => {
                         onPageChange={setCurrentPage}
                     />
                 )}
+                </div>
             </div>
-        </div>
+        </AdminLayout>
     );
 };
 
