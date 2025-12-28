@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook, Settings2 } from "lucide-react";
+import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook, Settings2, BookOpen } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface AdminLayoutProps {
@@ -102,6 +102,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   </Link>
                 </SidebarMenuItem>
 
+                <SidebarMenuItem>
+                  <Link to="/admin/manga">
+                    <SidebarMenuButton
+                      isActive={currentPath === "/admin/manga" || currentPath.startsWith("/admin/manga/")}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${(currentPath === "/admin/manga" || currentPath.startsWith("/admin/manga/")) ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
+                    >
+                      <BookOpen className={`h-5 w-5 transition-colors ${(currentPath === "/admin/manga" || currentPath.startsWith("/admin/manga/")) ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${(currentPath === "/admin/manga" || currentPath.startsWith("/admin/manga/")) ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Manga</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
 
                 <SidebarMenuItem>
                   <Link to="/admin/users">
