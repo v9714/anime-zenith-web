@@ -34,11 +34,23 @@ export function ThemeProvider({
   storageKey = "Otaku-theme",
   ...props
 }: ThemeProviderProps) {
+  // valid themes for validation
+  const validThemes: Theme[] = ["dark", "light", "system"];
+
   const [theme, setTheme] = useState<Theme>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      return (stored as Theme) || defaultTheme;
+      // validate stored value - must be valid theme
+      if (stored && validThemes.includes(stored as Theme)) {
+        return stored as Theme;
+      }
+      // invalid/corrupted data - clear and use default
+      if (stored) {
+        localStorage.removeItem(storageKey);
+      }
+      return defaultTheme;
     } catch {
+      // localStorage access failed - use default silently
       return defaultTheme;
     }
   });
