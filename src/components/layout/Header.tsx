@@ -1,31 +1,26 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, Home, Film, Video, BookOpen, Mail, User } from "lucide-react";
+import { Search, Menu, Home, BookOpen, Mail, User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { SITE_NAME, ROUTES } from "@/utils/constants";
 import { UserAuthButton } from "@/components/auth/UserAuthButton";
 import { cn } from "@/lib/utils";
-import { useAudio } from "@/contexts/AudioContext";
-import { SearchDropdown } from "./SearchDropdown";
+import { useEffect, useRef } from "react";
+
+const SITE_NAME = "MangaVerse";
 
 export function Header() {
-  const { playButtonClick } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      setShowDropdown(false);
-      window.location.href = `/search?title=${encodeURIComponent(searchQuery)}`;
+      window.location.href = `/browse?q=${encodeURIComponent(searchQuery)}`;
     }
   };
 
@@ -34,52 +29,23 @@ export function Header() {
     setIsSearchOpen(newState);
     if (newState) {
       setTimeout(() => searchInputRef.current?.focus(), 100);
-    } else {
-      setShowDropdown(false);
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    setShowDropdown(value.trim().length > 0);
-  };
-
   const menuItems = [
-    { name: "Home", path: ROUTES.home, icon: Home },
-    { name: "Anime List", path: ROUTES.anime, icon: Film },
-    { name: "Latest Episodes", path: ROUTES.episodes, icon: Video },
-    { name: "Manga", path: "/manga", icon: BookOpen },
-    { name: "Contact", path: ROUTES.contact, icon: Mail },
+    { name: "Home", path: "/", icon: Home },
+    { name: "Browse", path: "/browse", icon: BookOpen },
+    { name: "Contact", path: "/contact", icon: Mail },
   ];
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 60);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setIsSearchOpen(false);
-        setShowDropdown(false);
-      }
-    };
-
-    if (isSearchOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isSearchOpen]);
-
-  // Transparent/absolute on top, solid bg with smooth fade on scroll
   return (
     <header
       className={cn(
@@ -88,15 +54,11 @@ export function Header() {
           ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-md"
           : "bg-transparent"
       )}
-      style={{
-        pointerEvents: "auto",
-        transition: "background-color 0.3s ease"
-      }}
     >
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-6 md:gap-10">
-          <Link to={ROUTES.home} className="flex items-center space-x-2" onClick={playButtonClick}>
-            <span className="inline-block font-heading font-bold text-xl md:text-2xl bg-gradient-to-r from-primary via-anime-secondary to-anime-accent bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="inline-block font-heading font-bold text-xl md:text-2xl bg-gradient-to-r from-primary via-manga-secondary to-manga-accent bg-clip-text text-transparent animate-shimmer bg-[length:200%_auto]">
               {SITE_NAME}
             </span>
           </Link>
@@ -106,7 +68,6 @@ export function Header() {
               <Link
                 key={item.name}
                 to={item.path}
-                onClick={playButtonClick}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 {item.name}
@@ -116,7 +77,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div ref={searchContainerRef} className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-80' : 'w-10'} transition-all duration-300`}>
+          <div className={`relative hidden md:flex items-center ${isSearchOpen ? 'w-80' : 'w-10'} transition-all duration-300`}>
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="w-full">
                 <div className="relative">
@@ -124,45 +85,34 @@ export function Header() {
                   <Input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search anime..."
+                    placeholder="Search manga..."
                     className="w-full pl-8 pr-3"
                     value={searchQuery}
-                    onChange={handleSearchChange}
-                    onFocus={() => searchQuery.trim() && setShowDropdown(true)}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     autoComplete="off"
                   />
-                  {showDropdown && (
-                    <SearchDropdown
-                      searchQuery={searchQuery}
-                      onClose={() => setShowDropdown(false)}
-                      inputRef={searchInputRef}
-                    />
-                  )}
                 </div>
               </form>
             ) : (
               <Button variant="ghost" size="icon" onClick={toggleSearch} className="rounded-full">
                 <Search className="h-[1.2rem] w-[1.2rem]" />
-                <span className="sr-only">Search</span>
               </Button>
             )}
           </div>
 
           <ThemeToggle />
-
           <UserAuthButton />
 
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden rounded-full">
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[270px] sm:w-[300px]">
               <div className="px-2">
-                <Link to={ROUTES.home} className="flex items-center pb-6 pt-4" onClick={playButtonClick}>
-                  <span className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-anime-secondary bg-clip-text text-transparent">
+                <Link to="/" className="flex items-center pb-6 pt-4">
+                  <span className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-manga-secondary bg-clip-text text-transparent">
                     {SITE_NAME}
                   </span>
                 </Link>
@@ -174,7 +124,7 @@ export function Header() {
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="search"
-                        placeholder="Search anime..."
+                        placeholder="Search manga..."
                         className="w-full pl-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -187,7 +137,6 @@ export function Header() {
                     <Link
                       key={item.name}
                       to={item.path}
-                      onClick={playButtonClick}
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent hover:bg-opacity-10"
                     >
                       <item.icon className="h-4 w-4" />
@@ -196,7 +145,6 @@ export function Header() {
                   ))}
                   <Link
                     to="/profile"
-                    onClick={playButtonClick}
                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent hover:bg-opacity-10"
                   >
                     <User className="h-4 w-4" />
