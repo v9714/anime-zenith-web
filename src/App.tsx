@@ -9,43 +9,25 @@ import { ThemeProvider } from "@/lib/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioProvider } from "@/contexts/AudioContext";
 
-import { DevelopmentNotice } from "@/components/DevelopmentNotice";
 import { QUERY_CONFIG } from "@/utils/constants";
 
-// Import main pages directly for faster initial load
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import AnimeDetails from "./pages/AnimeDetails";
-import AnimeWatch from "./pages/AnimeWatch";
+// Manga pages (MangaDex API)
+import MangaHome from "./pages/MangaHome";
+import MangaBrowse from "./pages/MangaBrowse";
+import MangaDetailsPage from "./pages/MangaDetailsNew";
+import MangaReaderNew from "./pages/MangaReaderNew";
 
-// other pages
-import AnimeList from "./pages/AnimeList";
-import Episodes from "./pages/Episodes";
+// Utility pages
+import NotFound from "./pages/NotFound";
 import Search from "./pages/Search";
 import Contact from "./pages/Contact";
 import UserProfile from "./pages/UserProfile";
-import AudioSettings from "./pages/AudioSettings";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 
-// admin pages
-import AdminDashboard from "./pages/Admin";
-import AdminAnime from "./pages/AdminAnime";
-import AdminEpisodes from "./pages/AdminEpisodes";
-import AdminUsers from "./pages/AdminUsers";
-import AdminGenres from "./pages/AdminGenres";
-import AdminOptions from "./pages/AdminOptions";
-
-// manga pages
-import MangaList from "./pages/MangaList";
-import MangaDetails from "./pages/MangaDetails";
-import MangaReader from "./pages/MangaReader";
-import AdminManga from "./pages/AdminManga";
-import AdminChapters from "./pages/AdminChapters";
-
 // Loading component for Suspense
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
+  <div className="flex items-center justify-center min-h-screen bg-background">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
       <p className="mt-4 text-muted-foreground">Loading...</p>
@@ -72,40 +54,23 @@ const App = () => {
           <AuthProvider>
             <AudioProvider>
               <TooltipProvider>
-                {/* Toaster components */}
                 <Toaster />
                 <Sonner />
-                <DevelopmentNotice />
 
                 <React.Suspense fallback={<PageLoader />}>
                   <Routes>
-                    {/* Main Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/anime" element={<AnimeList />} />
-                    <Route path="/anime/:id" element={<AnimeDetails />} />
-                    <Route path="/watch/:encoded" element={<AnimeWatch />} />
-                    <Route path="/episodes" element={<Episodes />} />
+                    {/* Main Manga Routes */}
+                    <Route path="/" element={<MangaHome />} />
+                    <Route path="/browse" element={<MangaBrowse />} />
+                    <Route path="/manga/:id" element={<MangaDetailsPage />} />
+                    <Route path="/read/:mangaId/chapter/:chapterId" element={<MangaReaderNew />} />
+                    
+                    {/* Utility Routes */}
                     <Route path="/search" element={<Search />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/audio-settings" element={<AudioSettings />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/verify-email" element={<VerifyEmail />} />
-
-                    {/* Manga Routes */}
-                    <Route path="/manga" element={<MangaList />} />
-                    <Route path="/manga/:id" element={<MangaDetails />} />
-                    <Route path="/read/:mangaId/chapter/:chapterId" element={<MangaReader />} />
-
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/anime" element={<AdminAnime />} />
-                    <Route path="/admin/episodes" element={<AdminEpisodes />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/genres" element={<AdminGenres />} />
-                    <Route path="/admin/options" element={<AdminOptions />} />
-                    <Route path="/admin/manga" element={<AdminManga />} />
-                    <Route path="/admin/manga/:mangaId/chapters" element={<AdminChapters />} />
 
                     {/* Catch-all Route */}
                     <Route path="*" element={<NotFound />} />
