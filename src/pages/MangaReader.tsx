@@ -491,7 +491,7 @@ const MangaReader = () => {
             {/* Click to show controls - positioned outside scroll area */}
             {!showControls && (
                 <button
-                    className="absolute top-4 left-4 z-20 w-12 h-12 rounded-full bg-manga-glass/60 backdrop-blur-sm border border-manga-neon-purple/20 flex items-center justify-center hover:bg-manga-glass/80 transition-all"
+                    className="absolute top-3 left-4 z-20 w-11 h-11 rounded-full bg-manga-glass/60 backdrop-blur-sm border border-manga-neon-purple/20 flex items-center justify-center hover:bg-manga-glass/80 transition-all"
                     onClick={() => setShowControls(true)}
                     aria-label="Show controls"
                 >
