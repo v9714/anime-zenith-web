@@ -23,10 +23,10 @@ export interface Manga {
     artist: string;
     rating: string;
     votesCount: number;
-    releaseYear?: number;  // NEW
+    releaseYear?: number;
     isDeleted: boolean;
     updatedAt: string;
-    genres?: MangaGenre[];  // NEW
+    genres?: MangaGenre[];
 }
 
 export interface Chapter {
