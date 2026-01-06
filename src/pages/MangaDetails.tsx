@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, User, Star, ChevronRight, Play, Sparkles, Eye, Clock, ArrowLeft, Heart, Bookmark, Share2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MangaDetailsPage = () => {
     const { id } = useParams();
+    const { currentUser } = useAuth();
     const [manga, setManga] = useState<MangaDetails | null>(null);
     const [progress, setProgress] = useState<MangaProgress | null>(null);
     const [loading, setLoading] = useState(true);
@@ -18,13 +20,17 @@ const MangaDetailsPage = () => {
         const fetchData = async () => {
             if (!id) return;
             try {
-                const [mangaRes, progressRes] = await Promise.all([
-                    mangaService.getMangaDetails(parseInt(id)),
-                    mangaService.getProgress(parseInt(id))
-                ]);
+                // Always fetch manga details (public)
+                const mangaRes = await mangaService.getMangaDetails(parseInt(id));
+
+                // Only fetch progress if user is logged in
+                let progressRes = null;
+                if (currentUser) {
+                    progressRes = await mangaService.getProgress(parseInt(id));
+                }
 
                 if (mangaRes.success) setManga(mangaRes.data);
-                if (progressRes.success) setProgress(progressRes.data);
+                if (progressRes?.success) setProgress(progressRes.data);
             } catch (error) {
                 console.error("Error fetching manga details:", error);
             } finally {
@@ -32,7 +38,7 @@ const MangaDetailsPage = () => {
             }
         };
         fetchData();
-    }, [id]);
+    }, [id, currentUser]);
 
     const getImageUrl = (path: string | null) => {
         return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";

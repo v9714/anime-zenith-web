@@ -21,6 +21,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import PdfViewer from "@/components/manga/PdfViewer";
 import ChapterImagesViewer from "@/components/manga/ChapterImagesViewer";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ReadingMode = 'default' | 'night' | 'sepia' | 'paper' | 'contrast';
 
@@ -67,6 +68,7 @@ const readingModes: Record<ReadingMode, ReadingModeConfig> = {
 const MangaReader = () => {
     const { mangaId, chapterId } = useParams();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [chapter, setChapter] = useState<Chapter | null>(null);
     const [manga, setManga] = useState<MangaDetails | null>(null);
     const [loading, setLoading] = useState(true);
@@ -91,11 +93,14 @@ const MangaReader = () => {
                 if (chapRes.success) setChapter(chapRes.data);
                 if (mangaRes.success) setManga(mangaRes.data);
 
-                await mangaService.updateProgress({
-                    mangaId: parseInt(mangaId),
-                    chapterId: parseInt(chapterId),
-                    lastPage: 1
-                });
+                // Only update progress if user is logged in
+                if (currentUser) {
+                    await mangaService.updateProgress({
+                        mangaId: parseInt(mangaId),
+                        chapterId: parseInt(chapterId),
+                        lastPage: 1
+                    });
+                }
             } catch (error) {
                 console.error("Error loading chapter:", error);
                 toast.error("Failed to load chapter");
@@ -104,7 +109,7 @@ const MangaReader = () => {
             }
         };
         fetchData();
-    }, [mangaId, chapterId]);
+    }, [mangaId, chapterId, currentUser]);
 
     // Auto-hide controls
     const resetControlsTimeout = useCallback(() => {

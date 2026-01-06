@@ -142,9 +142,10 @@ export const contentApi = axios.create({ baseURL: CONTENT_API_URL, withCredentia
 export const userApi = axios.create({ baseURL: USER_API_URL, withCredentials: true });
 export const interactionApi = axios.create({ baseURL: INTERACTION_API_URL, withCredentials: true });
 export const commentsApi = axios.create({ baseURL: COMMENTS_API_URL, withCredentials: true });
+// Manga API allows optional auth - sends credentials for logged-in users
 export const mangaApi = axios.create({ baseURL: MANGA_API_URL, withCredentials: true });
 
 // Attach interceptors to all instances
-// Manga API doesn't require authentication (public access)
+// Manga API doesn't require authentication but supports it (optional auth)
 [authApi, contentApi, userApi, interactionApi, commentsApi].forEach(api => attachInterceptors(api, true));
-attachInterceptors(mangaApi, false); // Manga is public, no auth required
+attachInterceptors(mangaApi, false); // Manga is public, but can use auth if available
