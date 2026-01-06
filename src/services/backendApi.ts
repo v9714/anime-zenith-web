@@ -55,12 +55,12 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 // Function to attach interceptors to an instance
-const attachInterceptors = (instance: AxiosInstance) => {
+const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = true) => {
   // Request interceptor
   instance.interceptors.request.use(
     (config) => {
       const token = getToken(STORAGE_KEYS.ACCESS_TOKEN);
-      if (token) {
+      if (token && requiresAuth) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
@@ -74,7 +74,8 @@ const attachInterceptors = (instance: AxiosInstance) => {
     async (error) => {
       const originalRequest = error.config;
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // Only handle 401 and redirect for services that require auth
+      if (error.response?.status === 401 && !originalRequest._retry && requiresAuth) {
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
@@ -144,4 +145,6 @@ export const commentsApi = axios.create({ baseURL: COMMENTS_API_URL, withCredent
 export const mangaApi = axios.create({ baseURL: MANGA_API_URL, withCredentials: true });
 
 // Attach interceptors to all instances
-[authApi, contentApi, userApi, interactionApi, commentsApi, mangaApi].forEach(attachInterceptors);
+// Manga API doesn't require authentication (public access)
+[authApi, contentApi, userApi, interactionApi, commentsApi].forEach(api => attachInterceptors(api, true));
+attachInterceptors(mangaApi, false); // Manga is public, no auth required
