@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LazyImage } from "@/components/layout/LazyImage";
-import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight, Eye, Info, CheckCircle2 } from "lucide-react";
+import { Heart, Clock, Film, Video, Settings, Loader2, Bookmark, Trash2, ChevronLeft, ChevronRight, Eye, Info, CheckCircle2, BookOpen, Star } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAudio } from "@/contexts/AudioContext";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
@@ -13,6 +13,7 @@ import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection"
 import { likeService, LikedEpisode, watchlistService, WatchlistAnime } from "@/services/likeService";
 import { watchedEpisodesService, GroupedWatchedAnime } from "@/services/watchedEpisodesService";
 import { watchHistoryService, WatchHistoryItem } from "@/services/watchHistoryService";
+import { mangaService, Manga, MangaProgress } from "@/services/mangaService";
 import { generateWatchUrl } from "@/utils/urlEncoder";
 import { getImageUrl } from "@/utils/commanFunction";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -60,37 +61,43 @@ export default function UserProfile() {
   const [watchedPage, setWatchedPage] = useState(0);
   const [hasMoreWatched, setHasMoreWatched] = useState(true);
 
+  // Manga state
+  const [mangaHistory, setMangaHistory] = useState<MangaProgress[]>([]);
+  const [loadingMangaHistory, setLoadingMangaHistory] = useState(false);
+  const [mangaHistoryFetched, setMangaHistoryFetched] = useState(false);
+
+  const [likedManga, setLikedManga] = useState<Manga[]>([]);
+  const [loadingLikedManga, setLoadingLikedManga] = useState(false);
+  const [likedMangaFetched, setLikedMangaFetched] = useState(false);
+
+  const [bookmarkedManga, setBookmarkedManga] = useState<Manga[]>([]);
+  const [loadingBookmarkedManga, setLoadingBookmarkedManga] = useState(false);
+  const [bookmarkedMangaFetched, setBookmarkedMangaFetched] = useState(false);
+
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
   };
 
-  // Fetch watch history only when history tab is selected
+  // Fetch everything needed when currentUser changes or tab changes
   useEffect(() => {
-    if (activeTab === "history" && currentUser && !historyFetched) {
-      fetchWatchHistory(0);
-    }
-  }, [activeTab, currentUser, historyFetched]);
+    if (!currentUser) return;
 
-  // Fetch liked episodes only when likes tab is selected
-  useEffect(() => {
-    if (activeTab === "likes" && currentUser && !likedFetched) {
-      fetchLikedEpisodes(0);
+    if (activeTab === "history") {
+      if (!historyFetched) fetchWatchHistory(0);
+      if (!mangaHistoryFetched) fetchMangaHistory();
     }
-  }, [activeTab, currentUser, likedFetched]);
-
-  // Fetch watchlist only when watchlist tab is selected
-  useEffect(() => {
-    if (activeTab === "watchlist" && currentUser && !watchlistFetched) {
-      fetchWatchlist(0);
+    if (activeTab === "likes") {
+      if (!likedFetched) fetchLikedEpisodes(0);
+      if (!likedMangaFetched) fetchLikedManga();
     }
-  }, [activeTab, currentUser, watchlistFetched]);
-
-  // Fetch watched animes only when watched tab is selected
-  useEffect(() => {
-    if (activeTab === "watched" && currentUser && !watchedFetched) {
+    if (activeTab === "watchlist") {
+      if (!watchlistFetched) fetchWatchlist(0);
+      if (!bookmarkedMangaFetched) fetchBookmarkedManga();
+    }
+    if (activeTab === "watched" && !watchedFetched) {
       fetchWatchedAnimes(0);
     }
-  }, [activeTab, currentUser, watchedFetched]);
+  }, [activeTab, currentUser, historyFetched, mangaHistoryFetched, likedFetched, likedMangaFetched, watchlistFetched, bookmarkedMangaFetched, watchedFetched]);
 
   const fetchWatchHistory = async (page: number) => {
     setLoadingHistory(true);
@@ -171,6 +178,51 @@ export default function UserProfile() {
     } finally {
       setLoadingWatched(false);
       setWatchedFetched(true);
+    }
+  };
+
+  const fetchMangaHistory = async () => {
+    setLoadingMangaHistory(true);
+    try {
+      const response = await mangaService.getAllMangaProgress();
+      if (response.success) {
+        setMangaHistory(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch manga history:", error);
+    } finally {
+      setLoadingMangaHistory(false);
+      setMangaHistoryFetched(true);
+    }
+  };
+
+  const fetchLikedManga = async () => {
+    setLoadingLikedManga(true);
+    try {
+      const response = await mangaService.getLikedManga();
+      if (response.success) {
+        setLikedManga(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch liked manga:", error);
+    } finally {
+      setLoadingLikedManga(false);
+      setLikedMangaFetched(true);
+    }
+  };
+
+  const fetchBookmarkedManga = async () => {
+    setLoadingBookmarkedManga(true);
+    try {
+      const response = await mangaService.getBookmarkedManga();
+      if (response.success) {
+        setBookmarkedManga(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch bookmarked manga:", error);
+    } finally {
+      setLoadingBookmarkedManga(false);
+      setBookmarkedMangaFetched(true);
     }
   };
 
@@ -385,6 +437,60 @@ export default function UserProfile() {
                   </Link>
                 </div>
               )}
+
+              {/* Manga History Section */}
+              <div className="mt-12 flex items-center gap-2 mb-4">
+                <BookOpen className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-semibold">Manga History</h2>
+              </div>
+              {loadingMangaHistory && mangaHistory.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : mangaHistory.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {mangaHistory.map((item) => (
+                    <Link
+                      to={`/read/${item.mangaId}/chapter/${item.chapterId}`}
+                      key={`manga-history-${item.mangaId}`}
+                      className="group"
+                    >
+                      <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
+                        <div className="aspect-[3/4] relative">
+                          <LazyImage
+                            src={getImageUrl(item.manga?.coverImage, "/manga/api")}
+                            alt={item.manga?.title || "Manga"}
+                            className="object-cover"
+                          />
+                          <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            Ch. {item.chapter?.chapterNumber}
+                          </div>
+                        </div>
+                        <CardContent className="p-3">
+                          <h3 className="font-medium line-clamp-1">{item.manga?.title}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                            {item.chapter?.title || `Chapter ${item.chapter?.chapterNumber}`}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(item.updatedAt).toLocaleDateString()}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-muted/50 rounded-lg">
+                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-lg font-medium">No Manga History</h3>
+                  <p className="text-muted-foreground mt-1">
+                    Your reading history will appear here
+                  </p>
+                  <Link to="/manga">
+                    <Button variant="outline" className="mt-4">Browse Manga</Button>
+                  </Link>
+                </div>
+              )}
             </TabsContent>
 
             {/* Watched Tab */}
@@ -577,6 +683,51 @@ export default function UserProfile() {
                   </Link>
                 </div>
               )}
+
+              {/* Liked Manga Section */}
+              <h2 className="text-2xl font-semibold mb-4 mt-12">Liked Manga</h2>
+              {loadingLikedManga && likedManga.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : likedManga.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {likedManga.map((item) => (
+                    <Link
+                      to={`/manga/${item.id}`}
+                      key={`liked-manga-${item.id}`}
+                    >
+                      <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
+                        <div className="aspect-[3/4] relative">
+                          <LazyImage
+                            src={getImageUrl(item.coverImage, "/manga/api")}
+                            alt={item.title}
+                            className="object-cover"
+                          />
+                        </div>
+                        <CardContent className="p-3">
+                          <h3 className="font-medium line-clamp-1">{item.title}</h3>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                            <span>{item.rating || 'N/A'}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-muted/50 rounded-lg">
+                  <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-lg font-medium">No Liked Manga</h3>
+                  <p className="text-muted-foreground mt-1">
+                    Manga you like will appear here
+                  </p>
+                  <Link to="/manga">
+                    <Button variant="outline" className="mt-4">Browse Manga</Button>
+                  </Link>
+                </div>
+              )}
             </TabsContent>
 
             {/* Watchlist Tab */}
@@ -663,6 +814,54 @@ export default function UserProfile() {
                   </Link>
                 </div>
               )}
+
+              {/* Bookmarked Manga Section */}
+              <h2 className="text-2xl font-semibold mb-4 mt-12">Manga Watchlist</h2>
+              {loadingBookmarkedManga && bookmarkedManga.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : bookmarkedManga.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {bookmarkedManga.map((item) => (
+                    <Link
+                      to={`/manga/${item.id}`}
+                      key={`bookmarked-manga-${item.id}`}
+                    >
+                      <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
+                        <div className="aspect-[3/4] relative">
+                          <LazyImage
+                            src={getImageUrl(item.coverImage, "/manga/api")}
+                            alt={item.title}
+                            className="object-cover"
+                          />
+                          <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            {item.status}
+                          </div>
+                        </div>
+                        <CardContent className="p-3">
+                          <h3 className="font-medium line-clamp-1">{item.title}</h3>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                            <span>{item.rating || 'N/A'}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-muted/50 rounded-lg">
+                  <Bookmark className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-lg font-medium">Empty Manga Watchlist</h3>
+                  <p className="text-muted-foreground mt-1">
+                    Manga you save will appear here
+                  </p>
+                  <Link to="/manga">
+                    <Button variant="outline" className="mt-4">Browse Manga</Button>
+                  </Link>
+                </div>
+              )}
             </TabsContent>
 
             {/* Settings Tab */}
@@ -694,6 +893,6 @@ export default function UserProfile() {
           )}
         </div>
       </div>
-    </Layout>
+    </Layout >
   );
 }

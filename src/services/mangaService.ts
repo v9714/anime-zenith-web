@@ -46,9 +46,12 @@ export interface MangaDetails extends Manga {
 
 export interface MangaProgress {
     id: number;
+    mangaId: number;
     chapterId: number;
     lastPage: number;
     isRead: boolean;
+    updatedAt: string;
+    manga?: Manga;
     chapter?: Chapter;
 }
 
@@ -93,12 +96,12 @@ export const mangaService = {
     },
 
     updateProgress: async (data: { mangaId: number; chapterId: number; lastPage: number; isRead?: boolean }): Promise<ApiResponse<MangaProgress>> => {
-        const response = await mangaApi.post<ApiResponse<MangaProgress>>('/api/manga/progress', data);
+        const response = await interactionApi.post<ApiResponse<MangaProgress>>('/api/interactions/manga/progress', data);
         return response.data;
     },
 
     getProgress: async (mangaId: number): Promise<ApiResponse<MangaProgress>> => {
-        const response = await mangaApi.get<ApiResponse<MangaProgress>>(`/api/manga/progress/${mangaId}`);
+        const response = await interactionApi.get<ApiResponse<MangaProgress>>(`/api/interactions/manga/${mangaId}/progress`);
         return response.data;
     },
 
@@ -120,6 +123,25 @@ export const mangaService = {
 
     checkBookmarkStatus: async (mangaId: number): Promise<ApiResponse<{ isBookmarked: boolean }>> => {
         const response = await interactionApi.get<ApiResponse<{ isBookmarked: boolean }>>(`/api/interactions/manga/${mangaId}/bookmark-status`);
+        return response.data;
+    },
+
+    getLikedManga: async (limit: number = 20, offset: number = 0): Promise<ApiResponse<Manga[]>> => {
+        const response = await interactionApi.get<ApiResponse<Manga[]>>('/api/interactions/manga/liked', {
+            params: { limit, offset }
+        });
+        return response.data;
+    },
+
+    getBookmarkedManga: async (limit: number = 20, offset: number = 0): Promise<ApiResponse<Manga[]>> => {
+        const response = await interactionApi.get<ApiResponse<Manga[]>>('/api/interactions/manga/bookmarked', {
+            params: { limit, offset }
+        });
+        return response.data;
+    },
+
+    getAllMangaProgress: async (): Promise<ApiResponse<MangaProgress[]>> => {
+        const response = await interactionApi.get<ApiResponse<MangaProgress[]>>('/api/interactions/manga/progress/all');
         return response.data;
     }
 };
