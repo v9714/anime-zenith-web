@@ -112,28 +112,28 @@ const MangaDetailsPage = () => {
                             </Button>
                         </div>
 
-                        {/* Action Buttons - Favorite, Save, Share */}
-                        <div className="mt-4 grid grid-cols-3 gap-3">
+                        {/* Action Buttons - Favorite, Save, Share - Redesigned */}
+                        <div className="mt-4 flex items-center justify-center gap-2">
                             <Button
-                                variant="outline"
-                                className="h-12 backdrop-blur-xl bg-manga-glass/50 border-2 border-manga-neon-pink/30 hover:bg-manga-neon-pink/20 hover:border-manga-neon-pink/60 text-foreground transition-all duration-300 group"
+                                variant="ghost"
+                                size="icon"
+                                className="w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-pink/20 hover:bg-manga-neon-pink/20 hover:border-manga-neon-pink/50 text-muted-foreground hover:text-manga-neon-pink transition-all duration-300 group"
                             >
-                                <Heart className="w-5 h-5 mr-2 group-hover:fill-manga-neon-pink group-hover:text-manga-neon-pink transition-colors" />
-                                <span className="hidden sm:inline">Favorite</span>
+                                <Heart className="w-5 h-5 group-hover:fill-manga-neon-pink transition-all" />
                             </Button>
                             <Button
-                                variant="outline"
-                                className="h-12 backdrop-blur-xl bg-manga-glass/50 border-2 border-manga-neon-cyan/30 hover:bg-manga-neon-cyan/20 hover:border-manga-neon-cyan/60 text-foreground transition-all duration-300 group"
+                                variant="ghost"
+                                size="icon"
+                                className="w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-cyan/20 hover:bg-manga-neon-cyan/20 hover:border-manga-neon-cyan/50 text-muted-foreground hover:text-manga-neon-cyan transition-all duration-300 group"
                             >
-                                <Bookmark className="w-5 h-5 mr-2 group-hover:fill-manga-neon-cyan group-hover:text-manga-neon-cyan transition-colors" />
-                                <span className="hidden sm:inline">Save</span>
+                                <Bookmark className="w-5 h-5 group-hover:fill-manga-neon-cyan transition-all" />
                             </Button>
                             <Button
-                                variant="outline"
-                                className="h-12 backdrop-blur-xl bg-manga-glass/50 border-2 border-manga-neon-purple/30 hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/60 text-foreground transition-all duration-300 group"
+                                variant="ghost"
+                                size="icon"
+                                className="w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-purple/20 hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/50 text-muted-foreground hover:text-manga-neon-purple transition-all duration-300 group"
                             >
-                                <Share2 className="w-5 h-5 mr-2 group-hover:text-manga-neon-purple transition-colors" />
-                                <span className="hidden sm:inline">Share</span>
+                                <Share2 className="w-5 h-5 group-hover:scale-110 transition-all" />
                             </Button>
                         </div>
 
