@@ -201,8 +201,8 @@ const MangaReader = () => {
         >
             {/* Top Navigation - Floating Toolbar */}
             <div className={`
-                absolute top-0 left-0 right-0 z-30 transition-all duration-300
-                ${showControls ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}
+                fixed top-0 left-0 right-0 z-30 transition-all duration-300
+                ${showControls ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}
             `}>
                 <div className="mx-4 mt-4">
                     <div className="backdrop-blur-xl bg-manga-glass/80 border border-manga-neon-purple/20 rounded-2xl shadow-2xl shadow-manga-neon-purple/10">
@@ -433,8 +433,8 @@ const MangaReader = () => {
 
             {/* Bottom Controls - Floating */}
             <div className={`
-                absolute bottom-0 left-0 right-0 z-30 transition-all duration-300
-                ${showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}
+                fixed bottom-0 left-0 right-0 z-30 transition-all duration-300
+                ${showControls ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}
             `}>
                 <div className="mx-4 mb-4">
                     <div className="backdrop-blur-xl bg-manga-glass/80 border border-manga-neon-purple/20 rounded-2xl shadow-2xl shadow-manga-neon-purple/10">
