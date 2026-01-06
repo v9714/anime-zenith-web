@@ -42,7 +42,43 @@ export function MangaHero({ manga, autoPlay = true, interval = 6000 }: MangaHero
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
-  if (featuredManga.length === 0) return null;
+  // Loading skeleton when no manga data
+  if (featuredManga.length === 0) {
+    return (
+      <div className="relative w-full h-[70vh] min-h-[500px] max-h-[800px] overflow-hidden bg-gradient-to-br from-manga-dark via-background to-manga-glass">
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+        <div className="absolute inset-0 flex items-center">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl space-y-6 animate-pulse">
+              <div className="flex gap-2">
+                <div className="h-6 w-20 bg-muted rounded" />
+                <div className="h-6 w-24 bg-muted rounded" />
+              </div>
+              <div className="h-14 w-3/4 bg-muted rounded" />
+              <div className="h-5 w-1/2 bg-muted rounded" />
+              <div className="flex gap-2">
+                <div className="h-6 w-16 bg-muted rounded-full" />
+                <div className="h-6 w-20 bg-muted rounded-full" />
+                <div className="h-6 w-14 bg-muted rounded-full" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-muted rounded" />
+                <div className="h-4 w-5/6 bg-muted rounded" />
+              </div>
+              <div className="flex gap-4 pt-2">
+                <div className="h-11 w-32 bg-primary/30 rounded-md" />
+                <div className="h-11 w-32 bg-muted rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Decorative Elements */}
+        <div className="absolute top-20 right-20 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-40 w-24 h-24 bg-manga-accent/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+    );
+  }
+
 
   const current = featuredManga[currentIndex];
 
