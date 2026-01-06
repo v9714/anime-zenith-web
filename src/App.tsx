@@ -37,6 +37,7 @@ import AdminGenres from "./pages/AdminGenres";
 import AdminOptions from "./pages/AdminOptions";
 
 // manga pages
+import MangaHome from "./pages/MangaHome";
 import MangaList from "./pages/MangaList";
 import MangaDetails from "./pages/MangaDetails";
 import MangaReader from "./pages/MangaReader";
@@ -93,7 +94,8 @@ const App = () => {
                     <Route path="/verify-email" element={<VerifyEmail />} />
 
                     {/* Manga Routes */}
-                    <Route path="/manga" element={<MangaList />} />
+                    <Route path="/manga" element={<MangaHome />} />
+                    <Route path="/manga/browse" element={<MangaList />} />
                     <Route path="/manga/:id" element={<MangaDetails />} />
                     <Route path="/read/:mangaId/chapter/:chapterId" element={<MangaReader />} />
 

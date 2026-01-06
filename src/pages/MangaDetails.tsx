@@ -6,7 +6,7 @@ import { getImageUrl as getSharedImageUrl } from "@/utils/commanFunction";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, Calendar, User, Star, ChevronRight, Play, Sparkles, Eye, Clock, ArrowLeft } from "lucide-react";
+import { BookOpen, Calendar, User, Star, ChevronRight, Play, Sparkles, Eye, Clock, ArrowLeft, Heart, Bookmark, Share2 } from "lucide-react";
 
 const MangaDetailsPage = () => {
     const { id } = useParams();
@@ -112,6 +112,31 @@ const MangaDetailsPage = () => {
                             </Button>
                         </div>
 
+                        {/* Action Buttons - Favorite, Save, Share */}
+                        <div className="mt-4 grid grid-cols-3 gap-3">
+                            <Button
+                                variant="outline"
+                                className="h-12 backdrop-blur-xl bg-manga-glass/50 border-2 border-manga-neon-pink/30 hover:bg-manga-neon-pink/20 hover:border-manga-neon-pink/60 text-foreground transition-all duration-300 group"
+                            >
+                                <Heart className="w-5 h-5 mr-2 group-hover:fill-manga-neon-pink group-hover:text-manga-neon-pink transition-colors" />
+                                <span className="hidden sm:inline">Favorite</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-12 backdrop-blur-xl bg-manga-glass/50 border-2 border-manga-neon-cyan/30 hover:bg-manga-neon-cyan/20 hover:border-manga-neon-cyan/60 text-foreground transition-all duration-300 group"
+                            >
+                                <Bookmark className="w-5 h-5 mr-2 group-hover:fill-manga-neon-cyan group-hover:text-manga-neon-cyan transition-colors" />
+                                <span className="hidden sm:inline">Save</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-12 backdrop-blur-xl bg-manga-glass/50 border-2 border-manga-neon-purple/30 hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/60 text-foreground transition-all duration-300 group"
+                            >
+                                <Share2 className="w-5 h-5 mr-2 group-hover:text-manga-neon-purple transition-colors" />
+                                <span className="hidden sm:inline">Share</span>
+                            </Button>
+                        </div>
+
                         {/* Quick Stats */}
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             <div className="backdrop-blur-xl bg-manga-glass/50 border border-manga-neon-purple/20 rounded-xl p-3 text-center">
@@ -154,12 +179,12 @@ const MangaDetailsPage = () => {
 
                         {/* Genres */}
                         {manga.genres && manga.genres.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-6 justify-center lg:justify-start">
+                            <div className="flex flex-wrap gap-3 mb-6 justify-center lg:justify-start">
                                 {manga.genres.map((mg) => (
                                     <Badge
                                         key={mg.genre.id}
                                         variant="outline"
-                                        className="border-manga-neon-purple/30 text-manga-neon-purple hover:bg-manga-neon-purple/10 transition-colors"
+                                        className="border-2 border-manga-neon-purple/40 text-manga-neon-purple hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/60 transition-colors px-4 py-2 text-sm font-semibold"
                                     >
                                         {mg.genre.name}
                                     </Badge>
@@ -181,24 +206,31 @@ const MangaDetailsPage = () => {
                             </p>
                         )}
 
-                        {/* Meta Info */}
-                        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start text-sm mb-8">
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-manga-glass/30 border border-manga-neon-purple/10 w-full sm:w-auto">
-                                <User className="w-4 h-4 text-manga-neon-purple flex-shrink-0" />
-                                <span className="text-muted-foreground text-xs">Author:</span>
-                                <span className="text-foreground font-medium text-xs truncate">{manga.author || "Unknown"}</span>
+                        {/* Meta Info - Increased Size */}
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center lg:justify-start text-sm mb-8">
+                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-manga-glass/40 border-2 border-manga-neon-purple/20 hover:border-manga-neon-purple/40 transition-colors w-full sm:w-auto">
+                                <User className="w-5 h-5 text-manga-neon-purple flex-shrink-0" />
+                                <span className="text-muted-foreground text-sm font-medium">Author:</span>
+                                <span className="text-foreground font-bold text-sm truncate">{manga.author || "Unknown"}</span>
                             </div>
-                            {manga.releaseYear && (
-                                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-manga-glass/30 border border-manga-neon-purple/10 w-full sm:w-auto">
-                                    <Sparkles className="w-4 h-4 text-manga-neon-cyan flex-shrink-0" />
-                                    <span className="text-muted-foreground text-xs">Year:</span>
-                                    <span className="text-foreground font-medium text-xs">{manga.releaseYear}</span>
+                            {manga.artist && (
+                                <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-manga-glass/40 border-2 border-manga-neon-cyan/20 hover:border-manga-neon-cyan/40 transition-colors w-full sm:w-auto">
+                                    <Sparkles className="w-5 h-5 text-manga-neon-cyan flex-shrink-0" />
+                                    <span className="text-muted-foreground text-sm font-medium">Artist:</span>
+                                    <span className="text-foreground font-bold text-sm truncate">{manga.artist}</span>
                                 </div>
                             )}
-                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-manga-glass/30 border border-manga-neon-purple/10 w-full sm:w-auto">
-                                <Calendar className="w-4 h-4 text-manga-neon-pink flex-shrink-0" />
-                                <span className="text-muted-foreground text-xs">Updated:</span>
-                                <span className="text-foreground font-medium text-xs">{new Date(manga.updatedAt).toLocaleDateString()}</span>
+                            {manga.releaseYear && (
+                                <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-manga-glass/40 border-2 border-manga-neon-pink/20 hover:border-manga-neon-pink/40 transition-colors w-full sm:w-auto">
+                                    <Calendar className="w-5 h-5 text-manga-neon-pink flex-shrink-0" />
+                                    <span className="text-muted-foreground text-sm font-medium">Year:</span>
+                                    <span className="text-foreground font-bold text-sm">{manga.releaseYear}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-manga-glass/40 border-2 border-manga-accent/20 hover:border-manga-accent/40 transition-colors w-full sm:w-auto">
+                                <Clock className="w-5 h-5 text-manga-accent flex-shrink-0" />
+                                <span className="text-muted-foreground text-sm font-medium">Updated:</span>
+                                <span className="text-foreground font-bold text-sm">{new Date(manga.updatedAt).toLocaleDateString()}</span>
                             </div>
                         </div>
 
