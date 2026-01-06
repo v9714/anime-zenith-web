@@ -8,12 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, User, Star, ChevronRight, Play, Sparkles, Eye, Clock, ArrowLeft, Heart, Bookmark, Share2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const MangaDetailsPage = () => {
     const { id } = useParams();
     const { currentUser } = useAuth();
     const [manga, setManga] = useState<MangaDetails | null>(null);
     const [progress, setProgress] = useState<MangaProgress | null>(null);
+    const [isLiked, setIsLiked] = useState(false);
+    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [totalLikes, setTotalLikes] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -22,15 +26,29 @@ const MangaDetailsPage = () => {
             try {
                 // Always fetch manga details (public)
                 const mangaRes = await mangaService.getMangaDetails(parseInt(id));
-
-                // Only fetch progress if user is logged in
-                let progressRes = null;
-                if (currentUser) {
-                    progressRes = await mangaService.getProgress(parseInt(id));
+                if (mangaRes.success) {
+                    setManga(mangaRes.data);
                 }
 
-                if (mangaRes.success) setManga(mangaRes.data);
-                if (progressRes?.success) setProgress(progressRes.data);
+                // If logged in, fetch status and progress
+                if (currentUser) {
+                    const [progressRes, likeRes, bookmarkRes] = await Promise.all([
+                        mangaService.getProgress(parseInt(id)),
+                        mangaService.getLikeStatus(parseInt(id)),
+                        mangaService.checkBookmarkStatus(parseInt(id))
+                    ]);
+
+                    if (progressRes?.success) setProgress(progressRes.data);
+                    if (likeRes?.success) {
+                        setIsLiked(likeRes.data.isLiked);
+                        setTotalLikes(likeRes.data.totalLikes);
+                    }
+                    if (bookmarkRes?.success) setIsBookmarked(bookmarkRes.data.isBookmarked);
+                } else {
+                    // Still fetch likes count for public
+                    const likeRes = await mangaService.getLikeStatus(parseInt(id));
+                    if (likeRes?.success) setTotalLikes(likeRes.data.totalLikes);
+                }
             } catch (error) {
                 console.error("Error fetching manga details:", error);
             } finally {
@@ -39,6 +57,56 @@ const MangaDetailsPage = () => {
         };
         fetchData();
     }, [id, currentUser]);
+
+    const handleToggleLike = async () => {
+        if (!currentUser) {
+            toast.error("Please login to like manga");
+            return;
+        }
+        if (!id) return;
+
+        try {
+            const res = await mangaService.toggleLike(parseInt(id));
+            if (res.success) {
+                setIsLiked(res.data.isLiked);
+                setTotalLikes(res.data.totalLikes);
+                toast.success(res.data.isLiked ? "Added to favorites" : "Removed from favorites");
+            }
+        } catch (error) {
+            toast.error("Failed to update favorite status");
+        }
+    };
+
+    const handleToggleBookmark = async () => {
+        if (!currentUser) {
+            toast.error("Please login to save manga");
+            return;
+        }
+        if (!id) return;
+
+        try {
+            const res = await mangaService.toggleBookmark(parseInt(id));
+            if (res.success) {
+                setIsBookmarked(res.data.isBookmarked);
+                toast.success(res.data.isBookmarked ? "Added to watchlist" : "Removed from watchlist");
+            }
+        } catch (error) {
+            toast.error("Failed to update watchlist status");
+        }
+    };
+
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: manga?.title,
+                text: `Check out ${manga?.title} on OtakuTV!`,
+                url: window.location.href,
+            }).catch(() => toast.error("Failed to share"));
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success("Link copied to clipboard!");
+        }
+    };
 
     const getImageUrl = (path: string | null) => {
         return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
@@ -123,20 +191,27 @@ const MangaDetailsPage = () => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-pink/20 hover:bg-manga-neon-pink/20 hover:border-manga-neon-pink/50 text-muted-foreground hover:text-manga-neon-pink transition-all duration-300 group"
+                                onClick={handleToggleLike}
+                                className={`w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-pink/20 transition-all duration-300 group
+                                    ${isLiked ? 'text-manga-neon-pink border-manga-neon-pink/50 bg-manga-neon-pink/10' : 'text-muted-foreground hover:text-manga-neon-pink hover:bg-manga-neon-pink/20 hover:border-manga-neon-pink/50'}
+                                `}
                             >
-                                <Heart className="w-5 h-5 group-hover:fill-manga-neon-pink transition-all" />
+                                <Heart className={`w-5 h-5 transition-all ${isLiked ? 'fill-manga-neon-pink' : 'group-hover:fill-manga-neon-pink'}`} />
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-cyan/20 hover:bg-manga-neon-cyan/20 hover:border-manga-neon-cyan/50 text-muted-foreground hover:text-manga-neon-cyan transition-all duration-300 group"
+                                onClick={handleToggleBookmark}
+                                className={`w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-cyan/20 transition-all duration-300 group
+                                    ${isBookmarked ? 'text-manga-neon-cyan border-manga-neon-cyan/50 bg-manga-neon-cyan/10' : 'text-muted-foreground hover:text-manga-neon-cyan hover:bg-manga-neon-cyan/20 hover:border-manga-neon-cyan/50'}
+                                `}
                             >
-                                <Bookmark className="w-5 h-5 group-hover:fill-manga-neon-cyan transition-all" />
+                                <Bookmark className={`w-5 h-5 transition-all ${isBookmarked ? 'fill-manga-neon-cyan' : 'group-hover:fill-manga-neon-cyan'}`} />
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={handleShare}
                                 className="w-11 h-11 rounded-xl backdrop-blur-xl bg-manga-glass/30 border border-manga-neon-purple/20 hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/50 text-muted-foreground hover:text-manga-neon-purple transition-all duration-300 group"
                             >
                                 <Share2 className="w-5 h-5 group-hover:scale-110 transition-all" />
@@ -148,12 +223,12 @@ const MangaDetailsPage = () => {
                             <div className="backdrop-blur-xl bg-manga-glass/50 border border-manga-neon-purple/20 rounded-xl p-3 text-center">
                                 <Eye className="w-4 h-4 text-manga-neon-cyan mx-auto mb-1" />
                                 <p className="text-xs text-muted-foreground">Views</p>
-                                <p className="text-sm font-bold text-foreground">12.5K</p>
+                                <p className="text-sm font-bold text-foreground">{manga.chapters.reduce((acc, chap) => acc + chap.views, 0).toLocaleString()}</p>
                             </div>
                             <div className="backdrop-blur-xl bg-manga-glass/50 border border-manga-neon-purple/20 rounded-xl p-3 text-center">
-                                <Star className="w-4 h-4 text-manga-neon-pink mx-auto mb-1" />
-                                <p className="text-xs text-muted-foreground">Rating</p>
-                                <p className="text-sm font-bold text-foreground">{manga.rating ? Number(manga.rating).toFixed(1) : 'N/A'}</p>
+                                <Heart className={`w-4 h-4 mx-auto mb-1 ${isLiked ? 'text-manga-neon-pink fill-manga-neon-pink' : 'text-manga-neon-pink opacity-60'}`} />
+                                <p className="text-xs text-muted-foreground">Likes</p>
+                                <p className="text-sm font-bold text-foreground">{totalLikes.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>

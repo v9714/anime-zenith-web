@@ -1,4 +1,4 @@
-import { mangaApi } from "./backendApi";
+import { mangaApi, interactionApi } from "./backendApi";
 
 export interface Genre {
     id: number;
@@ -99,6 +99,27 @@ export const mangaService = {
 
     getProgress: async (mangaId: number): Promise<ApiResponse<MangaProgress>> => {
         const response = await mangaApi.get<ApiResponse<MangaProgress>>(`/api/manga/progress/${mangaId}`);
+        return response.data;
+    },
+
+    // Interactions
+    toggleLike: async (mangaId: number): Promise<ApiResponse<{ isLiked: boolean; totalLikes: number }>> => {
+        const response = await interactionApi.post<ApiResponse<{ isLiked: boolean; totalLikes: number }>>('/api/interactions/manga/like', { mangaId });
+        return response.data;
+    },
+
+    getLikeStatus: async (mangaId: number): Promise<ApiResponse<{ isLiked: boolean; totalLikes: number }>> => {
+        const response = await interactionApi.get<ApiResponse<{ isLiked: boolean; totalLikes: number }>>(`/api/interactions/manga/${mangaId}/like-status`);
+        return response.data;
+    },
+
+    toggleBookmark: async (mangaId: number): Promise<ApiResponse<{ isBookmarked: boolean }>> => {
+        const response = await interactionApi.post<ApiResponse<{ isBookmarked: boolean }>>('/api/interactions/manga/bookmark', { mangaId });
+        return response.data;
+    },
+
+    checkBookmarkStatus: async (mangaId: number): Promise<ApiResponse<{ isBookmarked: boolean }>> => {
+        const response = await interactionApi.get<ApiResponse<{ isBookmarked: boolean }>>(`/api/interactions/manga/${mangaId}/bookmark-status`);
         return response.data;
     }
 };
