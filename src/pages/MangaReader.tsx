@@ -77,6 +77,7 @@ const MangaReader = () => {
     const [readingMode, setReadingMode] = useState<ReadingMode>('default');
     const [zoom, setZoom] = useState(100);
     const [showChapterList, setShowChapterList] = useState(false);
+    const [isManuallyHidden, setIsManuallyHidden] = useState(false);
     const readerRef = useRef<HTMLDivElement>(null);
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -116,25 +117,33 @@ const MangaReader = () => {
         if (controlsTimeoutRef.current) {
             clearTimeout(controlsTimeoutRef.current);
         }
-        setShowControls(true);
-        controlsTimeoutRef.current = setTimeout(() => {
-            if (!showChapterList) {
-                setShowControls(false);
-            }
-        }, 3000);
-    }, [showChapterList]);
+
+        // Only auto-hide if not manually hidden and chapter list is closed
+        if (!isManuallyHidden && !showChapterList) {
+            setShowControls(true);
+            controlsTimeoutRef.current = setTimeout(() => {
+                if (!showChapterList) {
+                    setShowControls(false);
+                }
+            }, 3000);
+        }
+    }, [showChapterList, isManuallyHidden]);
 
     useEffect(() => {
-        resetControlsTimeout();
+        if (!isManuallyHidden) {
+            resetControlsTimeout();
+        }
         return () => {
             if (controlsTimeoutRef.current) {
                 clearTimeout(controlsTimeoutRef.current);
             }
         };
-    }, [resetControlsTimeout]);
+    }, [resetControlsTimeout, isManuallyHidden]);
 
     const handleMouseMove = () => {
-        resetControlsTimeout();
+        if (!isManuallyHidden) {
+            resetControlsTimeout();
+        }
     };
 
     const handleNextChapter = () => {
@@ -170,6 +179,45 @@ const MangaReader = () => {
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 10, 200));
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 10, 50));
     const handleZoomReset = () => setZoom(100);
+
+    // Toggle controls on reader area click
+    const handleReaderAreaClick = (e: React.MouseEvent) => {
+        // Block if clicking on sidebar, navigation buttons, or interactive elements
+        if (
+            (e.target as HTMLElement).closest('button') ||
+            (e.target as HTMLElement).closest('.interactive-element') ||
+            (e.target as HTMLElement).closest('[role="button"]')
+        ) {
+            return;
+        }
+
+        // Toggle controls
+        setShowControls(prev => {
+            const newState = !prev;
+            setIsManuallyHidden(!newState);
+
+            // Clear any existing timeout
+            if (controlsTimeoutRef.current) {
+                clearTimeout(controlsTimeoutRef.current);
+            }
+
+            // If showing controls, start auto-hide timer
+            if (newState && !showChapterList) {
+                controlsTimeoutRef.current = setTimeout(() => {
+                    setShowControls(false);
+                    setIsManuallyHidden(false);
+                }, 3000);
+            }
+
+            return newState;
+        });
+    };
+
+    const showControlsManually = () => {
+        setShowControls(true);
+        setIsManuallyHidden(false);
+        resetControlsTimeout();
+    };
 
     const getPathUrl = (path: string | null) => {
         return getImageUrl(path || undefined, MANGA_API_URL) || "";
@@ -375,7 +423,10 @@ const MangaReader = () => {
             </div>
 
             {/* Reader Area */}
-            <div className={`flex-1 relative overflow-auto ${currentModeConfig.overlayClass}`}>
+            <div
+                className={`flex-1 relative overflow-auto cursor-pointer ${currentModeConfig.overlayClass}`}
+                onClick={handleReaderAreaClick}
+            >
                 {isPdfFile(chapter.pdfUrl) ? (
                     <PdfViewer
                         pdfUrl={getPathUrl(chapter.pdfUrl)}
@@ -497,7 +548,7 @@ const MangaReader = () => {
             {!showControls && (
                 <button
                     className="absolute top-3 left-4 z-20 w-11 h-11 rounded-full bg-manga-glass/60 backdrop-blur-sm border border-manga-neon-purple/20 flex items-center justify-center hover:bg-manga-glass/80 transition-all"
-                    onClick={() => setShowControls(true)}
+                    onClick={showControlsManually}
                     aria-label="Show controls"
                 >
                     <Settings className="w-5 h-5 text-manga-neon-purple" />
