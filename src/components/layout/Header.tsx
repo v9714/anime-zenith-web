@@ -124,7 +124,7 @@ export function Header() {
                   <Input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search anime..."
+                    placeholder="Search anime & manga..."
                     className="w-full pl-8 pr-3"
                     value={searchQuery}
                     onChange={handleSearchChange}
@@ -174,7 +174,7 @@ export function Header() {
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="search"
-                        placeholder="Search anime..."
+                        placeholder="Search anime & manga..."
                         className="w-full pl-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}

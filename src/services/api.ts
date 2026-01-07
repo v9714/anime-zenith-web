@@ -148,3 +148,24 @@ export const getAnimeRecommendations = async (id: number) => {
   return response.data;
 };
 
+// Unified Search (Anime + Manga)
+export interface UnifiedSearchResponse {
+  anime: Anime[];
+  manga: any[]; // You might want to import Manga type here if needed
+  totalResults: number;
+}
+
+export const unifiedSearch = async (query: string, limit = 10): Promise<ApiResponse<UnifiedSearchResponse>> => {
+  const response = await contentApi.get<ApiResponse<UnifiedSearchResponse>>('/api/home/search', {
+    params: { q: query, limit }
+  });
+  return response.data;
+};
+
+interface ApiResponse<T> {
+  statusCode: number;
+  data: T;
+  message: string;
+  success: boolean;
+}
+

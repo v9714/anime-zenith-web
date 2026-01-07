@@ -143,5 +143,12 @@ export const mangaService = {
     getAllMangaProgress: async (): Promise<ApiResponse<MangaProgress[]>> => {
         const response = await interactionApi.get<ApiResponse<MangaProgress[]>>('/api/interactions/manga/progress/all');
         return response.data;
+    },
+
+    searchManga: async (title: string, page: number = 1, limit: number = 20): Promise<ApiResponse<PaginatedMangaResponse>> => {
+        const response = await mangaApi.get<ApiResponse<PaginatedMangaResponse>>('/api/manga/search', {
+            params: { title, page, limit }
+        });
+        return response.data;
     }
 };
