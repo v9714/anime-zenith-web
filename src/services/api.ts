@@ -4,6 +4,8 @@ import { contentApi } from './backendApi';
 export interface Anime {
   id: string;
   title: string;
+  titleEng?: string;
+  titleJp?: string;
   alternativeTitles?: string[];
   description?: string;
   coverImage?: string;
@@ -139,6 +141,23 @@ export interface EpisodesBySeasonResponse {
 
 export const getAnimeEpisodesBySeason = async (id: number | string): Promise<EpisodesBySeasonResponse> => {
   const response = await contentApi.get(`/api/episode/${id}/episodes`);
+  return response.data;
+};
+
+// Get stream URL (local or fallback)
+export interface StreamResponse {
+  statusCode: number;
+  data: {
+    url: string;
+    headers?: Record<string, string>;
+    source: "local" | "external";
+  };
+  message: string;
+  success: boolean;
+}
+
+export const getEpisodeStream = async (episodeId: number | string): Promise<StreamResponse> => {
+  const response = await contentApi.get(`/api/episode/${episodeId}/stream`);
   return response.data;
 };
 

@@ -1,16 +1,9 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-  ReactNode
-} from "react";
+import * as React from "react";
 
 type Theme = "dark" | "light" | "system";
 
 type ThemeProviderProps = {
-  children: ReactNode;
+  children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
 };
@@ -25,7 +18,7 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
 };
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+const ThemeProviderContext = React.createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
@@ -36,7 +29,7 @@ export function ThemeProvider({
   // valid themes for validation
   const validThemes: Theme[] = ["dark", "light", "system"];
 
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setTheme] = React.useState<Theme>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
       // validate stored value - must be valid theme
@@ -54,7 +47,7 @@ export function ThemeProvider({
     }
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       const root = window.document.documentElement;
       root.classList.remove("light", "dark");
@@ -75,7 +68,7 @@ export function ThemeProvider({
     }
   }, [theme, storageKey]);
 
-  const value = useMemo(() => ({
+  const value = React.useMemo(() => ({
     theme,
     setTheme: (newTheme: Theme) => {
       try {
@@ -94,7 +87,7 @@ export function ThemeProvider({
 }
 
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
+  const context = React.useContext(ThemeProviderContext);
   if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider");
   return context;

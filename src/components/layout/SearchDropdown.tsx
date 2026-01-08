@@ -15,6 +15,8 @@ interface SearchDropdownProps {
 interface MangaResult {
   id: number;
   title: string;
+  titleEng?: string;
+  titleJp?: string;
   coverImage: string;
   status: string;
   rating: string | null;
@@ -107,20 +109,20 @@ export function SearchDropdown({ searchQuery, onClose, inputRef }: SearchDropdow
                     {anime.coverImage ? (
                       <LazyImage
                         src={getImageUrl(anime.coverImage)}
-                        alt={anime.title}
+                        alt={anime.titleEng || anime.title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center p-1 text-center bg-accent/20">
                         <span className="text-[8px] font-bold text-muted-foreground uppercase break-words leading-tight">
-                          {anime.title}
+                          {anime.titleEng || anime.title}
                         </span>
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-sm text-foreground line-clamp-1">
-                      {anime.title}
+                      {anime.titleEng || anime.title}
                     </h4>
                     <div className="flex items-center gap-2 mt-1">
                       {anime.rating && (
@@ -164,20 +166,20 @@ export function SearchDropdown({ searchQuery, onClose, inputRef }: SearchDropdow
                     {manga.coverImage ? (
                       <LazyImage
                         src={getImageUrl(manga.coverImage)}
-                        alt={manga.title}
+                        alt={manga.titleEng || manga.title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center p-1 text-center bg-accent/20">
                         <span className="text-[8px] font-bold text-muted-foreground uppercase break-words leading-tight">
-                          {manga.title}
+                          {manga.titleEng || manga.title}
                         </span>
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-sm text-foreground line-clamp-1">
-                      {manga.title}
+                      {manga.titleEng || manga.title}
                     </h4>
                     <div className="flex items-center gap-2 mt-1">
                       {manga.rating && (

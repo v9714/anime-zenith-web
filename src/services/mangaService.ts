@@ -14,6 +14,8 @@ export interface MangaGenre {
 export interface Manga {
     id: number;
     title: string;
+    titleEng?: string;
+    titleJp?: string;
     alternativeTitles: string[];
     description: string;
     coverImage: string;

@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAudio } from "@/contexts/AudioContext";
 import { useToast } from "@/hooks/use-toast";
-import { getAnimeById, getAnimeEpisodesBySeason, Anime, Episode } from "@/services/api";
-import { BACKEND_API_Image_URL } from "@/utils/constants";
+import { getAnimeById, getAnimeEpisodesBySeason, getEpisodeStream, Anime, Episode } from "@/services/api";
+
+import { BACKEND_API_Image_URL, CONTENT_API_URL } from "@/utils/constants";
 import defaultThumbnail from "@/assets/default-episode-thumbnail.jpg";
 import { watchedEpisodesService } from "@/services/watchedEpisodesService";
 
@@ -36,6 +37,7 @@ const popularAnime = [
 ];
 
 export default function AnimeWatch() {
+
   const { encoded } = useParams<{ encoded: string }>();
 
   // Decode the base64 encoded URL parameter
@@ -58,17 +60,16 @@ export default function AnimeWatch() {
   const [isSaved, setIsSaved] = useState(false);
   const [activeEpisode, setActiveEpisode] = useState(0);
   const [watchedEpisodes, setWatchedEpisodes] = useState<number[]>([]);
-  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const [currentThumbnail, setCurrentThumbnail] = useState<string>("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isEpisodeReady, setIsEpisodeReady] = useState(false);
+  const [streamLoading, setStreamLoading] = useState(false);
 
   // Pause background music when entering watch page
   useEffect(() => {
     pauseBackgroundMusic();
-
     return () => {
-      // Resume background music when leaving watch page
       resumeBackgroundMusic();
     };
   }, [pauseBackgroundMusic, resumeBackgroundMusic]);
@@ -99,9 +100,9 @@ export default function AnimeWatch() {
     };
 
     fetchData();
-  }, [id, currentSeason]); // Only re-fetch when anime ID or season changes
+  }, [id, currentSeason]);
 
-  // Separate effect to handle URL params and set active episode (NO API CALLS)
+  // Handle active episode selection from URL parameters
   useEffect(() => {
     if (episodes.length === 0) {
       setIsEpisodeReady(false);
@@ -116,9 +117,11 @@ export default function AnimeWatch() {
       targetIndex = foundIndex >= 0 ? foundIndex : 0;
     }
 
-    const episode = episodes[targetIndex];
+    // Update active episode
+    setActiveEpisode(targetIndex);
 
-    // Check if episode requires login and user is not logged in
+    // Check login
+    const episode = episodes[targetIndex];
     if (episode?.loginRequired && !currentUser) {
       setShowLoginModal(true);
       toast({
@@ -127,30 +130,75 @@ export default function AnimeWatch() {
         description: "This episode requires you to be logged in to watch.",
         duration: 3000,
       });
-      // Clear video URL to stop playback
-      setCurrentVideoUrl("");
-      setCurrentThumbnail("");
-      setActiveEpisode(targetIndex);
-      setIsEpisodeReady(true);
-      return;
     }
 
-    // Update active episode and video URLs
-    setActiveEpisode(targetIndex);
-
-    // Update video URLs
-    if (episode?.masterUrl) {
-      const newVideoUrl = `${BACKEND_API_Image_URL}${episode.masterUrl}`;
-      const newThumbnail = episode.thumbnail ? `${BACKEND_API_Image_URL}${episode.thumbnail}` : defaultThumbnail;
-
-      // Batch state updates to prevent multiple re-renders
-      setCurrentVideoUrl(newVideoUrl);
-      setCurrentThumbnail(newThumbnail);
-    }
-
-    // Mark episode as ready after setting correct episode
+    // Mark episode as ready
     setIsEpisodeReady(true);
   }, [episodes, episodeNumber, currentUser]);
+
+
+  // Fetch Stream URL when active episode changes
+  useEffect(() => {
+    const fetchStream = async () => {
+      if (!episodes.length || !isEpisodeReady) return;
+
+      const episode = episodes[activeEpisode];
+      if (!episode) return;
+
+      // If login required and not logged in, stop.
+      if (episode.loginRequired && !currentUser) {
+        setCurrentVideoUrl(null);
+        return;
+      }
+
+      setStreamLoading(true);
+      try {
+        // Fetch dynamic stream URL (local or external)
+        const response = await getEpisodeStream(episode.id);
+
+        if (response.success && response.data.url) {
+          let finalUrl = response.data.url;
+          // If local and doesn't have full URL prefix, add it (or if it's external, keep as is)
+          if (response.data.source === "local" && !finalUrl.startsWith("http")) {
+            finalUrl = `${BACKEND_API_Image_URL}${finalUrl}`;
+          }
+
+          // Use Proxy if headers are required (e.g. Referer)
+          if (response.data.headers && Object.keys(response.data.headers).length > 0) {
+            console.log("Using proxy for stream:", finalUrl);
+            const encodedUrl = encodeURIComponent(finalUrl);
+            const encodedHeaders = encodeURIComponent(JSON.stringify(response.data.headers));
+            finalUrl = `${CONTENT_API_URL}/api/episode/proxy?url=${encodedUrl}&headers=${encodedHeaders}`;
+          } else {
+            console.log("Direct stream (no headers required):", finalUrl);
+          }
+
+          setCurrentVideoUrl(finalUrl);
+
+          // Thumbnail handling
+          const newThumbnail = episode.thumbnail
+            ? `${BACKEND_API_Image_URL}${episode.thumbnail}`
+            : defaultThumbnail;
+          setCurrentThumbnail(newThumbnail);
+        } else {
+          // Fallback if no URL found
+          setCurrentVideoUrl(null);
+        }
+
+      } catch (error) {
+        console.error("Failed to fetch stream:", error);
+        toast({
+          title: "Stream Error",
+          description: "Unable to load video stream.",
+        });
+        setCurrentVideoUrl(null);
+      } finally {
+        setStreamLoading(false);
+      }
+    };
+
+    fetchStream();
+  }, [activeEpisode, isEpisodeReady, episodes, currentUser]);
 
   // Get current episode data
   const getCurrentEpisode = () => {
@@ -454,20 +502,22 @@ export default function AnimeWatch() {
                   </div>
                 </div>
 
-                <VideoPlayer
-                  key={`${animeId}-${currentEpisode?.id || activeEpisode}`}
-                  videoUrl={currentEpisode?.loginRequired && !currentUser ? "" : getVideoUrl()}
-                  thumbnailUrl={getThumbnailUrl()}
-                  animeId={animeId}
-                  episodeId={currentEpisode?.id?.toString()}
-                  episodeIdNumber={currentEpisode?.id}
-                  onNextEpisode={handleNextEpisode}
-                  onPreviousEpisode={handlePreviousEpisode}
-                  hasNextEpisode={activeEpisode < episodes.length - 1}
-                  hasPreviousEpisode={activeEpisode > 0}
-                  episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
-                  isLoggedIn={!!currentUser}
-                />
+                {(currentVideoUrl || getCurrentEpisode()?.masterUrl) && (
+                  <VideoPlayer
+                    key={`${animeId}-${currentEpisode?.id || activeEpisode}`}
+                    videoUrl={currentEpisode?.loginRequired && !currentUser ? "" : getVideoUrl()}
+                    thumbnailUrl={getThumbnailUrl()}
+                    animeId={animeId}
+                    episodeId={currentEpisode?.id?.toString()}
+                    episodeIdNumber={currentEpisode?.id}
+                    onNextEpisode={handleNextEpisode}
+                    onPreviousEpisode={handlePreviousEpisode}
+                    hasNextEpisode={activeEpisode < episodes.length - 1}
+                    hasPreviousEpisode={activeEpisode > 0}
+                    episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
+                    isLoggedIn={!!currentUser}
+                  />
+                )}
 
 
                 {/* Filler Episode Notice */}

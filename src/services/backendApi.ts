@@ -55,12 +55,12 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 // Function to attach interceptors to an instance
-const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = true) => {
+const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = true, autoRedirect: boolean = true) => {
   // Request interceptor
   instance.interceptors.request.use(
     (config) => {
       const token = getToken(STORAGE_KEYS.ACCESS_TOKEN);
-      if (token && requiresAuth) {
+      if (token && (requiresAuth || token)) { // Attach token even if auth is optional but token exists
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
@@ -74,8 +74,8 @@ const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = tru
     async (error) => {
       const originalRequest = error.config;
 
-      // Only handle 401 and redirect for services that require auth
-      if (error.response?.status === 401 && !originalRequest._retry && requiresAuth) {
+      // Only handle 401 and refresh if there's a 401 error
+      if (error.response?.status === 401 && !originalRequest._retry) {
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
@@ -90,7 +90,6 @@ const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = tru
 
         try {
           // IMPORTANT: Root refresh MUST happen via Auth Service (Port 8000)
-          // Since withCredentials is true, the browser will automatically send the refresh cookie
           const refreshResponse = await axios.post(
             `${AUTH_API_URL}/auth/refresh-token`,
             {},
@@ -103,12 +102,9 @@ const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = tru
           if (refreshResponse.data.success) {
             const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
 
-            // Still update localStorage for UI compatibility, but security is now in cookies
             if (accessToken) setToken(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
             if (newRefreshToken) setToken(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
-            // Re-run the original request
-            // If the browser supports cross-port cookies, the new cookie will be sent automatically
             if (accessToken) {
               originalRequest.headers.Authorization = `Bearer ${accessToken}`;
               processQueue(null, accessToken);
@@ -123,7 +119,9 @@ const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = tru
           processQueue(refreshError, null);
           removeToken(STORAGE_KEYS.ACCESS_TOKEN);
           removeToken(STORAGE_KEYS.REFRESH_TOKEN);
-          if (window.location.pathname !== '/') {
+
+          // ONLY redirect if autoRedirect is explicitly enabled (for core user functions)
+          if (autoRedirect && window.location.pathname !== '/') {
             window.location.href = '/';
           }
           return Promise.reject(refreshError);
@@ -146,6 +144,9 @@ export const commentsApi = axios.create({ baseURL: COMMENTS_API_URL, withCredent
 export const mangaApi = axios.create({ baseURL: MANGA_API_URL, withCredentials: true });
 
 // Attach interceptors to all instances
-// Manga API doesn't require authentication but supports it (optional auth)
-[authApi, contentApi, userApi, interactionApi, commentsApi].forEach(api => attachInterceptors(api, true));
-attachInterceptors(mangaApi, false); // Manga is public, but can use auth if available
+// authApi and userApi require strict auth and redirect on failure
+[authApi, userApi].forEach(api => attachInterceptors(api, true, true));
+
+// contentApi, interactionApi, commentsApi, and mangaApi are public but use auth if available
+// They should NOT redirect on session expiry to prevent interrupting public viewing
+[contentApi, interactionApi, commentsApi, mangaApi].forEach(api => attachInterceptors(api, true, false));

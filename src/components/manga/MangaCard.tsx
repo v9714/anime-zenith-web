@@ -39,14 +39,14 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                 <div className="relative w-16 h-24 flex-shrink-0 rounded-md overflow-hidden">
                     <img
                         src={getImageUrl(manga.coverImage)}
-                        alt={manga.title}
+                        alt={manga.titleEng || manga.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         loading="lazy"
                     />
                 </div>
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                        {manga.title}
+                        {manga.titleEng || manga.title}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">{manga.author || 'Unknown'}</p>
                 </div>
@@ -67,7 +67,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                 {/* Background Image */}
                 <img
                     src={getImageUrl(manga.coverImage)}
-                    alt={manga.title}
+                    alt={manga.titleEng || manga.title}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     loading="lazy"
                 />
@@ -92,7 +92,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                     )}
 
                     <h3 className="font-bold text-lg line-clamp-2 text-white group-hover:text-primary transition-colors">
-                        {manga.title}
+                        {manga.titleEng || manga.title}
                     </h3>
 
                     <div className="flex items-center gap-3 text-xs text-gray-300">
@@ -129,7 +129,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
             <div className="relative aspect-[2/3] overflow-hidden">
                 <img
                     src={getImageUrl(manga.coverImage)}
-                    alt={manga.title}
+                    alt={manga.titleEng || manga.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                 />
@@ -168,7 +168,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
             {/* Info */}
             <div className="p-3 space-y-1 flex-1 flex flex-col">
                 <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors flex-1">
-                    {manga.title}
+                    {manga.titleEng || manga.title}
                 </h3>
 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
