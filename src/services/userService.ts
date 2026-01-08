@@ -111,5 +111,10 @@ export const userService = {
   deleteAccount: async (userId: string): Promise<DeleteAccountResponse> => {
     const response = await userApi.delete<DeleteAccountResponse>(`/api/users/${userId}`);
     return response.data;
+  },
+
+  removeAvatar: async (): Promise<UpdateProfileResponse> => {
+    const response = await userApi.delete<UpdateProfileResponse>(`/api/users/avatar`);
+    return response.data;
   }
 };

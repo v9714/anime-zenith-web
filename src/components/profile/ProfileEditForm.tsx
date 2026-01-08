@@ -81,7 +81,51 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
         setAvatarPreview(getImageUrl(url || undefined));
     };
 
-    const handleDeleteAvatar = () => {
+    const [isAvatarRemoving, setIsAvatarRemoving] = useState(false);
+
+    const handleDeleteAvatar = async () => {
+        console.log("handleDeleteAvatar called", {
+            currentAvatarUrl: currentUser.avatarUrl,
+            uploadedFile: !!uploadedFile,
+            formAvatarUrl: form.getValues("avatarUrl")
+        });
+
+        // If the user has a saved avatar, and we aren't currently previewing a NEW file
+        // then we should remove it from the backend
+        if (currentUser.avatarUrl && !uploadedFile) {
+            const currentFieldUrl = form.getValues("avatarUrl");
+            // If the field is empty (local avatar) OR matches the current saved URL
+            // then we're deleting the actual saved avatar.
+            const isDeletingSavedAvatar = !currentFieldUrl || currentFieldUrl === currentUser.avatarUrl;
+
+            if (isDeletingSavedAvatar) {
+                console.log("Removing avatar from backend...");
+                setIsAvatarRemoving(true);
+                try {
+                    const response = await userService.removeAvatar();
+                    console.log("Backend removal response:", response);
+                    if (response.success) {
+                        await onUpdate();
+                        toast({
+                            id: String(Date.now()),
+                            title: "Avatar removed",
+                            description: "Your profile picture has been removed"
+                        });
+                    }
+                } catch (error: any) {
+                    console.error("Backend removal failed:", error);
+                    toast({
+                        id: String(Date.now()),
+                        title: "Removal failed",
+                        description: error.response?.data?.message || "Failed to remove avatar"
+                    });
+                } finally {
+                    setIsAvatarRemoving(false);
+                }
+            }
+        }
+
+        // Always clear local state
         setAvatarPreview("");
         setUploadedFile(null);
         form.setValue("avatarUrl", "");
@@ -91,6 +135,7 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
     };
 
     const onSubmit = async (values: ProfileFormValues) => {
+        console.log("onSubmit called", values);
         setIsSubmitting(true);
         try {
             let response;
@@ -102,10 +147,11 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
                     avatarFile: uploadedFile
                 });
             } else {
-                // If user provided URL, send as JSON
+                // If user provided URL (or cleared it), send as JSON
+                // We pass "" if it's empty to tell the backend to set it to null
                 response = await userService.updateProfile(currentUser.id, {
                     displayName: values.displayName,
-                    avatarUrl: values.avatarUrl || undefined
+                    avatarUrl: values.avatarUrl === "" ? "" : (values.avatarUrl || undefined)
                 });
             }
 
@@ -120,6 +166,7 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
                 });
             }
         } catch (error: any) {
+            console.error("Update failed:", error);
             toast({
                 id: String(Date.now()),
                 title: "Update failed",
@@ -159,8 +206,13 @@ export function ProfileEditForm({ currentUser, onUpdate }: ProfileEditFormProps)
                                         size="icon"
                                         className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
                                         onClick={handleDeleteAvatar}
+                                        disabled={isAvatarRemoving}
                                     >
-                                        <X className="h-4 w-4" />
+                                        {isAvatarRemoving ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <X className="h-4 w-4" />
+                                        )}
                                     </Button>
                                 )}
                             </div>
