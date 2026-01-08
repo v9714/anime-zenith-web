@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: {
+      clientPort: 8080,
+      port: 8080,
+    },
     headers: {
       'Cache-Control': 'max-age=31536000',
       'X-Content-Type-Options': 'nosniff',
@@ -22,14 +26,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // CRITICAL: Force single React instance
-      // 'react': path.resolve(__dirname, './node_modules/react'),
-      // 'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
-      // 'react-router': path.resolve(__dirname, './node_modules/react-router'),
-      // 'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
+      'react': path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      'react-router-dom': path.resolve(__dirname, './node_modules/react-router-dom'),
     },
-    // Add dedupe to force single version
-    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
+    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom', '@tanstack/react-query'],
   },
   build: {
     minify: mode === 'production' ? "esbuild" : false,
@@ -38,8 +39,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-slot', '@radix-ui/react-tooltip'],
+          'vendor': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
         },
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -49,21 +49,23 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     reportCompressedSize: false,
     chunkSizeWarningLimit: 1000,
-    // Add commonjsOptions
     commonjsOptions: {
       include: [/node_modules/],
       extensions: ['.js', '.cjs'],
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'react/jsx-runtime', '@radix-ui/react-tooltip'],
-    exclude: [],
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'react/jsx-runtime',
+      '@tanstack/react-query',
+      'lucide-react',
+      'clsx',
+      'tailwind-merge'
+    ],
     force: true,
-    esbuildOptions: {
-      loader: {
-        '.js': 'jsx',
-      },
-    },
   },
   define: {
     global: 'globalThis',

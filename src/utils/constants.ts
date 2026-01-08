@@ -15,7 +15,7 @@ export const MANGA_API_URL = import.meta.env.VITE_MANGA_API_URL || "http://local
 export const BACKEND_API_BASE_URL = CONTENT_API_URL;
 
 // Legacy fallback for images (pointing to Content Service as it handles primary media)
-export const BACKEND_API_Image_URL = CONTENT_API_URL;
+export const BACKEND_API_Image_URL = `${CONTENT_API_URL}/uploads/`;
 export const OPEN_CHAR_API_BASE_URL = "https://api.jikan.moe/v4";
 
 // React Query Configuration

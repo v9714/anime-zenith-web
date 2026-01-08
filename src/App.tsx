@@ -1,5 +1,4 @@
-
-import * as React from "react";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -54,6 +53,44 @@ const PageLoader = () => (
   </div>
 );
 
+// Simple Error Boundary component
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+          <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
+          <p className="text-muted-foreground mb-4">The application encountered a critical error. Please refresh the page.</p>
+          <pre className="p-4 bg-muted rounded-md text-xs max-w-full overflow-auto mb-4">
+            {this.state.error?.toString()}
+          </pre>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+          >
+            Refresh Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Create Query Client for API requests
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,58 +104,60 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="dark">
-          <AuthProvider>
-            <AudioProvider>
-              <TooltipProvider>
-                {/* Toaster components */}
-                <Toaster />
-                <Sonner />
-                <DevelopmentNotice />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme="dark">
+            <AuthProvider>
+              <AudioProvider>
+                <TooltipProvider>
+                  {/* Toaster components */}
+                  <Toaster />
+                  <Sonner />
+                  <DevelopmentNotice />
 
-                <React.Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    {/* Main Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/anime" element={<AnimeList />} />
-                    <Route path="/anime/:id" element={<AnimeDetails />} />
-                    <Route path="/watch/:encoded" element={<AnimeWatch />} />
-                    <Route path="/episodes" element={<Episodes />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/audio-settings" element={<AudioSettings />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/verify-email" element={<VerifyEmail />} />
+                  <React.Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* Main Routes */}
+                      <Route path="/" element={<Home />} />
+                      <Route path="/anime" element={<AnimeList />} />
+                      <Route path="/anime/:id" element={<AnimeDetails />} />
+                      <Route path="/watch/:encoded" element={<AnimeWatch />} />
+                      <Route path="/episodes" element={<Episodes />} />
+                      <Route path="/search" element={<Search />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/profile" element={<UserProfile />} />
+                      <Route path="/audio-settings" element={<AudioSettings />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/verify-email" element={<VerifyEmail />} />
 
-                    {/* Manga Routes */}
-                    <Route path="/manga" element={<MangaHome />} />
-                    <Route path="/manga/browse" element={<MangaList />} />
-                    <Route path="/manga/:id" element={<MangaDetails />} />
-                    <Route path="/read/:mangaId/chapter/:chapterId" element={<MangaReader />} />
+                      {/* Manga Routes */}
+                      <Route path="/manga" element={<MangaHome />} />
+                      <Route path="/manga/browse" element={<MangaList />} />
+                      <Route path="/manga/:id" element={<MangaDetails />} />
+                      <Route path="/read/:mangaId/chapter/:chapterId" element={<MangaReader />} />
 
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/anime" element={<AdminAnime />} />
-                    <Route path="/admin/episodes" element={<AdminEpisodes />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/genres" element={<AdminGenres />} />
-                    <Route path="/admin/options" element={<AdminOptions />} />
-                    <Route path="/admin/manga" element={<AdminManga />} />
-                    <Route path="/admin/manga/:mangaId/chapters" element={<AdminChapters />} />
+                      {/* Admin Routes */}
+                      <Route path="/admin" element={<AdminDashboard />} />
+                      <Route path="/admin/anime" element={<AdminAnime />} />
+                      <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                      <Route path="/admin/users" element={<AdminUsers />} />
+                      <Route path="/admin/genres" element={<AdminGenres />} />
+                      <Route path="/admin/options" element={<AdminOptions />} />
+                      <Route path="/admin/manga" element={<AdminManga />} />
+                      <Route path="/admin/manga/:mangaId/chapters" element={<AdminChapters />} />
 
-                    {/* Catch-all Route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </React.Suspense>
-              </TooltipProvider>
-            </AudioProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+                      {/* Catch-all Route */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </React.Suspense>
+                </TooltipProvider>
+              </AudioProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 
