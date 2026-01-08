@@ -502,7 +502,15 @@ export default function AnimeWatch() {
                   </div>
                 </div>
 
-                {(currentVideoUrl || getCurrentEpisode()?.masterUrl) && (
+                {/* Video Player - Always show with loading state */}
+                {streamLoading ? (
+                  <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto"></div>
+                      <p className="text-white text-sm">Loading video stream...</p>
+                    </div>
+                  </div>
+                ) : (currentVideoUrl || getCurrentEpisode()?.masterUrl) ? (
                   <VideoPlayer
                     key={`${animeId}-${currentEpisode?.id || activeEpisode}`}
                     videoUrl={currentEpisode?.loginRequired && !currentUser ? "" : getVideoUrl()}
@@ -517,7 +525,7 @@ export default function AnimeWatch() {
                     episodeTitle={`${anime.title} - Episode ${currentEpisode?.episodeNumber || episodeNumber}: ${currentEpisode?.title || ''}`}
                     isLoggedIn={!!currentUser}
                   />
-                )}
+                ) : null}
 
 
                 {/* Filler Episode Notice */}

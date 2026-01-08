@@ -167,8 +167,8 @@ export default function Home() {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Main Content */}
               <div className="md:w-3/4">
-                {/* Trending Anime */}
-                {trendingAnime.length > 0 ? (
+                {/* Trending Now - Only show if data exists */}
+                {trendingAnime.length > 0 && (
                   <div className="mb-8">
                     <h2 className="text-xl font-heading font-bold mb-4">Trending Now</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -191,21 +191,12 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                ) : (
-                  <div className="mb-8">
-                    <h2 className="text-xl font-heading font-bold mb-4">Trending Now</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {Array(8).fill(0).map((_, i) => (
-                        <div key={i}>{renderListItemSkeleton()}</div>
-                      ))}
-                    </div>
-                  </div>
                 )}
 
                 {/* In-content Ad */}
                 <AdBanner className="h-[250px] mb-8" slot="in-content" />
 
-                {/* Seasonal Anime */}
+                {/* Seasonal Anime - Only show if data exists */}
                 {seasonalAnime.length > 0 ? (
                   <div>
                     <h2 className="text-xl font-heading font-bold mb-4">This Season</h2>
@@ -229,16 +220,31 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                ) : (
+                ) : topAnime.length > 8 ? (
+                  /* Fallback: Show more top anime when seasonal data is not available */
                   <div>
-                    <h2 className="text-xl font-heading font-bold mb-4">This Season</h2>
+                    <h2 className="text-xl font-heading font-bold mb-4">Popular Anime</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {Array(8).fill(0).map((_, i) => (
-                        <div key={i}>{renderListItemSkeleton()}</div>
+                      {topAnime.slice(8, 16).map((anime) => (
+                        <div key={anime.id} className="flex items-center gap-5 p-3 rounded-xl bg-white/5 dark:bg-black/10 hover:bg-muted/50 transition-colors shadow-lg">
+                          <LazyImage
+                            src={getImageUrl(anime.coverImage || anime.bannerImage)}
+                            alt={anime.title}
+                            width="64"
+                            height="96"
+                            className="w-16 h-24 object-cover rounded-md flex-shrink-0"
+                          />
+                          <div className="flex-1">
+                            <h3 className="text-base font-semibold line-clamp-2">{anime.title}</h3>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {anime.type} • {anime.rating ? `${anime.rating}★` : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* Sidebar - with fixed height to avoid CLS */}

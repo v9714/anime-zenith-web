@@ -89,11 +89,18 @@ export default function AnimeList() {
   };
 
   const handleGenreChange = (value: string) => {
-    if (value) {
+    if (value && value !== "all") {
       searchParams.set("genre", value);
     } else {
       searchParams.delete("genre");
     }
+    searchParams.set("page", "1");
+    setSearchParams(searchParams);
+  };
+
+  const handleClearFilters = () => {
+    searchParams.delete("genre");
+    searchParams.delete("sort");
     searchParams.set("page", "1");
     setSearchParams(searchParams);
   };
@@ -105,7 +112,7 @@ export default function AnimeList() {
   };
 
   const selectedGenre = genres.find(g => g.id.toString() === genre);
-  const pageTitle = selectedGenre 
+  const pageTitle = selectedGenre
     ? `${selectedGenre.name} Anime - Browse ${selectedGenre.name} Series & Movies`
     : "Browse All Anime Series & Movies - Complete Collection";
   const pageDescription = selectedGenre
@@ -137,12 +144,11 @@ export default function AnimeList() {
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
               <div className="w-full sm:w-auto">
-                <Select value={genre} onValueChange={handleGenreChange}>
+                <Select value={genre || "all"} onValueChange={handleGenreChange}>
                   <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="All Genres" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* Fix: Change empty string value to "all" */}
                     <SelectItem value="all">All Genres</SelectItem>
                     {genres.map((g, inx) => (
                       <SelectItem key={g.id ?? inx} value={g.id?.toString()}>
@@ -165,6 +171,17 @@ export default function AnimeList() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {(genre || sort !== "top") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="w-full sm:w-auto"
+                >
+                  Clear Filters
+                </Button>
+              )}
             </div>
           </div>
 
