@@ -134,6 +134,7 @@ const App = () => {
                       {/* Manga Routes */}
                       <Route path="/manga" element={<MangaHome />} />
                       <Route path="/manga/browse" element={<MangaList />} />
+                      <Route path="/browse" element={<MangaList />} />
                       <Route path="/manga/:id" element={<MangaDetails />} />
                       <Route path="/read/:mangaId/chapter/:chapterId" element={<MangaReader />} />
 
