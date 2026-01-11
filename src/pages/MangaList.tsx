@@ -29,7 +29,7 @@ const MangaList = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    
+
     // Filter states
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [sortBy, setSortBy] = useState<string>("latest");
@@ -53,7 +53,7 @@ const MangaList = () => {
         try {
             setLoading(true);
             let response;
-            
+
             if (debouncedSearch.trim()) {
                 // Use search API when there's a search term
                 response = await mangaService.searchManga(debouncedSearch, currentPage, itemsPerPage);
@@ -61,20 +61,20 @@ const MangaList = () => {
                 // Use regular fetch
                 response = await mangaService.getAllManga(currentPage, itemsPerPage);
             }
-            
+
             if (response.success) {
                 let mangaData = response.data.data || [];
-                
+
                 // Apply client-side status filter
                 if (statusFilter !== "all") {
-                    mangaData = mangaData.filter(m => 
+                    mangaData = mangaData.filter(m =>
                         m.status?.toLowerCase() === statusFilter.toLowerCase()
                     );
                 }
-                
+
                 // Apply client-side sorting
                 mangaData = sortManga(mangaData, sortBy);
-                
+
                 setMangas(mangaData);
                 setTotalPages(response.data.meta.totalPages);
                 setTotalResults(response.data.meta.total);
@@ -161,7 +161,7 @@ const MangaList = () => {
                     </div>
                     <h1 className="text-4xl md:text-6xl font-bold mb-4 text-center">
                         <span className="bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan bg-clip-text text-transparent animate-neon-flicker">
-                            Manga Universe
+                            Otaku Tv
                         </span>
                     </h1>
                     <p className="text-muted-foreground text-base max-w-xl mx-auto text-center">
@@ -241,8 +241,8 @@ const MangaList = () => {
                             <div className="lg:hidden">
                                 <Sheet>
                                     <SheetTrigger asChild>
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             className="w-full h-12 bg-manga-dark/50 border-manga-neon-purple/20 hover:bg-manga-neon-purple/10 rounded-xl"
                                         >
                                             <SlidersHorizontal className="w-4 h-4 mr-2" />
@@ -328,7 +328,7 @@ const MangaList = () => {
                             </>
                         )}
                     </p>
-                    
+
                     {/* Active filter tags */}
                     {hasActiveFilters && (
                         <div className="hidden md:flex items-center gap-2">
@@ -439,7 +439,7 @@ const MangaList = () => {
                         </div>
                         <p className="text-foreground text-lg font-medium mb-2">No manga found</p>
                         <p className="text-muted-foreground">
-                            {debouncedSearch 
+                            {debouncedSearch
                                 ? `No results for "${debouncedSearch}". Try a different search.`
                                 : "Try adjusting your filters to find more manga."
                             }
