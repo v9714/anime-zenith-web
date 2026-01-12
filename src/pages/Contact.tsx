@@ -68,13 +68,16 @@ export default function Contact() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values);
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      form.reset();
-    }, 1500);
+    // Build Gmail compose URL with form data
+    const emailBody = `Name: ${values.name}\nEmail: ${values.email}\n\nMessage:\n${values.message}`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT_EMAIL)}&su=${encodeURIComponent(values.subject)}&body=${encodeURIComponent(emailBody)}`;
+    
+    // Open Gmail compose in new tab
+    window.open(gmailUrl, '_blank');
+    
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    form.reset();
   }
 
   return (
