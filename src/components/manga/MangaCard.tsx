@@ -60,7 +60,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                 to={`/manga/${manga.id}`}
                 style={style}
                 className={cn(
-                    "group relative aspect-[2/3] rounded-xl overflow-hidden",
+                    "group relative aspect-[2/3] rounded-xl overflow-hidden flex flex-col",
                     className
                 )}
             >

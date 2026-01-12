@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { mangaService, Manga } from "@/services/mangaService";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -33,6 +34,19 @@ const MangaList = () => {
     // Filter states
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [sortBy, setSortBy] = useState<string>("latest");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const genreParam = searchParams.get("genre");
+    const [genreFilter, setGenreFilter] = useState<string>(genreParam || "all");
+
+    // Sync genre filter with URL param
+    useEffect(() => {
+        if (genreParam) {
+            setGenreFilter(genreParam);
+            setCurrentPage(1);
+        } else {
+            setGenreFilter("all");
+        }
+    }, [genreParam]);
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -65,6 +79,13 @@ const MangaList = () => {
             if (response.success) {
                 let mangaData = response.data.data || [];
 
+                // Apply client-side genre filter
+                if (genreFilter !== "all") {
+                    mangaData = mangaData.filter(m =>
+                        m.genres?.some(mg => mg.genre.name.toLowerCase() === genreFilter.toLowerCase())
+                    );
+                }
+
                 // Apply client-side status filter
                 if (statusFilter !== "all") {
                     mangaData = mangaData.filter(m =>
@@ -84,7 +105,7 @@ const MangaList = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, debouncedSearch, statusFilter, sortBy]);
+    }, [currentPage, debouncedSearch, statusFilter, sortBy, genreFilter]);
 
     useEffect(() => {
         fetchManga();
@@ -110,10 +131,12 @@ const MangaList = () => {
         setSearchTerm("");
         setStatusFilter("all");
         setSortBy("latest");
+        setGenreFilter("all");
+        setSearchParams({});
         setCurrentPage(1);
     };
 
-    const hasActiveFilters = searchTerm || statusFilter !== "all" || sortBy !== "latest";
+    const hasActiveFilters = searchTerm || statusFilter !== "all" || sortBy !== "latest" || genreFilter !== "all";
 
     const getImageUrl = (path: string | null) => {
         return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
@@ -332,6 +355,20 @@ const MangaList = () => {
                     {/* Active filter tags */}
                     {hasActiveFilters && (
                         <div className="hidden md:flex items-center gap-2">
+                            {genreFilter !== "all" && (
+                                <Badge variant="outline" className="border-manga-neon-pink/30 text-manga-neon-pink capitalize">
+                                    {genreFilter}
+                                    <button onClick={() => {
+                                        setSearchParams((prev) => {
+                                            const next = new URLSearchParams(prev);
+                                            next.delete("genre");
+                                            return next;
+                                        });
+                                    }} className="ml-1.5 hover:text-white">
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </Badge>
+                            )}
                             {statusFilter !== "all" && (
                                 <Badge variant="outline" className="border-manga-neon-purple/30 text-manga-neon-purple">
                                     {statusFilter}
