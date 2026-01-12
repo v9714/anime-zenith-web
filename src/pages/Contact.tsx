@@ -14,12 +14,11 @@ import {
 import {
   Mail,
   MapPin,
-  Phone,
   Send,
   Facebook,
   Twitter,
   Instagram,
-  Youtube
+  MessageCircle
 } from "lucide-react";
 import {
   Form,
@@ -32,7 +31,18 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CONTACT_EMAIL } from "@/utils/constants";
+import { CONTACT_EMAIL, SOCIAL_LINKS } from "@/utils/constants";
+
+// Helper to check if a link is valid (not blank or just "#")
+const isValidLink = (link: string) => link && link !== "#" && link.trim() !== "";
+
+const socialItems = [
+  { key: 'facebook', icon: Facebook, label: 'Facebook', link: SOCIAL_LINKS.facebook },
+  { key: 'twitter', icon: Twitter, label: 'Twitter', link: SOCIAL_LINKS.twitter },
+  { key: 'instagram', icon: Instagram, label: 'Instagram', link: SOCIAL_LINKS.instagram },
+  { key: 'discord', icon: MessageCircle, label: 'Discord', link: SOCIAL_LINKS.discord },
+  { key: 'telegram', icon: Send, label: 'Telegram', link: SOCIAL_LINKS.telegram },
+];
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -128,24 +138,6 @@ export default function Contact() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-primary/10 rounded-full p-3">
-                    <Phone className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">Phone</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      <a href="tel:+81-3-1234-5678" className="hover:text-primary">
-                        +81-3-1234-5678
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Social Media */}
             <Card>
               <CardHeader>
@@ -153,19 +145,19 @@ export default function Contact() {
                 <CardDescription>Follow us on social media</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-4">
-                  <a href="#" className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors">
-                    <Facebook className="h-5 w-5 text-primary" />
-                  </a>
-                  <a href="#" className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors">
-                    <Twitter className="h-5 w-5 text-primary" />
-                  </a>
-                  <a href="#" className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors">
-                    <Instagram className="h-5 w-5 text-primary" />
-                  </a>
-                  <a href="#" className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors">
-                    <Youtube className="h-5 w-5 text-primary" />
-                  </a>
+                <div className="flex gap-4 flex-wrap">
+                  {socialItems.filter(item => isValidLink(item.link)).map(item => (
+                    <a
+                      key={item.key}
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-primary/10 p-3 rounded-full hover:bg-primary/20 transition-colors"
+                    >
+                      <item.icon className="h-5 w-5 text-primary" />
+                      <span className="sr-only">{item.label}</span>
+                    </a>
+                  ))}
                 </div>
               </CardContent>
             </Card>
