@@ -1,11 +1,22 @@
 import { Link } from "react-router-dom";
-import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
-import { SITE_NAME, ROUTES } from "@/utils/constants";
+import { Facebook, Twitter, Instagram, Youtube, MessageCircle, Send } from "lucide-react";
+import { SITE_NAME, ROUTES, SOCIAL_LINKS } from "@/utils/constants";
 import { useAudio } from "@/contexts/AudioContext";
+
+// Helper to check if a link is valid (not blank or just "#")
+const isValidLink = (link: string) => link && link !== "#" && link.trim() !== "";
 
 export function Footer() {
   const { playButtonClick } = useAudio();
   const currentYear = new Date().getFullYear();
+
+  const socialItems = [
+    { key: 'facebook', icon: Facebook, label: 'Facebook', link: SOCIAL_LINKS.facebook },
+    { key: 'twitter', icon: Twitter, label: 'Twitter', link: SOCIAL_LINKS.twitter },
+    { key: 'instagram', icon: Instagram, label: 'Instagram', link: SOCIAL_LINKS.instagram },
+    { key: 'discord', icon: MessageCircle, label: 'Discord', link: SOCIAL_LINKS.discord },
+    { key: 'telegram', icon: Send, label: 'Telegram', link: SOCIAL_LINKS.telegram },
+  ];
 
   return (
     <footer className="w-full border-t bg-background py-8 md:py-12">
@@ -20,22 +31,19 @@ export function Footer() {
               Discover your next favorite series with us.
             </p>
             <div className="flex items-center gap-2 mt-4">
-              <Link to="#" onClick={playButtonClick} className="rounded-full bg-accent/10 p-2 text-accent hover:bg-accent/20">
-                <Facebook className="h-4 w-4" />
-                <span className="sr-only">Facebook</span>
-              </Link>
-              <Link to="#" onClick={playButtonClick} className="rounded-full bg-accent/10 p-2 text-accent hover:bg-accent/20">
-                <Twitter className="h-4 w-4" />
-                <span className="sr-only">Twitter</span>
-              </Link>
-              <Link to="#" onClick={playButtonClick} className="rounded-full bg-accent/10 p-2 text-accent hover:bg-accent/20">
-                <Instagram className="h-4 w-4" />
-                <span className="sr-only">Instagram</span>
-              </Link>
-              <Link to="#" onClick={playButtonClick} className="rounded-full bg-accent/10 p-2 text-accent hover:bg-accent/20">
-                <Youtube className="h-4 w-4" />
-                <span className="sr-only">YouTube</span>
-              </Link>
+              {socialItems.filter(item => isValidLink(item.link)).map(item => (
+                <a
+                  key={item.key}
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={playButtonClick}
+                  className="rounded-full bg-accent/10 p-2 text-accent hover:bg-accent/20 transition-colors"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="sr-only">{item.label}</span>
+                </a>
+              ))}
             </div>
           </div>
 
