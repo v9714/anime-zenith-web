@@ -4,34 +4,35 @@ import { SEO, BreadcrumbSchema } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
-import { 
-  Mail, 
-  MapPin, 
-  Phone, 
+import {
+  Mail,
+  MapPin,
+  Phone,
   Send,
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Youtube 
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube
 } from "lucide-react";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { CONTACT_EMAIL } from "@/utils/constants";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -43,7 +44,7 @@ const formSchema = z.object({
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,10 +54,10 @@ export default function Contact() {
       message: "",
     },
   });
-  
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       console.log(values);
@@ -65,7 +66,7 @@ export default function Contact() {
       form.reset();
     }, 1500);
   }
-  
+
   return (
     <Layout>
       <SEO
@@ -79,16 +80,16 @@ export default function Contact() {
           { name: "Contact", url: "https://otakutv.in/contact" }
         ]}
       />
-      
+
       <div className="container py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-heading font-bold mb-4">Contact Us</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Have a question, suggestion, or just want to say hello? We'd love to hear from you! 
+            Have a question, suggestion, or just want to say hello? We'd love to hear from you!
             Fill out the form below or reach out through one of our contact channels.
           </p>
         </div>
-        
+
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {/* Contact Info Cards */}
           <div className="md:col-span-1 space-y-4">
@@ -101,15 +102,15 @@ export default function Contact() {
                   <div>
                     <h3 className="font-medium">Email</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      <a href="mailto:contact@Otaku.com" className="hover:text-primary">
-                        contact@Otaku.com
+                      <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-primary">
+                        {CONTACT_EMAIL}
                       </a>
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -126,7 +127,7 @@ export default function Contact() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
@@ -144,7 +145,7 @@ export default function Contact() {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Social Media */}
             <Card>
               <CardHeader>
@@ -169,7 +170,7 @@ export default function Contact() {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Contact Form */}
           <div className="md:col-span-2">
             <Card>
@@ -208,7 +209,7 @@ export default function Contact() {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="email"
@@ -223,7 +224,7 @@ export default function Contact() {
                           )}
                         />
                       </div>
-                      
+
                       <FormField
                         control={form.control}
                         name="subject"
@@ -237,7 +238,7 @@ export default function Contact() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="message"
@@ -251,7 +252,7 @@ export default function Contact() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? "Sending..." : "Send Message"}
                       </Button>
@@ -262,11 +263,11 @@ export default function Contact() {
             </Card>
           </div>
         </div>
-        
+
         {/* FAQ Section */}
         <div className="mt-16 max-w-3xl mx-auto">
           <h2 className="text-2xl font-heading font-bold mb-6 text-center">Frequently Asked Questions</h2>
-          
+
           <div className="space-y-4">
             <Card>
               <CardHeader>
@@ -274,31 +275,31 @@ export default function Contact() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  If you encounter a broken video, please use our contact form and include the anime title and episode number. 
+                  If you encounter a broken video, please use our contact form and include the anime title and episode number.
                   Our team will fix it as soon as possible.
                 </p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">How can I request an anime to be added?</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  We welcome anime requests! Use the contact form with the subject "Anime Request" and include the title and 
+                  We welcome anime requests! Use the contact form with the subject "Anime Request" and include the title and
                   any other relevant information.
                 </p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">What are your business hours?</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Our support team is available Monday-Friday from 9:00 AM to 6:00 PM (JST). 
+                  Our support team is available Monday-Friday from 9:00 AM to 6:00 PM (JST).
                   We typically respond to inquiries within 24-48 hours.
                 </p>
               </CardContent>

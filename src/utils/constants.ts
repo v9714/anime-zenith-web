@@ -55,14 +55,15 @@ export const THEME_COLORS = {
 };
 
 // Contact Information
-export const CONTACT_EMAIL = "contact@otakutv.com";
+export const CONTACT_EMAIL = "watch.otakutv@gmail.com";
 
 // Social Links
 export const SOCIAL_LINKS = {
   facebook: "#",
   twitter: "#",
   instagram: "#",
-  discord: "#"
+  discord: "#",
+  telegram: "https://t.me/+0Gg_vJAvHLphMzll"
 };
 
 // Default Images
