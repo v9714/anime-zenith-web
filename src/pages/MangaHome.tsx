@@ -65,46 +65,52 @@ export default function MangaHome() {
                 </div>
 
                 <div className="container mx-auto px-4 pb-16 space-y-8">
-                    {/* Popular Section */}
-                    <MangaSection
-                        title="Popular Now"
-                        subtitle="Most followed manga this week"
-                        icon={<Flame className="w-5 h-5 text-manga-secondary" />}
-                        viewAllLink="/manga/browse"
-                    >
-                        <MangaCarousel
-                            manga={popularManga}
-                            loading={loading}
-                            variant="featured"
-                        />
-                    </MangaSection>
+                {/* Popular Section */}
+                    {(loading || popularManga.length > 0) && (
+                        <MangaSection
+                            title="Popular Now"
+                            subtitle="Most followed manga this week"
+                            icon={<Flame className="w-5 h-5 text-manga-secondary" />}
+                            viewAllLink="/manga/browse"
+                        >
+                            <MangaCarousel
+                                manga={popularManga}
+                                loading={loading}
+                                variant="featured"
+                            />
+                        </MangaSection>
+                    )}
 
                     {/* Latest Updates */}
-                    <MangaSection
-                        title="Latest Updates"
-                        subtitle="Fresh chapters just dropped"
-                        icon={<Clock className="w-5 h-5 text-manga-accent" />}
-                        viewAllLink="/manga/browse"
-                    >
-                        <MangaCarousel
-                            manga={latestManga}
-                            loading={loading}
-                        />
-                    </MangaSection>
+                    {(loading || latestManga.length > 0) && (
+                        <MangaSection
+                            title="Latest Updates"
+                            subtitle="Fresh chapters just dropped"
+                            icon={<Clock className="w-5 h-5 text-manga-accent" />}
+                            viewAllLink="/manga/browse"
+                        >
+                            <MangaCarousel
+                                manga={latestManga}
+                                loading={loading}
+                            />
+                        </MangaSection>
+                    )}
 
                     {/* Recently Added */}
-                    <MangaSection
-                        title="New Arrivals"
-                        subtitle="Recently added to our library"
-                        icon={<Sparkles className="w-5 h-5 text-manga-neon-cyan" />}
-                        viewAllLink="/manga/browse"
-                    >
-                        <MangaGrid
-                            manga={recentManga}
-                            loading={loading}
-                            columns={5}
-                        />
-                    </MangaSection>
+                    {(loading || recentManga.length > 0) && (
+                        <MangaSection
+                            title="New Arrivals"
+                            subtitle="Recently added to our library"
+                            icon={<Sparkles className="w-5 h-5 text-manga-neon-cyan" />}
+                            viewAllLink="/manga/browse"
+                        >
+                            <MangaGrid
+                                manga={recentManga}
+                                loading={loading}
+                                columns={5}
+                            />
+                        </MangaSection>
+                    )}
 
                     {/* Stats Banner with Cyberpunk Styling */}
                     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-manga-primary/10 via-manga-secondary/10 to-manga-accent/10 border border-manga-primary/20 p-8 my-12">
