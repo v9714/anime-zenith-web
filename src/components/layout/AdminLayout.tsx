@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook, Settings2, BookOpen } from "lucide-react";
+import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook, Settings2, BookOpen, FileText } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface AdminLayoutProps {
@@ -110,6 +110,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     >
                       <BookOpen className={`h-5 w-5 transition-colors ${(currentPath === "/admin/manga" || currentPath.startsWith("/admin/manga/")) ? "text-primary" : "text-sidebar-foreground"}`} />
                       <span className={`transition-colors ${(currentPath === "/admin/manga" || currentPath.startsWith("/admin/manga/")) ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Manga</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <Link to="/admin/logs">
+                    <SidebarMenuButton
+                      isActive={currentPath === "/admin/logs"}
+                      className={`hover:bg-sidebar-accent/40 transition-all duration-200 ${currentPath === "/admin/logs" ? "bg-gradient-to-r from-primary/20 to-secondary/20 border-l-4 border-primary shadow-lg" : ""}`}
+                    >
+                      <FileText className={`h-5 w-5 transition-colors ${currentPath === "/admin/logs" ? "text-primary" : "text-sidebar-foreground"}`} />
+                      <span className={`transition-colors ${currentPath === "/admin/logs" ? "text-sidebar-primary-foreground font-semibold" : "text-sidebar-foreground"}`}>Logs</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
