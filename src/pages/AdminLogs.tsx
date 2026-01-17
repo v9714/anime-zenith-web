@@ -19,13 +19,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { logsService, LogFile, HealthMetric } from "@/services/logsService";
-import { 
-  FileText, 
-  Eye, 
-  Trash2, 
-  RefreshCw, 
-  X, 
-  AlertTriangle, 
+import {
+  FileText,
+  Eye,
+  Trash2,
+  RefreshCw,
+  X,
+  AlertTriangle,
   Activity,
   Server
 } from "lucide-react";
@@ -54,17 +54,27 @@ export default function AdminLogs() {
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<"server" | "health">("server");
+  const [selectedService, setSelectedService] = useState<string>("all");
   const { toast } = useToast();
 
-  const serverLogs = useMemo(() => 
-    logFiles.filter((f) => f.type === "LOG"), 
+  const serverLogs = useMemo(() =>
+    logFiles.filter((f) => f.type === "LOG"),
     [logFiles]
   );
-  
-  const healthFiles = useMemo(() => 
-    logFiles.filter((f) => f.type === "METRIC"), 
+
+  const healthFiles = useMemo(() =>
+    logFiles.filter((f) => f.type === "METRIC"),
     [logFiles]
   );
+
+  const availableServices = useMemo(() => {
+    return Array.from(new Set(healthMetrics.map(m => m.service))).sort();
+  }, [healthMetrics]);
+
+  const filteredMetrics = useMemo(() => {
+    if (selectedService === "all") return healthMetrics;
+    return healthMetrics.filter(m => m.service === selectedService);
+  }, [healthMetrics, selectedService]);
 
   const fetchLogFiles = async () => {
     setLoading(true);
@@ -93,12 +103,12 @@ export default function AdminLogs() {
     setContentLoading(true);
     setLogContent("");
     setHealthMetrics([]);
-    
+
     try {
       const response = await logsService.getLogContent(filename);
       if (response.success) {
         setIsTruncated(response.data.truncated);
-        
+
         if (type === "METRIC") {
           const metrics = logsService.parseHealthMetrics(response.data.content);
           setHealthMetrics(metrics);
@@ -125,7 +135,7 @@ export default function AdminLogs() {
 
   const handleDeleteConfirm = async () => {
     if (!fileToDelete) return;
-    
+
     setDeleting(true);
     try {
       const response = await logsService.deleteLogFile(fileToDelete);
@@ -179,11 +189,10 @@ export default function AdminLogs() {
 
   const FileListItem = ({ file }: { file: LogFile }) => (
     <div
-      className={`p-3 rounded-lg border transition-colors ${
-        selectedFile === file.name
-          ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/50"
-      }`}
+      className={`p-3 rounded-lg border transition-colors ${selectedFile === file.name
+        ? "border-primary bg-primary/5"
+        : "border-border hover:border-primary/50"
+        }`}
     >
       <div className="flex items-center justify-between">
         <div className="min-w-0 flex-1">
@@ -367,56 +376,85 @@ export default function AdminLogs() {
                       </div>
                     ) : (
                       <>
+                        {/* Service Filter */}
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm font-medium">Service:</label>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant={selectedService === "all" ? "default" : "outline"}
+                              onClick={() => setSelectedService("all")}
+                            >
+                              All
+                            </Button>
+                            {availableServices.map(service => (
+                              <Button
+                                key={service}
+                                size="sm"
+                                variant={selectedService === service ? "default" : "outline"}
+                                onClick={() => setSelectedService(service)}
+                              >
+                                {service}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+
                         {/* Memory Usage Chart */}
                         <div>
-                          <h3 className="text-sm font-medium mb-3">Memory Usage (MB)</h3>
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-medium">Memory Usage (MB)</h3>
+                            <Badge variant="outline">
+                              {selectedService === "all" ? "Combined View" : selectedService}
+                            </Badge>
+                          </div>
                           <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={healthMetrics}>
+                            <LineChart data={filteredMetrics}>
                               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                              <XAxis 
-                                dataKey="timestamp" 
+                              <XAxis
+                                dataKey="timestamp"
                                 tickFormatter={formatChartTime}
                                 tick={{ fontSize: 11 }}
                                 interval="preserveStartEnd"
                               />
                               <YAxis tick={{ fontSize: 11 }} />
-                              <Tooltip 
+                              <Tooltip
                                 labelFormatter={(label) => formatDate(label as string)}
-                                contentStyle={{ 
+                                contentStyle={{
                                   backgroundColor: 'hsl(var(--card))',
                                   border: '1px solid hsl(var(--border))',
                                   borderRadius: '8px'
                                 }}
                               />
                               <Legend />
-                              <Line 
-                                type="monotone" 
-                                dataKey="heapUsed" 
-                                stroke="hsl(var(--primary))" 
+                              <Line
+                                type="monotone"
+                                dataKey="heapUsed"
+                                stroke="hsl(var(--primary))"
                                 name="Heap Used"
                                 dot={false}
                                 strokeWidth={2}
                               />
-                              <Line 
-                                type="monotone" 
-                                dataKey="heapTotal" 
-                                stroke="hsl(var(--chart-2))" 
+                              <Line
+                                type="monotone"
+                                dataKey="heapTotal"
+                                stroke="hsl(var(--chart-2))"
                                 name="Heap Total"
                                 dot={false}
                                 strokeWidth={2}
                               />
-                              <Line 
-                                type="monotone" 
-                                dataKey="rss" 
-                                stroke="hsl(var(--chart-3))" 
+                              <Line
+                                type="monotone"
+                                dataKey="rss"
+                                stroke="hsl(var(--chart-3))"
                                 name="RSS"
                                 dot={false}
                                 strokeWidth={2}
                               />
-                              <Line 
-                                type="monotone" 
-                                dataKey="external" 
-                                stroke="hsl(var(--chart-4))" 
+                              <Line
+                                type="monotone"
+                                dataKey="external"
+                                stroke="hsl(var(--chart-4))"
                                 name="External"
                                 dot={false}
                                 strokeWidth={2}
@@ -430,23 +468,23 @@ export default function AdminLogs() {
                           <div className="p-4 rounded-lg bg-muted/50 border">
                             <p className="text-xs text-muted-foreground">Latest Heap Used</p>
                             <p className="text-2xl font-bold">
-                              {healthMetrics[healthMetrics.length - 1]?.heapUsed || 0} MB
+                              {filteredMetrics[filteredMetrics.length - 1]?.heapUsed || 0} MB
                             </p>
                           </div>
                           <div className="p-4 rounded-lg bg-muted/50 border">
                             <p className="text-xs text-muted-foreground">Latest RSS</p>
                             <p className="text-2xl font-bold">
-                              {healthMetrics[healthMetrics.length - 1]?.rss || 0} MB
+                              {filteredMetrics[filteredMetrics.length - 1]?.rss || 0} MB
                             </p>
                           </div>
                           <div className="p-4 rounded-lg bg-muted/50 border">
                             <p className="text-xs text-muted-foreground">Data Points</p>
-                            <p className="text-2xl font-bold">{healthMetrics.length}</p>
+                            <p className="text-2xl font-bold">{filteredMetrics.length}</p>
                           </div>
                           <div className="p-4 rounded-lg bg-muted/50 border">
                             <p className="text-xs text-muted-foreground">Services</p>
                             <p className="text-2xl font-bold">
-                              {new Set(healthMetrics.map(m => m.service)).size}
+                              {new Set(filteredMetrics.map(m => m.service)).size}
                             </p>
                           </div>
                         </div>
@@ -466,7 +504,7 @@ export default function AdminLogs() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {healthMetrics.slice(-20).reverse().map((metric, i) => (
+                                  {filteredMetrics.slice(-20).reverse().map((metric, i) => (
                                     <tr key={i} className="border-b last:border-0">
                                       <td className="py-2">{formatDate(metric.timestamp)}</td>
                                       <td className="py-2">
