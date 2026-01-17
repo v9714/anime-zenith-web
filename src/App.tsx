@@ -34,6 +34,7 @@ import AdminEpisodes from "./pages/AdminEpisodes";
 import AdminUsers from "./pages/AdminUsers";
 import AdminGenres from "./pages/AdminGenres";
 import AdminOptions from "./pages/AdminOptions";
+import AdminLogs from "./pages/AdminLogs";
 
 // manga pages
 import MangaHome from "./pages/MangaHome";
@@ -145,6 +146,7 @@ const App = () => {
                       <Route path="/admin/users" element={<AdminUsers />} />
                       <Route path="/admin/genres" element={<AdminGenres />} />
                       <Route path="/admin/options" element={<AdminOptions />} />
+                      <Route path="/admin/logs" element={<AdminLogs />} />
                       <Route path="/admin/manga" element={<AdminManga />} />
                       <Route path="/admin/manga/:mangaId/chapters" element={<AdminChapters />} />
 
