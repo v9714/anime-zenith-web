@@ -34,6 +34,8 @@ export interface DeleteLogResponse {
 export interface HealthMetric {
   timestamp: string;
   service: string;
+  uptime: number;
+  activeHandles: number;
   heapUsed: number;
   heapTotal: number;
   rss: number;
@@ -59,7 +61,7 @@ export const logsService = {
   parseHealthMetrics: (content: string): HealthMetric[] => {
     const lines = content.trim().split('\n').filter(line => line.trim());
     const metrics: HealthMetric[] = [];
-    
+
     for (const line of lines) {
       try {
         const metric = JSON.parse(line) as HealthMetric;
@@ -68,7 +70,7 @@ export const logsService = {
         // Skip invalid lines
       }
     }
-    
+
     return metrics;
   },
 };

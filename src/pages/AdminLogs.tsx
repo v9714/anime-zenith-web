@@ -180,6 +180,18 @@ export default function AdminLogs() {
     }
   };
 
+  const formatUptime = (seconds: number) => {
+    const d = Math.floor(seconds / (3600 * 24));
+    const h = Math.floor(seconds % (3600 * 24) / 3600);
+    const m = Math.floor(seconds % 3600 / 60);
+
+    const parts = [];
+    if (d > 0) parts.push(`${d}d`);
+    if (h > 0) parts.push(`${h}h`);
+    if (m > 0 || parts.length === 0) parts.push(`${m}m`);
+    return parts.join(' ');
+  };
+
   const clearViewer = () => {
     setSelectedFile(null);
     setSelectedFileType(null);
@@ -466,7 +478,19 @@ export default function AdminLogs() {
                         {/* Summary Stats */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="p-4 rounded-lg bg-muted/50 border">
-                            <p className="text-xs text-muted-foreground">Latest Heap Used</p>
+                            <p className="text-xs text-muted-foreground">Service Uptime</p>
+                            <p className="text-2xl font-bold text-primary">
+                              {formatUptime(filteredMetrics[filteredMetrics.length - 1]?.uptime || 0)}
+                            </p>
+                          </div>
+                          <div className="p-4 rounded-lg bg-muted/50 border">
+                            <p className="text-xs text-muted-foreground">Active Handles</p>
+                            <p className="text-2xl font-bold">
+                              {filteredMetrics[filteredMetrics.length - 1]?.activeHandles || 0}
+                            </p>
+                          </div>
+                          <div className="p-4 rounded-lg bg-muted/50 border">
+                            <p className="text-xs text-muted-foreground">Latest Heap</p>
                             <p className="text-2xl font-bold">
                               {filteredMetrics[filteredMetrics.length - 1]?.heapUsed || 0} MB
                             </p>
@@ -475,16 +499,6 @@ export default function AdminLogs() {
                             <p className="text-xs text-muted-foreground">Latest RSS</p>
                             <p className="text-2xl font-bold">
                               {filteredMetrics[filteredMetrics.length - 1]?.rss || 0} MB
-                            </p>
-                          </div>
-                          <div className="p-4 rounded-lg bg-muted/50 border">
-                            <p className="text-xs text-muted-foreground">Data Points</p>
-                            <p className="text-2xl font-bold">{filteredMetrics.length}</p>
-                          </div>
-                          <div className="p-4 rounded-lg bg-muted/50 border">
-                            <p className="text-xs text-muted-foreground">Services</p>
-                            <p className="text-2xl font-bold">
-                              {new Set(filteredMetrics.map(m => m.service)).size}
                             </p>
                           </div>
                         </div>
@@ -499,19 +513,23 @@ export default function AdminLogs() {
                                   <tr className="border-b">
                                     <th className="text-left py-2 font-medium">Timestamp</th>
                                     <th className="text-left py-2 font-medium">Service</th>
+                                    <th className="text-left py-2 font-medium">Uptime</th>
+                                    <th className="text-center py-2 font-medium">Handles</th>
                                     <th className="text-right py-2 font-medium">Heap</th>
                                     <th className="text-right py-2 font-medium">RSS</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {filteredMetrics.slice(-20).reverse().map((metric, i) => (
-                                    <tr key={i} className="border-b last:border-0">
+                                    <tr key={i} className="border-b last:border-0 hover:bg-muted/30">
                                       <td className="py-2">{formatDate(metric.timestamp)}</td>
                                       <td className="py-2">
                                         <Badge variant="outline" className="text-xs">
                                           {metric.service}
                                         </Badge>
                                       </td>
+                                      <td className="py-2 font-mono text-primary">{formatUptime(metric.uptime)}</td>
+                                      <td className="text-center py-2">{metric.activeHandles}</td>
                                       <td className="text-right py-2">{metric.heapUsed} MB</td>
                                       <td className="text-right py-2">{metric.rss} MB</td>
                                     </tr>
