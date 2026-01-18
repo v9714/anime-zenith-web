@@ -156,8 +156,8 @@ export interface StreamResponse {
   success: boolean;
 }
 
-export const getEpisodeStream = async (episodeId: number | string): Promise<StreamResponse> => {
-  const response = await contentApi.get(`/api/episode/${episodeId}/stream`);
+export const getEpisodeStream = async (episodeId: number | string, locale = "sub"): Promise<StreamResponse> => {
+  const response = await contentApi.get(`/api/episode/${episodeId}/stream`, { params: { locale } });
   return response.data;
 };
 

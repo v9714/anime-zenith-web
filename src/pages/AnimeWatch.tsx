@@ -65,6 +65,7 @@ export default function AnimeWatch() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isEpisodeReady, setIsEpisodeReady] = useState(false);
   const [streamLoading, setStreamLoading] = useState(false);
+  const [streamSource, setStreamSource] = useState<"local" | "external">("external");
 
   // Pause background music when entering watch page
   useEffect(() => {
@@ -137,7 +138,9 @@ export default function AnimeWatch() {
   }, [episodes, episodeNumber, currentUser]);
 
 
-  // Fetch Stream URL when active episode changes
+  const [subOrDub, setSubOrDub] = useState<"sub" | "dub">("sub");
+
+  // Fetch Stream URL when active episode changes or sub/dub preference changes
   useEffect(() => {
     const fetchStream = async () => {
       if (!episodes.length || !isEpisodeReady) return;
@@ -153,10 +156,11 @@ export default function AnimeWatch() {
 
       setStreamLoading(true);
       try {
-        // Fetch dynamic stream URL (local or external)
-        const response = await getEpisodeStream(episode.id);
+        // Fetch dynamic stream URL (local or external) with locale
+        const response = await getEpisodeStream(episode.id, subOrDub);
 
         if (response.success && response.data.url) {
+          setStreamSource(response.data.source);
           let finalUrl = response.data.url;
           // If local and doesn't have full URL prefix, add it (or if it's external, keep as is)
           if (response.data.source === "local" && !finalUrl.startsWith("http")) {
@@ -198,7 +202,7 @@ export default function AnimeWatch() {
     };
 
     fetchStream();
-  }, [activeEpisode, isEpisodeReady, episodes, currentUser]);
+  }, [activeEpisode, isEpisodeReady, episodes, currentUser, subOrDub]);
 
   // Get current episode data
   const getCurrentEpisode = () => {
@@ -481,6 +485,26 @@ export default function AnimeWatch() {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {streamSource === 'external' && (
+                      <div className="flex items-center bg-muted rounded-md p-1 mr-2">
+                        <Button
+                          variant={subOrDub === "sub" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setSubOrDub("sub")}
+                          className="h-7 px-3 text-xs"
+                        >
+                          SUB
+                        </Button>
+                        <Button
+                          variant={subOrDub === "dub" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setSubOrDub("dub")}
+                          className="h-7 px-3 text-xs"
+                        >
+                          DUB
+                        </Button>
+                      </div>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
