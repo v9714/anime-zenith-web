@@ -6,7 +6,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://otakutv.in/</loc>
-    <lastmod>2025-01-21</lastmod>
+    <lastmod>2026-01-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -14,7 +14,7 @@
   <!-- Anime List -->
   <url>
     <loc>https://otakutv.in/anime</loc>
-    <lastmod>2025-01-21</lastmod>
+    <lastmod>2026-01-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -22,15 +22,31 @@
   <!-- Latest Episodes -->
   <url>
     <loc>https://otakutv.in/episodes</loc>
-    <lastmod>2025-01-21</lastmod>
+    <lastmod>2026-01-31</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
+  </url>
+  
+  <!-- Manga Home -->
+  <url>
+    <loc>https://otakutv.in/manga</loc>
+    <lastmod>2026-01-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Browse Manga -->
+  <url>
+    <loc>https://otakutv.in/manga/browse</loc>
+    <lastmod>2026-01-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
   
   <!-- Search Page -->
   <url>
     <loc>https://otakutv.in/search</loc>
-    <lastmod>2025-01-21</lastmod>
+    <lastmod>2026-01-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -38,17 +54,9 @@
   <!-- Contact Page -->
   <url>
     <loc>https://otakutv.in/contact</loc>
-    <lastmod>2025-01-21</lastmod>
+    <lastmod>2026-01-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-  </url>
-  
-  <!-- User Profile -->
-  <url>
-    <loc>https://otakutv.in/profile</loc>
-    <lastmod>2025-01-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
   </url>
 
 </urlset>

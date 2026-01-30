@@ -32,7 +32,7 @@ export function SEO({
   noIndex = false
 }: SEOProps) {
   const location = useLocation();
-  
+
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Your Ultimate Anime Streaming Platform`;
   const pageUrl = canonical || `${SITE_URL}${location.pathname}${location.search}`;
   const imageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
@@ -45,7 +45,7 @@ export function SEO({
     const updateMetaTag = (property: string, content: string, isProperty = false) => {
       const attribute = isProperty ? 'property' : 'name';
       let element = document.querySelector(`meta[${attribute}="${property}"]`) as HTMLMetaElement;
-      
+
       if (!element) {
         element = document.createElement('meta');
         element.setAttribute(attribute, property);
@@ -206,6 +206,56 @@ export function VideoSchema({
     "uploadDate": uploadDate,
     ...(duration && { "duration": duration }),
     ...(contentUrl && { "contentUrl": contentUrl })
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+export function MangaSchema({
+  name,
+  description,
+  author,
+  image,
+  url,
+  genres,
+  rating,
+  datePublished,
+  dateModified
+}: {
+  name: string;
+  description: string;
+  author?: string;
+  image: string;
+  url: string;
+  genres?: string[];
+  rating?: number;
+  datePublished?: string;
+  dateModified?: string;
+}) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": name,
+    "description": description,
+    "image": image,
+    "url": url,
+    ...(author && { "author": { "@type": "Person", "name": author } }),
+    ...(genres && genres.length > 0 && { "genre": genres }),
+    ...(rating && {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": rating,
+        "bestRating": 10,
+        "worstRating": 0
+      }
+    }),
+    ...(datePublished && { "datePublished": datePublished }),
+    ...(dateModified && { "dateModified": dateModified })
   };
 
   return (

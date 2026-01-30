@@ -9,6 +9,7 @@ import { Search, BookOpen, Sparkles, TrendingUp, Clock, Filter, X, SlidersHorizo
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MangaPagination } from "@/components/admin/MangaPagination";
+import { SEO } from "@/components/SEO";
 import {
     Select,
     SelectContent,
@@ -157,7 +158,15 @@ const MangaList = () => {
 
     return (
         <div className="min-h-screen bg-manga-dark text-foreground pb-12">
-            {/* Cyberpunk Hero Section */}
+            {/* SEO Meta Tags */}
+            <SEO
+                title={genreFilter !== "all"
+                    ? `${genreFilter.charAt(0).toUpperCase() + genreFilter.slice(1)} Manga - Browse Free Online`
+                    : "Browse Manga - Read Free Online"
+                }
+                description={`Discover and read thousands of manga titles for free. ${genreFilter !== "all" ? `Browse ${genreFilter} manga. ` : ''}Filter by genre, status, and more. High quality manga reading experience.`}
+                keywords={`browse manga, manga list, read manga, ${genreFilter !== "all" ? genreFilter + ' manga, ' : ''}manga online, free manga`}
+            />
             <div className="relative h-[320px] w-full overflow-hidden">
                 {/* Animated Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-manga-dark via-manga-glass to-manga-dark" />

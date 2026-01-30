@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout/Layout";
+import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -292,6 +293,11 @@ export default function UserProfile() {
 
   return (
     <Layout>
+      <SEO
+        title="Your Profile - OtakuTV"
+        description="Manage your OtakuTV profile, watch history, liked content and settings."
+        noIndex={true}
+      />
       <div className="container py-8">
         <div className="max-w-4xl mx-auto">
           {/* User Header */}

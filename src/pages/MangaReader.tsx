@@ -22,6 +22,7 @@ import { Slider } from "@/components/ui/slider";
 import PdfViewer from "@/components/manga/PdfViewer";
 import ChapterImagesViewer from "@/components/manga/ChapterImagesViewer";
 import { useAuth } from "@/contexts/AuthContext";
+import { SEO, BreadcrumbSchema } from "@/components/SEO";
 
 type ReadingMode = 'default' | 'night' | 'sepia' | 'paper' | 'contrast';
 
@@ -252,6 +253,25 @@ const MangaReader = () => {
             className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${currentModeConfig.bgClass}`}
             onMouseMove={handleMouseMove}
         >
+            {/* SEO Meta Tags - noIndex for reader pages */}
+            <SEO
+                title={`${manga?.title || 'Manga'} Chapter ${chapter.chapterNumber}${chapter.title ? ` - ${chapter.title}` : ''} - Read Online`}
+                description={`Read ${manga?.title || 'manga'} Chapter ${chapter.chapterNumber} online for free. High quality manga reading experience on OtakuTV.`}
+                keywords={`${manga?.title || ''}, chapter ${chapter.chapterNumber}, read manga, manga online`}
+                noIndex={true}
+            />
+
+            {/* Breadcrumb for navigation context */}
+            {manga && (
+                <BreadcrumbSchema
+                    items={[
+                        { name: 'Home', url: 'https://otakutv.in' },
+                        { name: 'Manga', url: 'https://otakutv.in/manga' },
+                        { name: manga.title, url: `https://otakutv.in/manga/${manga.id}` },
+                        { name: `Chapter ${chapter.chapterNumber}`, url: `https://otakutv.in/read/${manga.id}/chapter/${chapter.id}` }
+                    ]}
+                />
+            )}
             {/* Top Navigation - Floating Toolbar */}
             <div className={`
                 fixed top-0 left-0 right-0 z-30 transition-all duration-300

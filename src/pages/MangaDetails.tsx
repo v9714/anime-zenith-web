@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, User, Star, ChevronRight, Play, Sparkles, Eye, Clock, ArrowLeft, Heart, Bookmark, Share2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { SEO, MangaSchema, BreadcrumbSchema } from "@/components/SEO";
 
 const MangaDetailsPage = () => {
     const { id } = useParams();
@@ -118,8 +119,47 @@ const MangaDetailsPage = () => {
     const lastReadChapter = progress?.chapter?.chapterNumber || 0;
     const firstChapterId = manga.chapters.length > 0 ? manga.chapters[0].id : null;
 
+    // SEO data preparation
+    const seoDescription = manga.description
+        ? manga.description.slice(0, 160).replace(/\s+/g, ' ').trim() + (manga.description.length > 160 ? '...' : '')
+        : `Read ${manga.title} manga online for free. High quality manga reading experience on OtakuTV.`;
+
+    const genreNames = manga.genres?.map(mg => mg.genre.name) || [];
+    const coverImageUrl = getImageUrl(manga.coverImage);
+    const pageUrl = `https://otakutv.in/manga/${manga.id}`;
+
     return (
         <div className="min-h-screen bg-manga-dark">
+            {/* SEO Meta Tags */}
+            <SEO
+                title={`${manga.title} - Read Free Manga Online`}
+                description={seoDescription}
+                image={coverImageUrl}
+                type="article"
+                keywords={`${manga.title}, ${genreNames.join(', ')}, manga, read manga, manga online`}
+                author={manga.author || undefined}
+                modifiedTime={manga.updatedAt}
+            />
+
+            {/* Structured Data */}
+            <MangaSchema
+                name={manga.title}
+                description={seoDescription}
+                author={manga.author || undefined}
+                image={coverImageUrl}
+                url={pageUrl}
+                genres={genreNames}
+                rating={manga.rating ? parseFloat(manga.rating) : undefined}
+                dateModified={manga.updatedAt}
+            />
+
+            <BreadcrumbSchema
+                items={[
+                    { name: 'Home', url: 'https://otakutv.in' },
+                    { name: 'Manga', url: 'https://otakutv.in/manga' },
+                    { name: manga.title, url: pageUrl }
+                ]}
+            />
             {/* Cinematic Banner Section */}
             <div className="relative h-[500px] w-full overflow-hidden">
                 {/* Banner Image */}
