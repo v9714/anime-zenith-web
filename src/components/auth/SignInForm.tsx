@@ -128,13 +128,13 @@ export function SignInForm({ onSuccess, switchToSignUp, switchToForgotPassword, 
           </Button>
 
           <div className="flex justify-between text-sm">
-            <button
+            {/* <button
               type="button"
               className="text-primary hover:underline text-sm"
               onClick={() => fillDemoCredentials("user")}
             >
               Try Demo User
-            </button>
+            </button> */}
             {/* <button
               type="button"
               className="text-primary hover:underline text-sm"
