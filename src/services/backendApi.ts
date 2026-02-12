@@ -92,7 +92,7 @@ const attachInterceptors = (instance: AxiosInstance, requiresAuth: boolean = tru
           // IMPORTANT: Root refresh MUST happen via Auth Service (Port 8000)
           const refreshResponse = await axios.post(
             `${AUTH_API_URL}/auth/refresh-token`,
-            {},
+            { refreshToken: getToken(STORAGE_KEYS.REFRESH_TOKEN) },
             {
               withCredentials: true,
               headers: { 'Content-Type': 'application/json' }
