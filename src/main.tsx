@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
+import ReactGA from "react-ga4";
 import App from './App.tsx';
 import './index.css';
 import { optimizeLCPImages } from './lib/image-optimizer';
@@ -24,6 +25,9 @@ const handleError = (event: ErrorEvent | PromiseRejectionEvent) => {
 // Register global error handlers
 window.addEventListener('error', handleError);
 window.addEventListener('unhandledrejection', handleError);
+
+// Initialize GA4 (Replace with your Measurement ID)
+ReactGA.initialize("G-XXXXXXXXXX");
 
 // Optimize LCP images when available
 optimizeLCPImages();

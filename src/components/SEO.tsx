@@ -9,6 +9,8 @@ interface SEOProps {
   url?: string;
   type?: string;
   schema?: any; // JSON-LD structured data
+  author?: string;
+  modifiedTime?: string;
 }
 
 const SEO: React.FC<SEOProps> = ({
@@ -19,6 +21,8 @@ const SEO: React.FC<SEOProps> = ({
   url = 'https://otakutv.in',
   type = 'website',
   schema,
+  author,
+  modifiedTime,
 }) => {
   const siteTitle = title ? `${title} | OtakuTV` : 'OtakuTV - Watch Anime Online | Stream HD Anime Episodes & Movies';
   const siteDescription = description || 'Watch thousands of anime series and movies in HD quality. Stream the latest episodes and enjoy the best anime streaming experience on OtakuTV.';
@@ -41,6 +45,8 @@ const SEO: React.FC<SEOProps> = ({
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:type" content={type} />
       <meta property="og:site_name" content="OtakuTV" />
+      {author && <meta name="author" content={author} />}
+      {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -151,6 +157,47 @@ export const MangaSchema = ({ name, description, author, image, url, genres, rat
           "ratingCount": "100"
         } : undefined,
         "dateModified": dateModified
+      })}
+    </script>
+  </Helmet>
+);
+
+export const TVSeriesSchema = ({ name, description, image, genre, seasonsCount }: { name: string; description: string; image: string; genre?: string; seasonsCount?: number }) => (
+  <Helmet>
+    <script type="application/ld+json">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "TVSeries",
+        "name": name,
+        "description": description,
+        "image": image,
+        "genre": genre,
+        "numberOfSeasons": seasonsCount || 1,
+        "publisher": {
+          "@type": "Organization",
+          "name": "OtakuTV"
+        }
+      })}
+    </script>
+  </Helmet>
+);
+
+export const EpisodeSchema = ({ animeName, episodeName, episodeNumber, description, thumbnailUrl, uploadDate, duration }: { animeName: string; episodeName: string; episodeNumber: number; description: string; thumbnailUrl: string; uploadDate: string; duration?: string }) => (
+  <Helmet>
+    <script type="application/ld+json">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "TVEpisode",
+        "name": episodeName,
+        "partOfSeries": {
+          "@type": "TVSeries",
+          "name": animeName
+        },
+        "episodeNumber": episodeNumber,
+        "description": description,
+        "image": thumbnailUrl,
+        "datePublished": uploadDate,
+        "timeRequired": duration
       })}
     </script>
   </Helmet>

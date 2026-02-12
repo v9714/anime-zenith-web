@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { getImageUrl } from "@/utils/commanFunction";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 interface AnimeCardProps {
   anime: Anime;
@@ -19,11 +20,10 @@ export function AnimeCard({ anime, className = "", showDescription = false }: An
     <Card className={`overflow-hidden group transition-all hover:shadow-md ${className}`}>
       <div className="relative overflow-hidden">
         <AspectRatio ratio={3 / 4}>
-          <img
+          <SmartImage
             src={getImageUrl(anime?.coverImage)}
             alt={anime.titleEng || anime.title}
             className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
             <Button asChild variant="secondary" size="sm" className="rounded-full bg-primary/90 text-primary-foreground">

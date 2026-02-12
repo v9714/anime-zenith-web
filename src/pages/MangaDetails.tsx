@@ -10,6 +10,7 @@ import { BookOpen, Calendar, User, Star, ChevronRight, Play, Sparkles, Eye, Cloc
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SEO, MangaSchema, BreadcrumbSchema } from "@/components/SEO";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 const MangaDetailsPage = () => {
     const { id } = useParams();
@@ -163,7 +164,7 @@ const MangaDetailsPage = () => {
             {/* Cinematic Banner Section */}
             <div className="relative h-[500px] w-full overflow-hidden">
                 {/* Banner Image */}
-                <img
+                <SmartImage
                     src={getImageUrl(manga.bannerImage || manga.coverImage)}
                     alt={manga.title}
                     className="w-full h-full object-cover scale-105"
@@ -197,7 +198,7 @@ const MangaDetailsPage = () => {
 
                             {/* Cover Container */}
                             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border-2 border-manga-neon-purple/30 shadow-2xl shadow-manga-neon-purple/20">
-                                <img
+                                <SmartImage
                                     src={getImageUrl(manga.coverImage)}
                                     alt={manga.title}
                                     className="w-full h-full object-cover"

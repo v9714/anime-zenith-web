@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MangaPagination } from "@/components/admin/MangaPagination";
 import { SEO, BreadcrumbSchema } from "@/components/SEO";
+import { SmartImage } from "@/components/ui/SmartImage";
 import {
     Select,
     SelectContent,
@@ -430,11 +431,10 @@ const MangaList = () => {
                                     <div className="relative backdrop-blur-sm bg-manga-glass/60 rounded-xl md:rounded-2xl overflow-hidden border border-manga-neon-purple/10 group-hover:border-transparent">
                                         {/* Cover Image */}
                                         <div className="relative aspect-[3/4] overflow-hidden">
-                                            <img
+                                            <SmartImage
                                                 src={getImageUrl(manga.coverImage)}
                                                 alt={manga.title}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                loading="lazy"
                                             />
 
                                             {/* Overlay Gradient */}

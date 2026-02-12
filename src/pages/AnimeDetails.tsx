@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { getAnimeById, getAnimeRecommendations, Anime } from "@/services/api";
 import { getImageUrl } from "@/utils/commanFunction";
+import { SmartImage } from "@/components/ui/SmartImage";
 import EpisodesTab from "@/components/anime/details/EpisodesTab";
 import CharactersTab from "@/components/anime/details/CharactersTab";
 import { generateWatchUrl } from "@/utils/urlEncoder";
@@ -157,7 +158,7 @@ export default function AnimeDetails() {
       {/* Background Banner */}
       <div className="relative w-full h-[300px] overflow-hidden mb-8">
         <div className="absolute inset-0">
-          <img
+          <SmartImage
             src={getImageUrl(anime.bannerImage || anime.coverImage)}
             alt={anime.title}
             className="w-full h-full object-cover"
@@ -173,7 +174,7 @@ export default function AnimeDetails() {
           <div className="w-full md:w-1/4 flex flex-col gap-6">
             {/* Poster */}
             <div>
-              <img
+              <SmartImage
                 src={getImageUrl(anime.coverImage || anime.bannerImage)}
                 alt={anime.title}
                 className="w-full max-w-[300px] md:max-w-full rounded-md shadow-lg mx-auto md:mx-0"
