@@ -73,6 +73,7 @@ export const DEFAULT_EPISODE_THUMBNAIL = "/src/assets/default-episode-thumbnail.
 export const ROUTES = {
   home: "/",
   anime: "/anime",
+  manga: "/manga",
   episodes: "/episodes",
   search: "/search",
   contact: "/contact"

@@ -50,6 +50,7 @@ export function Footer() {
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium">Explore</h3>
             <Link to="/anime" onClick={playButtonClick} className="text-sm text-muted-foreground hover:text-foreground">Anime List</Link>
+            <Link to="/manga" onClick={playButtonClick} className="text-sm text-muted-foreground hover:text-foreground">Manga List</Link>
             <Link to="/episodes" onClick={playButtonClick} className="text-sm text-muted-foreground hover:text-foreground">Latest Episodes</Link>
             <Link to="/genres" onClick={playButtonClick} className="text-sm text-muted-foreground hover:text-foreground">Genres</Link>
             <Link to="/seasonal" onClick={playButtonClick} className="text-sm text-muted-foreground hover:text-foreground">Seasonal</Link>
