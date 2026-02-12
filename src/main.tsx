@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App.tsx';
 import './index.css';
 import { optimizeLCPImages } from './lib/image-optimizer';
@@ -44,7 +45,9 @@ const initializeApp = () => {
     const root = createRoot(rootElement);
     root.render(
       <React.StrictMode>
-        <App />
+        <HelmetProvider>
+          <App />
+        </HelmetProvider>
       </React.StrictMode>
     );
   } catch (error) {

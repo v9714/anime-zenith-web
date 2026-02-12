@@ -11,45 +11,43 @@ import { AudioProvider } from "@/contexts/AudioContext";
 import { DevelopmentNotice } from "@/components/DevelopmentNotice";
 import { QUERY_CONFIG } from "@/utils/constants";
 
-// Import main pages directly for faster initial load
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import AnimeDetails from "./pages/AnimeDetails";
-import AnimeWatch from "./pages/AnimeWatch";
+// Lazy-load all pages for performance
+const Home = React.lazy(() => import("./pages/Home"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+const AnimeDetails = React.lazy(() => import("./pages/AnimeDetails"));
+const AnimeWatch = React.lazy(() => import("./pages/AnimeWatch"));
+const AnimeList = React.lazy(() => import("./pages/AnimeList"));
+const Episodes = React.lazy(() => import("./pages/Episodes"));
+const Search = React.lazy(() => import("./pages/Search"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const UserProfile = React.lazy(() => import("./pages/UserProfile"));
+const AudioSettings = React.lazy(() => import("./pages/AudioSettings"));
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = React.lazy(() => import("./pages/VerifyEmail"));
 
-// other pages
-import AnimeList from "./pages/AnimeList";
-import Episodes from "./pages/Episodes";
-import Search from "./pages/Search";
-import Contact from "./pages/Contact";
-import UserProfile from "./pages/UserProfile";
-import AudioSettings from "./pages/AudioSettings";
-import ResetPassword from "./pages/ResetPassword";
-import VerifyEmail from "./pages/VerifyEmail";
+// Admin lazy loads (grouped together)
+const AdminDashboard = React.lazy(() => import("./pages/Admin"));
+const AdminAnime = React.lazy(() => import("./pages/AdminAnime"));
+const AdminEpisodes = React.lazy(() => import("./pages/AdminEpisodes"));
+const AdminUsers = React.lazy(() => import("./pages/AdminUsers"));
+const AdminGenres = React.lazy(() => import("./pages/AdminGenres"));
+const AdminOptions = React.lazy(() => import("./pages/AdminOptions"));
+const AdminLogs = React.lazy(() => import("./pages/AdminLogs"));
 
-// admin pages
-import AdminDashboard from "./pages/Admin";
-import AdminAnime from "./pages/AdminAnime";
-import AdminEpisodes from "./pages/AdminEpisodes";
-import AdminUsers from "./pages/AdminUsers";
-import AdminGenres from "./pages/AdminGenres";
-import AdminOptions from "./pages/AdminOptions";
-import AdminLogs from "./pages/AdminLogs";
-
-// manga pages
-import MangaHome from "./pages/MangaHome";
-import MangaList from "./pages/MangaList";
-import MangaDetails from "./pages/MangaDetails";
-import MangaReader from "./pages/MangaReader";
-import AdminManga from "./pages/AdminManga";
-import AdminChapters from "./pages/AdminChapters";
+// Manga lazy loads
+const MangaHome = React.lazy(() => import("./pages/MangaHome"));
+const MangaList = React.lazy(() => import("./pages/MangaList"));
+const MangaDetails = React.lazy(() => import("./pages/MangaDetails"));
+const MangaReader = React.lazy(() => import("./pages/MangaReader"));
+const AdminManga = React.lazy(() => import("./pages/AdminManga"));
+const AdminChapters = React.lazy(() => import("./pages/AdminChapters"));
 
 // Loading component for Suspense
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-      <p className="mt-4 text-muted-foreground">Loading...</p>
+      <p className="mt-4 text-muted-foreground font-medium">Loading OtakuTV...</p>
     </div>
   </div>
 );

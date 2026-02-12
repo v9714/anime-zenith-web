@@ -9,7 +9,7 @@ import { Search, BookOpen, Sparkles, TrendingUp, Clock, Filter, X, SlidersHorizo
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MangaPagination } from "@/components/admin/MangaPagination";
-import { SEO } from "@/components/SEO";
+import { SEO, BreadcrumbSchema } from "@/components/SEO";
 import {
     Select,
     SelectContent,
@@ -166,6 +166,12 @@ const MangaList = () => {
                 }
                 description={`Discover and read thousands of manga titles for free. ${genreFilter !== "all" ? `Browse ${genreFilter} manga. ` : ''}Filter by genre, status, and more. High quality manga reading experience.`}
                 keywords={`browse manga, manga list, read manga, ${genreFilter !== "all" ? genreFilter + ' manga, ' : ''}manga online, free manga`}
+            />
+            <BreadcrumbSchema
+                items={[
+                    { name: 'Home', url: 'https://otakutv.in' },
+                    { name: 'Manga List', url: 'https://otakutv.in/manga/browse' }
+                ]}
             />
             <div className="relative h-[320px] w-full overflow-hidden">
                 {/* Animated Background */}
