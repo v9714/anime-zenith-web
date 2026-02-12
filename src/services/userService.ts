@@ -23,6 +23,7 @@ export interface AdminUser {
   email: string;
   isBlocked: boolean;
   canComment: boolean;
+  isAdmin: boolean;
   createdAt: string;
 }
 
@@ -36,6 +37,7 @@ export interface AdminUsersResponse {
 export interface UpdateUserRequest {
   isBlocked?: boolean;
   canComment?: boolean;
+  isAdmin?: boolean;
 }
 
 export interface UpdateUserResponse {
