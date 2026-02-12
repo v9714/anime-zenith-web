@@ -545,7 +545,12 @@ export default function AdminLogs() {
                 ) : (
                   <ScrollArea className="h-[500px] rounded-md border bg-muted/30">
                     <pre className="p-4 text-xs font-mono whitespace-pre-wrap break-all">
-                      {logContent || "No content available"}
+                      {logContent ? logContent.split('\n').map((line, i) => (
+                        <div key={i} className="flex gap-4 hover:bg-muted/50 transition-colors">
+                          <span className="shrink-0 text-muted-foreground/30 w-8 text-right select-none border-r pr-2">{i + 1}</span>
+                          <span className="flex-1 whitespace-pre-wrap">{line || ' '}</span>
+                        </div>
+                      )) : "No content available"}
                     </pre>
                   </ScrollArea>
                 )}
