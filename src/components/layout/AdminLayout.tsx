@@ -10,7 +10,8 @@ import {
   SidebarProvider,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  SidebarTrigger
 } from "@/components/ui/sidebar";
 import { Database, Film, ListChecks, LayoutDashboard, Users, Settings, Notebook, Settings2, BookOpen, FileText } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -150,7 +151,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </Sidebar>
           <div className="flex-1 flex flex-col min-w-0">
             <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm border-b">
-              <div className="flex h-14 items-center px-4">
+              <div className="flex h-14 items-center px-4 gap-2">
+                <SidebarTrigger className="md:hidden" />
                 <div className="flex-1 flex items-center justify-end gap-2 sm:gap-4">
                   <Link to="/" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                     Home
