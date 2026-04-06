@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { useAudio } from "@/contexts/AudioContext";
 import { SearchDropdown } from "./SearchDropdown";
 
+const isAnimeEnabled = import.meta.env.VITE_ANIME_ENABLED !== 'false';
+
 export function Header() {
   const { playButtonClick } = useAudio();
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,8 +49,10 @@ export function Header() {
 
   const menuItems = [
     { name: "Home", path: ROUTES.home, icon: Home },
-    { name: "Anime List", path: ROUTES.anime, icon: Film },
-    { name: "Latest Episodes", path: ROUTES.episodes, icon: Video },
+    ...(isAnimeEnabled ? [
+      { name: "Anime List", path: ROUTES.anime, icon: Film },
+      { name: "Latest Episodes", path: ROUTES.episodes, icon: Video },
+    ] : []),
     { name: "Manga", path: "/manga", icon: BookOpen },
     { name: "Contact", path: ROUTES.contact, icon: Mail },
   ];

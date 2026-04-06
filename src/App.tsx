@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/lib/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioProvider } from "@/contexts/AudioContext";
@@ -101,6 +101,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const isAnimeEnabled = import.meta.env.VITE_ANIME_ENABLED !== 'false';
+
 const App = () => {
   return (
     <ErrorBoundary>
@@ -118,11 +120,11 @@ const App = () => {
                   <React.Suspense fallback={<PageLoader />}>
                     <Routes>
                       {/* Main Routes */}
-                      <Route path="/" element={<Home />} />
-                      <Route path="/anime" element={<AnimeList />} />
-                      <Route path="/anime/:id" element={<AnimeDetails />} />
-                      <Route path="/watch/:encoded" element={<AnimeWatch />} />
-                      <Route path="/episodes" element={<Episodes />} />
+                      <Route path="/" element={isAnimeEnabled ? <Home /> : <Navigate to="/manga" replace />} />
+                      {isAnimeEnabled && <Route path="/anime" element={<AnimeList />} />}
+                      {isAnimeEnabled && <Route path="/anime/:id" element={<AnimeDetails />} />}
+                      {isAnimeEnabled && <Route path="/watch/:encoded" element={<AnimeWatch />} />}
+                      {isAnimeEnabled && <Route path="/episodes" element={<Episodes />} />}
                       <Route path="/search" element={<Search />} />
                       <Route path="/contact" element={<Contact />} />
                       <Route path="/profile" element={<UserProfile />} />
@@ -139,8 +141,8 @@ const App = () => {
 
                       {/* Admin Routes */}
                       <Route path="/admin" element={<AdminDashboard />} />
-                      <Route path="/admin/anime" element={<AdminAnime />} />
-                      <Route path="/admin/episodes" element={<AdminEpisodes />} />
+                      {isAnimeEnabled && <Route path="/admin/anime" element={<AdminAnime />} />}
+                      {isAnimeEnabled && <Route path="/admin/episodes" element={<AdminEpisodes />} />}
                       <Route path="/admin/users" element={<AdminUsers />} />
                       <Route path="/admin/genres" element={<AdminGenres />} />
                       <Route path="/admin/options" element={<AdminOptions />} />
