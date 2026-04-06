@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SEO, MangaSchema, BreadcrumbSchema } from "@/components/SEO";
 import { SmartImage } from "@/components/ui/SmartImage";
+import { Layout } from "@/components/layout/Layout";
 
 const MangaDetailsPage = () => {
     const { id } = useParams();
@@ -115,7 +116,7 @@ const MangaDetailsPage = () => {
     };
 
     if (loading) return <DetailsSkeleton />;
-    if (!manga) return <div className="text-center py-20 text-muted-foreground">Manga not found.</div>;
+    if (!manga) return <Layout><div className="text-center py-20 text-muted-foreground">Manga not found.</div></Layout>;
 
     const lastReadChapter = progress?.chapter?.chapterNumber || 0;
     const firstChapterId = manga.chapters.length > 0 ? manga.chapters[0].id : null;
@@ -130,6 +131,7 @@ const MangaDetailsPage = () => {
     const pageUrl = `https://otakutv.in/manga/${manga.id}`;
 
     return (
+        <Layout>
         <div className="min-h-screen bg-manga-dark">
             {/* SEO Meta Tags */}
             <SEO
@@ -455,6 +457,7 @@ const MangaDetailsPage = () => {
                 </div>
             </div>
         </div>
+        </Layout>
     );
 };
 

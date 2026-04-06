@@ -19,27 +19,14 @@ export default function MangaHome() {
         const fetchMangaData = async () => {
             try {
                 setLoading(true);
-                // Fetch different categories
-                // For now, we'll use the same API endpoint and split the data
-                // You can modify this to use different API endpoints when they're available
-                const [topResponse, popularResponse, latestResponse, recentResponse] = await Promise.all([
-                    mangaService.getAllManga(1, 5),
-                    mangaService.getAllManga(1, 20),
-                    mangaService.getAllManga(1, 20),
-                    mangaService.getAllManga(1, 15),
-                ]);
-
-                if (topResponse.success) {
-                    setTopManga(topResponse.data.data.slice(0, 5));
-                }
-                if (popularResponse.success) {
-                    setPopularManga(popularResponse.data.data);
-                }
-                if (latestResponse.success) {
-                    setLatestManga(latestResponse.data.data);
-                }
-                if (recentResponse.success) {
-                    setRecentManga(recentResponse.data.data);
+                // Single API call — data is reused across all sections
+                const response = await mangaService.getAllManga(1, 20);
+                if (response.success) {
+                    const data = response.data.data;
+                    setTopManga(data.slice(0, 5));
+                    setPopularManga(data);
+                    setLatestManga(data);
+                    setRecentManga(data.slice(0, 15));
                 }
             } catch (error) {
                 console.error('Error fetching manga data:', error);
