@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface MangaSectionProps {
@@ -24,42 +23,43 @@ export function MangaSection({
     className,
 }: MangaSectionProps) {
     return (
-        <section className={cn("py-8", className)}>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="space-y-1">
+        <section className={cn("py-6 md:py-8", className)}>
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-5">
+                <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-3">
                         {icon && (
-                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <div className="p-2 rounded-xl bg-manga-neon-purple/10 border border-manga-neon-purple/20">
                                 {icon}
                             </div>
                         )}
-                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-                            {title}
-                        </h2>
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+                                {title}
+                            </h2>
+                            {subtitle && (
+                                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                                    {subtitle}
+                                </p>
+                            )}
+                        </div>
                     </div>
-                    {subtitle && (
-                        <p className="text-muted-foreground text-sm md:text-base">
-                            {subtitle}
-                        </p>
-                    )}
                 </div>
 
                 {viewAllLink && (
-                    <Button
-                        asChild
-                        variant="ghost"
-                        className="group text-muted-foreground hover:text-foreground"
+                    <Link
+                        to={viewAllLink}
+                        className="group flex items-center gap-1 text-sm text-muted-foreground hover:text-manga-neon-pink transition-colors duration-200 flex-shrink-0 ml-4"
                     >
-                        <Link to={viewAllLink}>
-                            {viewAllText}
-                            <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    </Button>
+                        {viewAllText}
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                 )}
             </div>
 
-            {/* Content */}
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-r from-manga-neon-purple/40 via-manga-neon-pink/20 to-transparent mb-5" />
+
             {children}
         </section>
     );

@@ -2,15 +2,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { mangaService, Manga } from "@/services/mangaService";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
-import { MANGA_API_URL } from "@/utils/constants";
-import { getImageUrl as getSharedImageUrl } from "@/utils/commanFunction";
-import { Search, BookOpen, Sparkles, X, SlidersHorizontal } from "lucide-react";
+import { Search, Sparkles, X, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MangaPagination } from "@/components/admin/MangaPagination";
 import { SEO, BreadcrumbSchema } from "@/components/SEO";
-import { SmartImage } from "@/components/ui/SmartImage";
+import { MangaCard } from "@/components/manga/MangaCard";
 import { Layout } from "@/components/layout/Layout";
 import {
     Select,
@@ -132,19 +129,6 @@ const MangaList = () => {
     };
 
     const hasActiveFilters = searchTerm || statusFilter !== "all" || sortBy !== "latest" || genreFilter !== "all";
-
-    const getImageUrl = (path: string | null) => {
-        return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
-    };
-
-    const getStatusGradient = (status: string) => {
-        switch (status?.toLowerCase()) {
-            case 'ongoing': return 'from-manga-neon-purple to-manga-neon-pink';
-            case 'completed': return 'from-manga-neon-cyan to-manga-accent';
-            case 'hiatus': return 'from-amber-500 to-orange-500';
-            default: return 'from-manga-primary to-manga-secondary';
-        }
-    };
 
     return (
         <Layout>
@@ -374,7 +358,7 @@ const MangaList = () => {
                         )}
                     </div>
 
-                    {/* Manga Grid */}
+                    {/* Manga Grid — uses shared MangaCard for uniform heights */}
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20">
                             <div className="relative">
@@ -384,59 +368,15 @@ const MangaList = () => {
                             <p className="text-muted-foreground mt-6 animate-pulse">Loading manga universe...</p>
                         </div>
                     ) : mangas.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                             {mangas.map((manga, index) => (
-                                <Link
+                                <MangaCard
                                     key={manga.id}
-                                    to={`/manga/${manga.id}`}
-                                    className="group animate-fade-in"
-                                    style={{ animationDelay: `${index * 30}ms` }}
-                                >
-                                    <div className="relative overflow-hidden rounded-xl md:rounded-2xl transition-transform duration-300 ease-out group-hover:scale-[1.02]">
-                                        <div className="absolute -inset-[1px] rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan transition-opacity duration-300 blur-sm" />
-                                        <div className="relative backdrop-blur-sm bg-manga-glass/60 rounded-xl md:rounded-2xl overflow-hidden border border-manga-neon-purple/10 group-hover:border-transparent">
-                                            <div className="relative aspect-[3/4] overflow-hidden">
-                                                <SmartImage
-                                                    src={getImageUrl(manga.coverImage)}
-                                                    alt={manga.title}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-manga-dark via-manga-dark/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                                    <div className="px-3 py-1.5 md:px-4 md:py-2 bg-manga-neon-purple/90 backdrop-blur-sm rounded-full flex items-center gap-1.5 md:gap-2 text-white text-sm font-medium shadow-lg shadow-manga-neon-purple/30 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                                        <BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                                        Read Now
-                                                    </div>
-                                                </div>
-                                                {manga.status && (
-                                                    <Badge className={`
-                                                        absolute top-2 right-2 md:top-3 md:right-3
-                                                        bg-gradient-to-r ${getStatusGradient(manga.status)}
-                                                        text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 md:px-2.5 md:py-1
-                                                        border-none shadow-lg
-                                                    `}>
-                                                        {manga.status}
-                                                    </Badge>
-                                                )}
-                                                {manga.rating && parseFloat(manga.rating) > 0 && (
-                                                    <div className="absolute top-2 left-2 md:top-3 md:left-3 flex items-center gap-1 bg-manga-dark/80 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
-                                                        <span className="text-yellow-400 text-xs">★</span>
-                                                        <span className="text-white text-[10px] font-medium">{parseFloat(manga.rating).toFixed(1)}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="p-3 md:p-4 bg-gradient-to-t from-manga-dark to-manga-glass/80">
-                                                <h3 className="font-bold text-xs md:text-sm line-clamp-1 text-foreground group-hover:text-manga-neon-pink transition-colors duration-300">
-                                                    {manga.title}
-                                                </h3>
-                                                <p className="text-[10px] md:text-xs text-muted-foreground mt-1 line-clamp-1 flex items-center gap-1">
-                                                    <span className="w-1 h-1 rounded-full bg-manga-neon-purple" />
-                                                    {manga.author || "Unknown Author"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
+                                    manga={manga}
+                                    variant="default"
+                                    className="animate-fade-in"
+                                    style={{ animationDelay: `${index * 30}ms` } as React.CSSProperties}
+                                />
                             ))}
                         </div>
                     ) : (
