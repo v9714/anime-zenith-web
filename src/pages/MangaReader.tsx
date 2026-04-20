@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { mangaService, Chapter, MangaDetails } from "@/services/mangaService";
+import { mangaUnifiedService } from "@/services/mangaUnifiedService";
 import { MANGA_API_URL } from "@/utils/constants";
 import { getImageUrl } from "@/utils/commanFunction";
 import { Button } from "@/components/ui/button";
@@ -87,16 +88,34 @@ const MangaReader = () => {
             if (!mangaId || !chapterId) return;
             setLoading(true);
             try {
-                const [chapRes, mangaRes] = await Promise.all([
-                    mangaService.getChapterDetails(parseInt(chapterId)),
-                    mangaService.getMangaDetails(parseInt(mangaId))
-                ]);
+                const isMdx = mangaUnifiedService.isMangaDex(mangaId);
+                let mangaResData, chapData;
 
-                if (chapRes.success) setChapter(chapRes.data);
-                if (mangaRes.success) setManga(mangaRes.data);
+                if (isMdx) {
+                    mangaResData = await mangaUnifiedService.getMangaDetails(mangaId);
+                    if (mangaResData) {
+                        const chapterObj = mangaResData.chapters.find((c: Chapter) => String(c.id) === String(chapterId));
+                        if (chapterObj) {
+                            const pages = await mangaUnifiedService.getChapterPages(chapterId);
+                            chapterObj.externalPages = pages;
+                            chapterObj.pagesCount = pages.length;
+                            chapData = chapterObj;
+                        }
+                    }
+                } else {
+                    const [chapRes, mangaRes] = await Promise.all([
+                        mangaService.getChapterDetails(parseInt(chapterId)),
+                        mangaService.getMangaDetails(parseInt(mangaId))
+                    ]);
+                    if (chapRes.success) chapData = chapRes.data;
+                    if (mangaRes.success) mangaResData = mangaRes.data;
+                }
 
-                // Only update progress if user is logged in
-                if (currentUser) {
+                if (chapData) setChapter(chapData);
+                if (mangaResData) setManga(mangaResData);
+
+                // Only update progress if user is logged in and it's a local manga
+                if (currentUser && !isMdx) {
                     await mangaService.updateProgress({
                         mangaId: parseInt(mangaId),
                         chapterId: parseInt(chapterId),
@@ -447,7 +466,7 @@ const MangaReader = () => {
                 className={`flex-1 relative overflow-auto cursor-pointer ${currentModeConfig.overlayClass}`}
                 onClick={handleReaderAreaClick}
             >
-                {isPdfFile(chapter.pdfUrl) ? (
+                {isPdfFile(chapter.pdfUrl) && !chapter.externalPages ? (
                     <PdfViewer
                         pdfUrl={getPathUrl(chapter.pdfUrl)}
                         zoom={zoom}
@@ -457,6 +476,7 @@ const MangaReader = () => {
                 ) : (
                     <ChapterImagesViewer
                         imagesUrl={getPathUrl(chapter.pdfUrl)}
+                        externalPages={chapter.externalPages}
                         pagesCount={chapter.pagesCount || 0}
                         zoom={zoom}
                         overlayClass={currentModeConfig.overlayClass}

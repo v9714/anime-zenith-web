@@ -11,6 +11,10 @@ export const INTERACTION_API_URL = import.meta.env.VITE_INTERACTION_API_URL || "
 export const COMMENTS_API_URL = import.meta.env.VITE_COMMENTS_API_URL || "http://localhost:8004";
 export const MANGA_API_URL = import.meta.env.VITE_MANGA_API_URL || "http://localhost:8005";
 
+// MangaDex Open API
+export const MANGADEX_API_URL = 'https://api.mangadex.org';
+export const MANGADEX_COVERS_URL = 'https://uploads.mangadex.org/covers';
+
 // Legacy fallback for generic backend calls (pointing to Content Service Port 8001 by default)
 export const BACKEND_API_BASE_URL = CONTENT_API_URL;
 

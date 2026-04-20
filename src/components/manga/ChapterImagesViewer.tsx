@@ -7,6 +7,7 @@ interface ChapterImagesViewerProps {
     pagesCount: number;
     zoom: number;
     overlayClass?: string;
+    externalPages?: string[];
 }
 
 const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
@@ -14,6 +15,7 @@ const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
     pagesCount,
     zoom,
     overlayClass = "",
+    externalPages,
 }) => {
     const [loading, setLoading] = useState(true);
     const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
@@ -22,6 +24,7 @@ const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
     const [error, setError] = useState<Record<number, boolean>>({});
 
     const baseUrl = imagesUrl.endsWith("/") ? imagesUrl : `${imagesUrl}/`;
+    const actualPagesCount = externalPages?.length || pagesCount;
 
     const handleImageLoad = (page: number) => {
         setLoadedImages(prev => ({ ...prev, [page]: true }));
@@ -34,21 +37,23 @@ const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
     useEffect(() => {
         // Simple loading heuristic
         const loadedCount = Object.keys(loadedImages).length;
-        if (loadedCount >= Math.min(pagesCount, 3) || pagesCount === 0) {
+        if (loadedCount >= Math.min(actualPagesCount, 3) || actualPagesCount === 0) {
             setLoading(false);
         }
-    }, [loadedImages, pagesCount]);
+    }, [loadedImages, actualPagesCount]);
 
-    const pages = Array.from({ length: pagesCount }, (_, i) => i + 1);
+    const pages = Array.from({ length: actualPagesCount }, (_, i) => i + 1);
 
     const goToPage = (page: number) => {
-        if (page >= 1 && page <= pagesCount) {
+        if (page >= 1 && page <= actualPagesCount) {
             setCurrentPage(page);
             if (viewMode === 'continuous') {
                 document.getElementById(`image-page-${page}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
     };
+
+    const isExternal = !!(externalPages && externalPages.length > 0);
 
     return (
         <div className={`flex flex-col h-full ${overlayClass}`}>
@@ -68,13 +73,13 @@ const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
                         </Button>
                         <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-manga-glass/50 border border-manga-neon-purple/10">
                             <span className="text-sm font-medium text-foreground">{currentPage}</span>
-                            <span className="text-muted-foreground text-sm">/ {pagesCount}</span>
+                            <span className="text-muted-foreground text-sm">/ {actualPagesCount}</span>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => goToPage(currentPage + 1)}
-                            disabled={currentPage >= pagesCount}
+                            disabled={currentPage >= actualPagesCount}
                             className="h-8 w-8 text-muted-foreground hover:text-manga-neon-purple"
                         >
                             <ChevronRight className="w-4 h-4" />
@@ -118,12 +123,13 @@ const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
                         <div className="relative w-full h-[calc(100vh-140px)] flex items-center justify-center p-2 sm:p-4">
                             <div className="h-full shadow-2xl shadow-manga-neon-purple/20 rounded-lg overflow-hidden border border-white/5 flex items-center justify-center">
                                 <ImageWithFallback
-                                    src={`${baseUrl}${currentPage}`}
+                                    src={isExternal ? externalPages![currentPage - 1] : `${baseUrl}${currentPage}`}
                                     page={currentPage}
                                     baseUrl={baseUrl}
                                     onLoaded={() => handleImageLoad(currentPage)}
                                     onError={() => handleImageError(currentPage)}
                                     isError={error[currentPage]}
+                                    skipFallback={isExternal}
                                     className="max-h-full w-auto object-contain"
                                 />
                             </div>
@@ -136,12 +142,13 @@ const ChapterImagesViewer: React.FC<ChapterImagesViewerProps> = ({
                                 className="relative w-full shadow-2xl shadow-manga-neon-purple/10 border-b border-white/5 last:border-b-0"
                             >
                                 <ImageWithFallback
-                                    src={`${baseUrl}${page}`}
+                                    src={isExternal ? externalPages![page - 1] : `${baseUrl}${page}`}
                                     page={page}
                                     baseUrl={baseUrl}
                                     onLoaded={() => handleImageLoad(page)}
                                     onError={() => handleImageError(page)}
                                     isError={error[page]}
+                                    skipFallback={isExternal}
                                     className="w-full h-auto object-contain"
                                 />
                                 <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full text-xs text-white/70 font-medium">
@@ -163,14 +170,20 @@ const ImageWithFallback: React.FC<{
     onLoaded: () => void;
     onError: () => void;
     isError: boolean;
+    skipFallback?: boolean;
     className?: string;
-}> = ({ src, page, baseUrl, onLoaded, onError, isError, className }) => {
-    const [currentSrc, setCurrentSrc] = useState(`${src}.png`);
+}> = ({ src, page, baseUrl, onLoaded, onError, isError, skipFallback, className }) => {
+    const [currentSrc, setCurrentSrc] = useState(skipFallback ? src : `${src}.png`);
     const [retryCount, setRetryCount] = useState(0);
 
     const fallbacks = [".png", ".jpg", ".jpeg", ".webp"];
 
     const handleError = () => {
+        if (skipFallback) {
+            onError();
+            return;
+        }
+
         if (retryCount < fallbacks.length - 1) {
             const nextExt = fallbacks[retryCount + 1];
             setCurrentSrc(`${baseUrl}${page}${nextExt}`);

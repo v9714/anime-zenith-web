@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { mangaService, MangaDetails, MangaProgress } from "@/services/mangaService";
+import { mangaUnifiedService } from "@/services/mangaUnifiedService";
 import { MANGA_API_URL } from "@/utils/constants";
 import { getImageUrl as getSharedImageUrl } from "@/utils/commanFunction";
 import { Button } from "@/components/ui/button";
@@ -28,12 +29,17 @@ const MangaDetailsPage = () => {
             if (!id) return;
             try {
                 // Always fetch manga details (public)
-                const mangaRes = await mangaService.getMangaDetails(parseInt(id));
-                if (mangaRes.success) {
-                    setManga(mangaRes.data);
+                const mangaDetailData = await mangaUnifiedService.getMangaDetails(id);
+                if (mangaDetailData) {
+                    setManga(mangaDetailData);
                 }
 
-                // If logged in, fetch status and progress
+                if (mangaUnifiedService.isMangaDex(id)) {
+                    setLoading(false);
+                    return; // Skip interaction data for MangaDex
+                }
+
+                // If logged in, fetch status and progress (local manga only)
                 if (currentUser) {
                     const [progressRes, likeRes, bookmarkRes] = await Promise.all([
                         mangaService.getProgress(parseInt(id)),
@@ -61,7 +67,13 @@ const MangaDetailsPage = () => {
         fetchData();
     }, [id, currentUser]);
 
+    const isMdx = manga?._source === 'mangadex';
+
     const handleToggleLike = async () => {
+        if (isMdx) {
+            toast.info("Favorites are only available for local manga");
+            return;
+        }
         if (!currentUser) {
             toast.error("Please login to like manga");
             return;
@@ -81,6 +93,10 @@ const MangaDetailsPage = () => {
     };
 
     const handleToggleBookmark = async () => {
+        if (isMdx) {
+            toast.info("Watchlist is only available for local manga");
+            return;
+        }
         if (!currentUser) {
             toast.error("Please login to save manga");
             return;
@@ -112,6 +128,8 @@ const MangaDetailsPage = () => {
     };
 
     const getImageUrl = (path: string | null) => {
+        if (!path) return '/placeholder-manga.jpg';
+        if (path.startsWith('http')) return path;
         return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
     };
 
@@ -266,12 +284,12 @@ const MangaDetailsPage = () => {
                             <div className="backdrop-blur-xl bg-manga-glass/50 border border-manga-neon-purple/20 rounded-xl p-3 text-center">
                                 <Eye className="w-4 h-4 text-manga-neon-cyan mx-auto mb-1" />
                                 <p className="text-xs text-muted-foreground">Views</p>
-                                <p className="text-sm font-bold text-foreground">{manga.chapters.reduce((acc, chap) => acc + chap.views, 0).toLocaleString()}</p>
+                                <p className="text-sm font-bold text-foreground">{isMdx ? 'N/A' : manga.chapters.reduce((acc, chap) => acc + chap.views, 0).toLocaleString()}</p>
                             </div>
                             <div className="backdrop-blur-xl bg-manga-glass/50 border border-manga-neon-purple/20 rounded-xl p-3 text-center">
                                 <Heart className={`w-4 h-4 mx-auto mb-1 ${isLiked ? 'text-manga-neon-pink fill-manga-neon-pink' : 'text-manga-neon-pink opacity-60'}`} />
                                 <p className="text-xs text-muted-foreground">Likes</p>
-                                <p className="text-sm font-bold text-foreground">{totalLikes.toLocaleString()}</p>
+                                <p className="text-sm font-bold text-foreground">{isMdx ? 'N/A' : totalLikes.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>

@@ -23,7 +23,12 @@ const statusGradient: Record<string, string> = {
 };
 
 export function MangaCard({ manga, variant = 'default', showStatus = true, className, style }: MangaCardProps) {
+    const isMdx = manga._source === 'mangadex';
+
     const getImageUrl = (path: string | null) => {
+        if (!path) return '/placeholder-manga.jpg';
+        // MangaDex URLs are already full URLs
+        if (path.startsWith('http://') || path.startsWith('https://')) return path;
         return getSharedImageUrl(path || undefined, MANGA_API_URL) || "/placeholder-manga.jpg";
     };
 
@@ -51,6 +56,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                 <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
                     <h3 className="font-semibold text-sm line-clamp-2 text-foreground group-hover:text-manga-neon-pink transition-colors">
                         {manga.titleEng || manga.title}
+                        {isMdx && <span className="ml-1.5 inline-flex items-center rounded-md bg-[#ff6740]/20 px-1 py-0.5 text-[9px] font-bold text-[#ff6740] ring-1 ring-inset ring-[#ff6740]/40 align-middle shadow-sm">MD</span>}
                     </h3>
                     <p className="text-xs text-muted-foreground truncate">{manga.author || 'Unknown'}</p>
                 </div>
@@ -109,6 +115,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                     <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-manga-dark to-transparent">
                         <h3 className="font-bold text-sm line-clamp-1 text-foreground group-hover:text-manga-neon-pink transition-colors duration-300">
                             {manga.titleEng || manga.title}
+                            {isMdx && <span className="ml-1.5 inline-flex items-center rounded-md bg-[#ff6740]/20 px-1 py-0.5 text-[9px] font-bold text-[#ff6740] ring-1 ring-inset ring-[#ff6740]/40 align-middle shadow-sm">MD</span>}
                         </h3>
                         <p className="text-[10px] text-muted-foreground mt-0.5 truncate flex items-center gap-1">
                             <span className="w-1 h-1 rounded-full bg-manga-neon-purple inline-block" />
@@ -180,6 +187,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                         {/* Title */}
                         <h3 className="font-bold text-[11px] md:text-xs line-clamp-1 text-foreground group-hover:text-manga-neon-pink transition-colors duration-300">
                             {manga.titleEng || manga.title}
+                            {isMdx && <span className="ml-1.5 inline-flex items-center rounded-md bg-[#ff6740]/20 px-1 py-0.5 text-[9px] font-bold text-[#ff6740] ring-1 ring-inset ring-[#ff6740]/40 align-middle shadow-sm">MD</span>}
                         </h3>
 
                         {/* Author + Year */}

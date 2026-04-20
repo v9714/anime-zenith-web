@@ -12,7 +12,7 @@ export interface MangaGenre {
 }
 
 export interface Manga {
-    id: number;
+    id: number | string;
     title: string;
     titleEng?: string;
     titleJp?: string;
@@ -29,14 +29,16 @@ export interface Manga {
     isDeleted: boolean;
     updatedAt: string;
     genres?: MangaGenre[];
+    _source?: 'local' | 'mangadex';
 }
 
 export interface Chapter {
-    id: number;
-    mangaId: number;
+    id: number | string;
+    mangaId: number | string;
     title: string;
     chapterNumber: number;
     pdfUrl: string;
+    externalPages?: string[];
     pagesCount: number;
     views: number;
     createdAt: string;

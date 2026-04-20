@@ -6,7 +6,8 @@ import { MangaSection } from '@/components/manga/MangaSection';
 import { MangaCarousel } from '@/components/manga/MangaCarousel';
 import { MangaGrid } from '@/components/manga/MangaGrid';
 import { SEO } from '@/components/SEO';
-import { mangaService, Manga } from '@/services/mangaService';
+import { mangaUnifiedService } from '@/services/mangaUnifiedService';
+import { Manga } from '@/services/mangaService';
 
 export default function MangaHome() {
     const [topManga, setTopManga] = useState<Manga[]>([]);
@@ -19,15 +20,20 @@ export default function MangaHome() {
         const fetchMangaData = async () => {
             try {
                 setLoading(true);
-                // Single API call — data is reused across all sections
-                const response = await mangaService.getAllManga(1, 20);
-                if (response.success) {
-                    const data = response.data.data;
-                    setTopManga(data.slice(0, 5));
-                    setPopularManga(data);
-                    setLatestManga(data);
-                    setRecentManga(data.slice(0, 15));
+                // Fetch data for different sections using the unified service
+                const [allRes, popRes, latestRes, recentRes] = await Promise.all([
+                    mangaUnifiedService.getAllManga(1, 10),
+                    mangaUnifiedService.getPopularManga(15),
+                    mangaUnifiedService.getLatestManga(15),
+                    mangaUnifiedService.getRecentManga(15)
+                ]);
+
+                if (allRes.success) {
+                    setTopManga(allRes.data.data.slice(0, 5));
                 }
+                setPopularManga(popRes);
+                setLatestManga(latestRes);
+                setRecentManga(recentRes);
             } catch (error) {
                 console.error('Error fetching manga data:', error);
             } finally {

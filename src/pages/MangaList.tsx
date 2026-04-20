@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { mangaService, Manga } from "@/services/mangaService";
+import { mangaUnifiedService } from "@/services/mangaUnifiedService";
+import { Manga } from "@/services/mangaService";
 import { Badge } from "@/components/ui/badge";
 import { Search, Sparkles, X, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -84,9 +85,9 @@ const MangaList = () => {
             setLoading(true);
             let response;
             if (debouncedSearch.trim()) {
-                response = await mangaService.searchManga(debouncedSearch, currentPage, itemsPerPage);
+                response = await mangaUnifiedService.searchManga(debouncedSearch, currentPage, itemsPerPage);
             } else {
-                response = await mangaService.getAllManga(currentPage, itemsPerPage);
+                response = await mangaUnifiedService.getAllManga(currentPage, itemsPerPage);
             }
 
             if (response.success) {
