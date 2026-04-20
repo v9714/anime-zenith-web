@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils';
 import { getImageUrl as getSharedImageUrl } from '@/utils/commanFunction';
 import { MANGA_API_URL } from '@/utils/constants';
 import { SmartImage } from '@/components/ui/SmartImage';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { Button } from '@/components/ui/button';
+import * as HoverCardPrimitive from '@radix-ui/react-hover-card';
 
 interface MangaCardProps {
     manga: Manga;
@@ -34,6 +37,59 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
 
     const status = manga.status?.toLowerCase() || '';
     const gradient = statusGradient[status] || 'from-manga-primary to-manga-secondary';
+
+    const renderTooltipContent = (
+        <div className="p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+                <h4 className="font-bold text-sm text-foreground line-clamp-2 leading-tight">
+                    {manga.titleEng || manga.title}
+                </h4>
+                {manga.rating && parseFloat(manga.rating) > 0 && (
+                    <div className="flex items-center gap-1 shrink-0 bg-yellow-400/10 px-1.5 py-0.5 rounded text-yellow-400">
+                        <Star className="w-3 h-3 fill-current" />
+                        <span className="text-xs font-bold">{parseFloat(manga.rating).toFixed(1)}</span>
+                    </div>
+                )}
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                {showStatus && manga.status && (
+                    <span className={cn("font-medium capitalize", status === 'ongoing' ? 'text-manga-neon-pink' : status === 'completed' ? 'text-manga-neon-cyan' : 'text-manga-neon-purple')}>
+                        {manga.status}
+                    </span>
+                )}
+                {manga.releaseYear && <span>{manga.releaseYear}</span>}
+                {manga.author && <span className="truncate max-w-[120px]">{manga.author}</span>}
+            </div>
+
+            {manga.genres && manga.genres.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                    {manga.genres.map((mg) => (
+                        <span key={mg.genre.id} className="text-[10px] px-2 py-0.5 rounded-full bg-manga-neon-purple/10 border border-manga-neon-purple/20 text-manga-neon-purple/90 font-medium leading-none">
+                            {mg.genre.name}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {manga.description ? (
+                <p className="text-xs text-muted-foreground/90 leading-relaxed line-clamp-5">
+                    {manga.description}
+                </p>
+            ) : (
+                <p className="text-xs text-muted-foreground/50 italic">
+                    No description available.
+                </p>
+            )}
+
+            <div className="pt-2">
+                <Button className="w-full bg-manga-neon-purple hover:bg-manga-neon-pink text-white font-semibold flex items-center justify-center gap-2 rounded-xl transition-colors">
+                    <BookOpen className="w-4 h-4" />
+                    Read Now
+                </Button>
+            </div>
+        </div>
+    );
 
     /* ── Compact variant ─────────────────────────────────────────── */
     if (variant === 'compact') {
@@ -67,16 +123,18 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
     /* ── Featured variant ────────────────────────────────────────── */
     if (variant === 'featured') {
         return (
-            <Link
-                to={`/manga/${manga.id}`}
-                style={style}
-                className={cn(
-                    "group relative block rounded-2xl overflow-hidden",
-                    className
-                )}
-            >
-                {/* Fixed aspect ratio so all featured cards are the same height */}
-                <div className="relative aspect-[3/4] w-full">
+            <HoverCard openDelay={200} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                    <Link
+                        to={`/manga/${manga.id}`}
+                        style={style}
+                        className={cn(
+                            "group relative block rounded-2xl overflow-hidden",
+                            className
+                        )}
+                    >
+                        {/* Fixed aspect ratio so all featured cards are the same height */}
+                        <div className="relative aspect-[3/4] w-full">
                     <SmartImage
                         src={getImageUrl(manga.coverImage)}
                         alt={manga.titleEng || manga.title}
@@ -103,13 +161,7 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                         </div>
                     )}
 
-                    {/* Read Now hover pill */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-manga-neon-purple/90 backdrop-blur-sm rounded-full text-white text-sm font-semibold shadow-lg shadow-manga-neon-purple/40 translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                            <BookOpen className="w-4 h-4" />
-                            Read Now
-                        </div>
-                    </div>
+
 
                     {/* Info footer */}
                     <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-manga-dark to-transparent">
@@ -124,18 +176,31 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                     </div>
                 </div>
             </Link>
+        </HoverCardTrigger>
+        <HoverCardContent 
+            side="right" 
+            align="start" 
+            sideOffset={15} 
+            className="hidden md:block w-72 bg-manga-dark/95 backdrop-blur-xl border border-manga-neon-purple/20 shadow-2xl shadow-manga-neon-purple/10 p-0 z-[60]"
+        >
+            {renderTooltipContent}
+            <HoverCardPrimitive.Arrow className="fill-manga-dark/95" width={16} height={8} />
+        </HoverCardContent>
+    </HoverCard>
         );
     }
 
     /* ── Default variant ─────────────────────────────────────────── */
     return (
-        <Link
-            to={`/manga/${manga.id}`}
-            style={style}
-            className={cn("group block", className)}
-        >
-            {/* Outer wrapper — fixed aspect ratio ensures uniform height across all cards */}
-            <div className="relative rounded-xl md:rounded-2xl overflow-hidden transition-transform duration-300 ease-out group-hover:scale-[1.02]">
+        <HoverCard openDelay={200} closeDelay={100}>
+            <HoverCardTrigger asChild>
+                <Link
+                    to={`/manga/${manga.id}`}
+                    style={style}
+                    className={cn("group block", className)}
+                >
+                    {/* Outer wrapper — fixed aspect ratio ensures uniform height across all cards */}
+                    <div className="relative rounded-xl md:rounded-2xl overflow-hidden transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                 {/* Neon glow border on hover */}
                 <div className="absolute -inset-[1px] rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 bg-gradient-to-r from-manga-neon-purple via-manga-neon-pink to-manga-neon-cyan transition-opacity duration-300 blur-sm" />
 
@@ -148,23 +213,6 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-manga-dark via-manga-dark/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-
-                        {/* Description snippet — slides up from bottom on hover */}
-                        {manga.description && (
-                            <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-10">
-                                <p className="text-[9px] md:text-[10px] text-white/85 line-clamp-3 leading-relaxed bg-manga-dark/80 backdrop-blur-sm m-2 rounded-lg p-2">
-                                    {manga.description}
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Read Now pill */}
-                        <div className="absolute top-1/3 inset-x-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                            <div className="px-3 py-1.5 bg-manga-neon-purple/90 backdrop-blur-sm rounded-full flex items-center gap-1.5 text-white text-xs font-semibold shadow-lg shadow-manga-neon-purple/30 -translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                <BookOpen className="w-3 h-3" />
-                                Read Now
-                            </div>
-                        </div>
 
                         {/* Status badge — top right */}
                         {showStatus && manga.status && (
@@ -223,7 +271,18 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                     </div>
                 </div>
             </div>
-        </Link>
+            </Link>
+        </HoverCardTrigger>
+        <HoverCardContent 
+            side="right" 
+            align="start" 
+            sideOffset={15} 
+            className="hidden md:block w-72 bg-manga-dark/95 backdrop-blur-xl border border-manga-neon-purple/20 shadow-2xl shadow-manga-neon-purple/10 p-0 z-[60]"
+        >
+            {renderTooltipContent}
+            <HoverCardPrimitive.Arrow className="fill-manga-dark/95" width={16} height={8} />
+        </HoverCardContent>
+    </HoverCard>
     );
 }
 

@@ -96,9 +96,14 @@ const MangaReader = () => {
                     if (mangaResData) {
                         const chapterObj = mangaResData.chapters.find((c: Chapter) => String(c.id) === String(chapterId));
                         if (chapterObj) {
-                            const pages = await mangaUnifiedService.getChapterPages(chapterId);
-                            chapterObj.externalPages = pages;
-                            chapterObj.pagesCount = pages.length;
+                            if (!chapterObj.externalUrl || chapterObj.pagesCount > 0) {
+                                const pages = await mangaUnifiedService.getChapterPages(chapterId);
+                                chapterObj.externalPages = pages;
+                                chapterObj.pagesCount = pages.length;
+                            } else {
+                                chapterObj.externalPages = [];
+                                chapterObj.pagesCount = 0;
+                            }
                             chapData = chapterObj;
                         }
                     }
@@ -466,7 +471,21 @@ const MangaReader = () => {
                 className={`flex-1 relative overflow-auto cursor-pointer ${currentModeConfig.overlayClass}`}
                 onClick={handleReaderAreaClick}
             >
-                {isPdfFile(chapter.pdfUrl) && !chapter.externalPages ? (
+                {chapter.externalUrl && (!chapter.pagesCount || chapter.pagesCount === 0) ? (
+                    <div className="flex flex-col items-center justify-center p-8 bg-manga-glass/20 rounded-xl border border-manga-neon-purple/20 max-w-md mx-auto mt-20 text-center z-10 shadow-2xl">
+                        <BookOpen className="w-16 h-16 text-manga-neon-purple mb-4" />
+                        <h2 className="text-xl font-bold text-foreground mb-2">External Chapter</h2>
+                        <p className="text-muted-foreground mb-6">
+                            This chapter is hosted on an external website and cannot be read directly here.
+                        </p>
+                        <Button 
+                            onClick={() => window.open(chapter.externalUrl, '_blank', 'noopener,noreferrer')}
+                            className="bg-gradient-to-r from-manga-neon-purple to-manga-neon-pink hover:from-manga-neon-pink hover:to-manga-neon-purple text-white shadow-lg shadow-manga-neon-purple/20 px-8 py-6 rounded-xl font-semibold transition-all hover:scale-105"
+                        >
+                            Read on External Site
+                        </Button>
+                    </div>
+                ) : isPdfFile(chapter.pdfUrl) && !chapter.externalPages ? (
                     <PdfViewer
                         pdfUrl={getPathUrl(chapter.pdfUrl)}
                         zoom={zoom}
@@ -587,7 +606,7 @@ const MangaReader = () => {
             {/* Click to show controls - positioned outside scroll area */}
             {!showControls && (
                 <button
-                    className="absolute top-3 left-4 z-20 w-11 h-11 rounded-full bg-manga-glass/60 backdrop-blur-sm border border-manga-neon-purple/20 flex items-center justify-center hover:bg-manga-glass/80 transition-all"
+                    className="absolute bottom-6 left-6 z-40 w-11 h-11 rounded-full bg-manga-glass/60 backdrop-blur-sm border border-manga-neon-purple/20 flex items-center justify-center hover:bg-manga-glass/80 transition-all shadow-lg"
                     onClick={showControlsManually}
                     aria-label="Show controls"
                 >

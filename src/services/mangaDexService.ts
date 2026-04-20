@@ -120,6 +120,7 @@ function normalizeMangaDexChapter(mdxChapter: any, mangaId: string): Chapter {
         pagesCount: attrs.pages || 0,
         views: 0,
         createdAt: attrs.publishAt || attrs.createdAt || new Date().toISOString(),
+        externalUrl: attrs.externalUrl || undefined,
     };
 }
 

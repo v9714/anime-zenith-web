@@ -47,13 +47,13 @@ export function MangaCarousel({
     if (manga.length === 0) return null;
 
     return (
-        <div className={cn("relative group", className)}>
+        <div className={cn("relative group/carousel", className)}>
             {/* Scroll Buttons */}
             <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity -translate-x-4 hover:scale-110"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-opacity -translate-x-4 hover:scale-110"
             >
                 <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -62,7 +62,7 @@ export function MangaCarousel({
                 variant="ghost"
                 size="icon"
                 onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 hover:scale-110"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm shadow-lg opacity-0 group-hover/carousel:opacity-100 transition-opacity translate-x-4 hover:scale-110"
             >
                 <ChevronRight className="w-5 h-5" />
             </Button>

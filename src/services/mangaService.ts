@@ -42,6 +42,7 @@ export interface Chapter {
     pagesCount: number;
     views: number;
     createdAt: string;
+    externalUrl?: string;
 }
 
 export interface MangaDetails extends Manga {
