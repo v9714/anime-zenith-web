@@ -15,27 +15,24 @@ export const mangaUnifiedService = {
     /**
      * Get all manga: local first, then MangaDex popular to fill remaining slots
      */
-    getAllManga: async (page: number = 1, limit: number = 20): Promise<UnifiedApiResponse<PaginatedMangaResponse>> => {
+    getAllManga: async (page: number = 1, limit: number = 20, skipMangaDex: boolean = false): Promise<UnifiedApiResponse<PaginatedMangaResponse>> => {
         try {
-            // Fetch both in parallel
-            const [localRes, mdxManga] = await Promise.allSettled([
-                mangaService.getAllManga(page, limit).catch(() => null),
-                mangaDexService.getPopularManga(limit, (page - 1) * limit),
-            ]);
-
-            const localData = localRes.status === 'fulfilled' && localRes.value?.success
-                ? localRes.value.data.data : [];
-            const mdxData = mdxManga.status === 'fulfilled' ? mdxManga.value : [];
-
-            // Mark local manga
+            // Fetch local API
+            const localRes = await mangaService.getAllManga(page, limit).catch(() => null);
+            const localData = localRes?.success ? localRes.data.data : [];
             const markedLocal = localData.map((m: Manga) => ({ ...m, _source: 'local' as const }));
 
-            // Combine: local first, then MangaDex
-            const combined = [...markedLocal, ...mdxData];
+            let combined = [...markedLocal];
+            let mdxLength = 0;
 
-            // Get total from local response if available
-            const localMeta = localRes.status === 'fulfilled' && localRes.value?.success
-                ? localRes.value.data.meta : null;
+            // Fetch MangaDex if not skipped
+            if (!skipMangaDex) {
+                const mdxManga = await mangaDexService.getPopularManga(limit, (page - 1) * limit).catch(() => []);
+                combined = [...markedLocal, ...mdxManga];
+                mdxLength = mdxManga.length;
+            }
+
+            const localMeta = localRes?.success ? localRes.data.meta : null;
 
             return {
                 success: true,
@@ -45,7 +42,7 @@ export const mangaUnifiedService = {
                     meta: {
                         page,
                         limit,
-                        total: (localMeta?.total || 0) + mdxData.length,
+                        total: (localMeta?.total || 0) + mdxLength,
                         totalPages: Math.max(localMeta?.totalPages || 1, 10), // MangaDex has many pages
                         hasNext: true,
                         hasPrev: page > 1,
@@ -55,14 +52,21 @@ export const mangaUnifiedService = {
         } catch (error) {
             console.error('UnifiedService: Error in getAllManga:', error);
             // Fallback to MangaDex only
-            const mdxManga = await mangaDexService.getPopularManga(limit, (page - 1) * limit);
+            if (!skipMangaDex) {
+                const mdxManga = await mangaDexService.getPopularManga(limit, (page - 1) * limit).catch(() => []);
+                return {
+                    success: true,
+                    message: 'MangaDex only',
+                    data: {
+                        data: mdxManga,
+                        meta: { page, limit, total: mdxManga.length, totalPages: 10, hasNext: true, hasPrev: page > 1 }
+                    }
+                };
+            }
             return {
                 success: true,
-                message: 'MangaDex only',
-                data: {
-                    data: mdxManga,
-                    meta: { page, limit, total: mdxManga.length, totalPages: 10, hasNext: true, hasPrev: page > 1 }
-                }
+                message: 'Error',
+                data: { data: [], meta: { page, limit, total: 0, totalPages: 1, hasNext: false, hasPrev: false } }
             };
         }
     },

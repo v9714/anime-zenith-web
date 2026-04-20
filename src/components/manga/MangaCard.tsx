@@ -83,10 +83,12 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
             )}
 
             <div className="pt-2">
-                <Button className="w-full bg-manga-neon-purple hover:bg-manga-neon-pink text-white font-semibold flex items-center justify-center gap-2 rounded-xl transition-colors">
-                    <BookOpen className="w-4 h-4" />
-                    Read Now
-                </Button>
+                <Link to={`/manga/${manga.id}`}>
+                    <Button className="w-full bg-manga-neon-purple hover:bg-manga-neon-pink text-white font-semibold flex items-center justify-center gap-2 rounded-xl transition-colors">
+                        <BookOpen className="w-4 h-4" />
+                        Read Now
+                    </Button>
+                </Link>
             </div>
         </div>
     );

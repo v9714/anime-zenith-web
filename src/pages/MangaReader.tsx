@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { mangaService, Chapter, MangaDetails } from "@/services/mangaService";
 import { mangaUnifiedService } from "@/services/mangaUnifiedService";
 import { MANGA_API_URL } from "@/utils/constants";
@@ -73,7 +74,6 @@ const MangaReader = () => {
     const { currentUser } = useAuth();
     const [chapter, setChapter] = useState<Chapter | null>(null);
     const [manga, setManga] = useState<MangaDetails | null>(null);
-    const [loading, setLoading] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [readingMode, setReadingMode] = useState<ReadingMode>('default');
@@ -83,59 +83,65 @@ const MangaReader = () => {
     const readerRef = useRef<HTMLDivElement>(null);
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!mangaId || !chapterId) return;
-            setLoading(true);
-            try {
-                const isMdx = mangaUnifiedService.isMangaDex(mangaId);
-                let mangaResData, chapData;
+    const { data: readerData, isLoading: loading, isError } = useQuery({
+        queryKey: ['mangaReader', mangaId, chapterId],
+        queryFn: async () => {
+            if (!mangaId || !chapterId) return null;
+            const isMdx = mangaUnifiedService.isMangaDex(mangaId);
+            let mangaResData, chapData;
 
-                if (isMdx) {
-                    mangaResData = await mangaUnifiedService.getMangaDetails(mangaId);
-                    if (mangaResData) {
-                        const chapterObj = mangaResData.chapters.find((c: Chapter) => String(c.id) === String(chapterId));
-                        if (chapterObj) {
-                            if (!chapterObj.externalUrl || chapterObj.pagesCount > 0) {
-                                const pages = await mangaUnifiedService.getChapterPages(chapterId);
-                                chapterObj.externalPages = pages;
-                                chapterObj.pagesCount = pages.length;
-                            } else {
-                                chapterObj.externalPages = [];
-                                chapterObj.pagesCount = 0;
-                            }
-                            chapData = chapterObj;
+            if (isMdx) {
+                mangaResData = await mangaUnifiedService.getMangaDetails(mangaId);
+                if (mangaResData) {
+                    const chapterObj = mangaResData.chapters.find((c: Chapter) => String(c.id) === String(chapterId));
+                    if (chapterObj) {
+                        if (!chapterObj.externalUrl || chapterObj.pagesCount > 0) {
+                            const pages = await mangaUnifiedService.getChapterPages(chapterId);
+                            chapterObj.externalPages = pages;
+                            chapterObj.pagesCount = pages.length;
+                        } else {
+                            chapterObj.externalPages = [];
+                            chapterObj.pagesCount = 0;
                         }
+                        chapData = chapterObj;
                     }
-                } else {
-                    const [chapRes, mangaRes] = await Promise.all([
-                        mangaService.getChapterDetails(parseInt(chapterId)),
-                        mangaService.getMangaDetails(parseInt(mangaId))
-                    ]);
-                    if (chapRes.success) chapData = chapRes.data;
-                    if (mangaRes.success) mangaResData = mangaRes.data;
                 }
-
-                if (chapData) setChapter(chapData);
-                if (mangaResData) setManga(mangaResData);
-
-                // Only update progress if user is logged in and it's a local manga
-                if (currentUser && !isMdx) {
-                    await mangaService.updateProgress({
-                        mangaId: parseInt(mangaId),
-                        chapterId: parseInt(chapterId),
-                        lastPage: 1
-                    });
-                }
-            } catch (error) {
-                console.error("Error loading chapter:", error);
-                toast.error("Failed to load chapter");
-            } finally {
-                setLoading(false);
+            } else {
+                const [chapRes, mangaRes] = await Promise.all([
+                    mangaService.getChapterDetails(parseInt(chapterId)),
+                    mangaService.getMangaDetails(parseInt(mangaId))
+                ]);
+                if (chapRes.success) chapData = chapRes.data;
+                if (mangaRes.success) mangaResData = mangaRes.data;
             }
-        };
-        fetchData();
-    }, [mangaId, chapterId, currentUser]);
+
+            return { isMdx, mangaResData, chapData };
+        },
+        staleTime: 10 * 60 * 1000,
+        enabled: !!mangaId && !!chapterId,
+    });
+
+    useEffect(() => {
+        if (isError) {
+            toast.error("Failed to load chapter");
+        }
+    }, [isError]);
+
+    useEffect(() => {
+        if (readerData) {
+            if (readerData.mangaResData) setManga(readerData.mangaResData);
+            if (readerData.chapData) setChapter(readerData.chapData);
+
+            // Only update progress if user is logged in and it's a local manga
+            if (currentUser && !readerData.isMdx && mangaId && chapterId) {
+                mangaService.updateProgress({
+                    mangaId: parseInt(mangaId),
+                    chapterId: parseInt(chapterId),
+                    lastPage: 1
+                }).catch(console.error);
+            }
+        }
+    }, [readerData, currentUser, mangaId, chapterId]);
 
     // Auto-hide controls
     const resetControlsTimeout = useCallback(() => {
@@ -478,7 +484,7 @@ const MangaReader = () => {
                         <p className="text-muted-foreground mb-6">
                             This chapter is hosted on an external website and cannot be read directly here.
                         </p>
-                        <Button 
+                        <Button
                             onClick={() => window.open(chapter.externalUrl, '_blank', 'noopener,noreferrer')}
                             className="bg-gradient-to-r from-manga-neon-purple to-manga-neon-pink hover:from-manga-neon-pink hover:to-manga-neon-purple text-white shadow-lg shadow-manga-neon-purple/20 px-8 py-6 rounded-xl font-semibold transition-all hover:scale-105"
                         >

@@ -11,6 +11,7 @@ interface SEOProps {
   schema?: any; // JSON-LD structured data
   author?: string;
   modifiedTime?: string;
+  noIndex?: boolean;
 }
 
 const SEO: React.FC<SEOProps> = ({
@@ -23,6 +24,7 @@ const SEO: React.FC<SEOProps> = ({
   schema,
   author,
   modifiedTime,
+  noIndex,
 }) => {
   const siteTitle = title ? `${title} | OtakuTV` : 'OtakuTV - Watch Anime Online | Stream HD Anime Episodes & Movies';
   const siteDescription = description || 'Watch thousands of anime series and movies in HD quality. Stream the latest episodes and enjoy the best anime streaming experience on OtakuTV.';
@@ -37,6 +39,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="description" content={siteDescription} />
       <meta name="keywords" content={siteKeywords} />
       <link rel="canonical" href={canonicalUrl} />
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* Open Graph / Facebook */}
       <meta property="og:title" content={siteTitle} />
@@ -142,10 +145,12 @@ export const MangaSchema = ({ name, description, author, image, url, genres, rat
         "@type": "Book",
         "name": name,
         "description": description,
-        "author": {
-          "@type": "Person",
-          "name": author || "Unknown"
-        },
+        ...(author && author !== "Unknown" ? {
+          "author": {
+            "@type": "Person",
+            "name": author
+          }
+        } : {}),
         "image": image,
         "url": url,
         "genre": genres,

@@ -28,7 +28,7 @@ function getCoverUrl(manga: any): string {
     if (coverRel?.attributes?.fileName) {
         return `${MANGADEX_COVERS_URL}/${manga.id}/${coverRel.attributes.fileName}.512.jpg`;
     }
-    return '/placeholder-manga.jpg';
+    return '/placeholder.svg';
 }
 
 function getCoverUrlSmall(manga: any): string {
@@ -36,7 +36,7 @@ function getCoverUrlSmall(manga: any): string {
     if (coverRel?.attributes?.fileName) {
         return `${MANGADEX_COVERS_URL}/${manga.id}/${coverRel.attributes.fileName}.256.jpg`;
     }
-    return '/placeholder-manga.jpg';
+    return '/placeholder.svg';
 }
 
 // ─── Helper: Extract author/artist name ──────────────────────────────────────

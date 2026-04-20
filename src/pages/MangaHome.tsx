@@ -5,44 +5,50 @@ import { MangaHero } from '@/components/manga/MangaHero';
 import { MangaSection } from '@/components/manga/MangaSection';
 import { MangaCarousel } from '@/components/manga/MangaCarousel';
 import { MangaGrid } from '@/components/manga/MangaGrid';
-import { SEO } from '@/components/SEO';
+import { SEO, WebSiteSchema, OrganizationSchema } from '@/components/SEO';
 import { mangaUnifiedService } from '@/services/mangaUnifiedService';
 import { Manga } from '@/services/mangaService';
 
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+
 export default function MangaHome() {
-    const [topManga, setTopManga] = useState<Manga[]>([]);
-    const [popularManga, setPopularManga] = useState<Manga[]>([]);
-    const [latestManga, setLatestManga] = useState<Manga[]>([]);
-    const [recentManga, setRecentManga] = useState<Manga[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: allRes, isLoading: loadingAll } = useQuery({
+        queryKey: ['manga', 'all', 1, 10],
+        queryFn: () => mangaUnifiedService.getAllManga(1, 10, true), // skipMangaDex to avoid duplicate
+        staleTime: 5 * 60 * 1000,
+    });
 
-    useEffect(() => {
-        const fetchMangaData = async () => {
-            try {
-                setLoading(true);
-                // Fetch data for different sections using the unified service
-                const [allRes, popRes, latestRes, recentRes] = await Promise.all([
-                    mangaUnifiedService.getAllManga(1, 10),
-                    mangaUnifiedService.getPopularManga(15),
-                    mangaUnifiedService.getLatestManga(15),
-                    mangaUnifiedService.getRecentManga(15)
-                ]);
+    const { data: popRes, isLoading: loadingPop } = useQuery({
+        queryKey: ['manga', 'popular', 15],
+        queryFn: () => mangaUnifiedService.getPopularManga(15),
+        staleTime: 5 * 60 * 1000,
+    });
 
-                if (allRes.success) {
-                    setTopManga(allRes.data.data.slice(0, 5));
-                }
-                setPopularManga(popRes);
-                setLatestManga(latestRes);
-                setRecentManga(recentRes);
-            } catch (error) {
-                console.error('Error fetching manga data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const { data: latestRes, isLoading: loadingLatest } = useQuery({
+        queryKey: ['manga', 'latest', 15],
+        queryFn: () => mangaUnifiedService.getLatestManga(15),
+        staleTime: 5 * 60 * 1000,
+    });
 
-        fetchMangaData();
-    }, []);
+    const { data: recentRes, isLoading: loadingRecent } = useQuery({
+        queryKey: ['manga', 'recent', 15],
+        queryFn: () => mangaUnifiedService.getRecentManga(15),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const loading = loadingAll || loadingPop || loadingLatest || loadingRecent;
+
+    const topManga = React.useMemo(() => {
+        const local = allRes?.success ? allRes.data.data : [];
+        const combined = [...local, ...(popRes || [])];
+        // Ensure uniqueness if needed, but it's ok assuming local and pop don't overlap much
+        return combined.slice(0, 5);
+    }, [allRes, popRes]);
+
+    const popularManga = popRes || [];
+    const latestManga = latestRes || [];
+    const recentManga = recentRes || [];
 
     return (
         <Layout>
@@ -50,6 +56,8 @@ export default function MangaHome() {
                 title="MangaVerse - Read Manga Online Free"
                 description="Discover and read thousands of manga titles for free. Latest updates, popular series, and new releases - all in one place."
             />
+            <WebSiteSchema />
+            <OrganizationSchema />
 
             <div className="min-h-screen bg-manga-dark">
                 {/* Hero Section - Full bleed above container */}

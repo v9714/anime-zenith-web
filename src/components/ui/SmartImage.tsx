@@ -31,10 +31,24 @@ export const SmartImage: React.FC<SmartImageProps> = ({
 }) => {
     // Ensure alt text is descriptive for SEO
     const descriptiveAlt = alt || 'Anime illustration for OtakuTV';
+    const [imgSrc, setImgSrc] = React.useState(src);
+    const [hasError, setHasError] = React.useState(false);
+
+    React.useEffect(() => {
+        setImgSrc(src);
+        setHasError(false);
+    }, [src]);
+
+    const handleError = () => {
+        if (!hasError) {
+            setImgSrc('/placeholder.svg');
+            setHasError(true);
+        }
+    };
 
     return (
         <LazyLoadImage
-            src={src}
+            src={imgSrc || '/placeholder.svg'}
             alt={descriptiveAlt}
             effect={effect}
             className={cn("transition-all duration-300", className)}
@@ -42,6 +56,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
             width={width}
             height={height}
             placeholderSrc={placeholderSrc || "/placeholder.svg"}
+            onError={handleError}
         />
     );
 };
