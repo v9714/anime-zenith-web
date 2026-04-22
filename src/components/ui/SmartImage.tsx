@@ -57,6 +57,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
             height={height}
             placeholderSrc={placeholderSrc || "/placeholder.svg"}
             onError={handleError}
+            referrerPolicy="no-referrer"
         />
     );
 };

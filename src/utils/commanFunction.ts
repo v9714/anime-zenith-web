@@ -11,6 +11,12 @@ const getImageUrl = (path: string | undefined, customBaseUrl?: string): string |
     // Normalize path (convert backslashes to forward slashes)
     const normalizedPath = path.replace(/\\/g, '/');
 
+    // Handle MangaDex proxy paths that might be stored as relative paths
+    if (normalizedPath.startsWith('/mdx-covers/') || normalizedPath.startsWith('mdx-covers/') ||
+        normalizedPath.startsWith('/mdx/') || normalizedPath.startsWith('mdx/')) {
+        return normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`;
+    }
+
     // Use customBaseUrl if provided, otherwise fallback to BACKEND_API_Image_URL
     const baseUrl = customBaseUrl || BACKEND_API_Image_URL;
 

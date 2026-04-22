@@ -3,9 +3,16 @@ import { MANGADEX_API_URL, MANGADEX_COVERS_URL } from '@/utils/constants';
 import { Manga, Chapter, MangaGenre } from './mangaService';
 
 // ─── MangaDex API Client ─────────────────────────────────────────────────────
+// In production, requests go to /mdx/ which nginx proxies to api.mangadex.org
+// This completely eliminates CORS issues — no public proxy services needed.
+const MDX_BASE = import.meta.env.PROD ? '/mdx' : MANGADEX_API_URL;
+// Use absolute URL for covers so getImageUrl() doesn't prepend MANGA_API_URL
+export const MDX_COVERS_BASE = import.meta.env.PROD
+    ? 'https://otakutv.in/mdx-covers'
+    : MANGADEX_COVERS_URL;
 
 const mdxApi = axios.create({
-    baseURL: MANGADEX_API_URL,
+    baseURL: MDX_BASE,
     timeout: 15000,
 });
 
@@ -26,7 +33,7 @@ async function rateLimitedRequest<T>(fn: () => Promise<T>): Promise<T> {
 function getCoverUrl(manga: any): string {
     const coverRel = manga.relationships?.find((r: any) => r.type === 'cover_art');
     if (coverRel?.attributes?.fileName) {
-        return `${MANGADEX_COVERS_URL}/${manga.id}/${coverRel.attributes.fileName}.512.jpg`;
+        return `${MDX_COVERS_BASE}/${manga.id}/${coverRel.attributes.fileName}.512.jpg`;
     }
     return '/placeholder.svg';
 }
@@ -34,7 +41,7 @@ function getCoverUrl(manga: any): string {
 function getCoverUrlSmall(manga: any): string {
     const coverRel = manga.relationships?.find((r: any) => r.type === 'cover_art');
     if (coverRel?.attributes?.fileName) {
-        return `${MANGADEX_COVERS_URL}/${manga.id}/${coverRel.attributes.fileName}.256.jpg`;
+        return `${MDX_COVERS_BASE}/${manga.id}/${coverRel.attributes.fileName}.256.jpg`;
     }
     return '/placeholder.svg';
 }
