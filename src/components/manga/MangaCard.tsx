@@ -136,11 +136,12 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                         )}
                     >
                         {/* Fixed aspect ratio so all featured cards are the same height */}
-                        <div className="relative aspect-[3/4] w-full">
+                    <div className="relative aspect-[3/4] w-full">
                     <SmartImage
                         src={getImageUrl(manga.coverImage)}
                         alt={manga.titleEng || manga.title}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        wrapperClassName="absolute inset-0 w-full h-full"
                     />
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-manga-dark via-manga-dark/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
@@ -287,4 +288,3 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
     </HoverCard>
     );
 }
-

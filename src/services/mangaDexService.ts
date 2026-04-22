@@ -16,16 +16,27 @@ const mdxApi = axios.create({
     timeout: 15000,
 });
 
-// Rate limit: simple delay helper (MangaDex allows 5 req/s)
+// Rate limit: robust queue to ensure 250ms gap between requests (max 4 req/s)
 let lastRequestTime = 0;
+let requestQueue = Promise.resolve();
+
 async function rateLimitedRequest<T>(fn: () => Promise<T>): Promise<T> {
-    const now = Date.now();
-    const elapsed = now - lastRequestTime;
-    if (elapsed < 200) {
-        await new Promise(resolve => setTimeout(resolve, 200 - elapsed));
-    }
-    lastRequestTime = Date.now();
-    return fn();
+    return new Promise<T>((resolve, reject) => {
+        requestQueue = requestQueue.then(async () => {
+            const now = Date.now();
+            const elapsed = now - lastRequestTime;
+            if (elapsed < 250) {
+                await new Promise(res => setTimeout(res, 250 - elapsed));
+            }
+            lastRequestTime = Date.now();
+            try {
+                const result = await fn();
+                resolve(result);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    });
 }
 
 // ─── Helper: Extract cover art URL ───────────────────────────────────────────
