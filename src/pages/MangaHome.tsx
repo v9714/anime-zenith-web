@@ -55,6 +55,7 @@ export default function MangaHome() {
             <SEO
                 title="MangaVerse - Read Manga Online Free"
                 description="Discover and read thousands of manga titles for free. Latest updates, popular series, and new releases - all in one place."
+                url="/manga"
             />
             <WebSiteSchema />
             <OrganizationSchema />

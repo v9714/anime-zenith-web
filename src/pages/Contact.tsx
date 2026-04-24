@@ -86,6 +86,7 @@ export default function Contact() {
         title="Contact Us - Get in Touch with OtakuTV Support"
         description="Have questions or feedback? Contact OtakuTV support team. We're here to help with anime streaming issues, requests, and general inquiries."
         keywords="contact otakutv, anime support, customer service, feedback, anime requests"
+        url="/contact"
       />
       <BreadcrumbSchema
         items={[

@@ -160,6 +160,7 @@ const MangaDetailsPage = () => {
                 keywords={`${manga.title}, ${genreNames.join(', ')}, manga, read manga, manga online`}
                 author={manga.author || undefined}
                 modifiedTime={manga.updatedAt}
+                url={pageUrl}
             />
 
             {/* Structured Data */}

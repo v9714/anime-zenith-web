@@ -131,6 +131,7 @@ export default function AnimeDetails() {
 
   const animeImage = getImageUrl(anime.bannerImage || anime.coverImage);
   const genresList = anime.genres?.map(g => g.name).join(', ') || '';
+  const pageUrl = `/anime/${anime.id}`;
 
   return (
     <Layout>
@@ -140,6 +141,7 @@ export default function AnimeDetails() {
         keywords={`${anime.title}, watch ${anime.title}, ${anime.title} anime, ${genresList}, anime online`}
         image={animeImage}
         type="video.movie"
+        url={pageUrl}
       />
       <BreadcrumbSchema
         items={[

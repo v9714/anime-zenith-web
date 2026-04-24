@@ -130,6 +130,7 @@ export default function Home() {
         description="Watch thousands of anime series and movies in HD quality. Stream the latest episodes, discover classic favorites, and enjoy the best anime streaming experience."
         keywords="anime, watch anime online, anime streaming, HD anime, latest anime episodes, anime movies, top anime series"
         type="website"
+        url="/"
       />
       <OrganizationSchema />
       <WebSiteSchema />

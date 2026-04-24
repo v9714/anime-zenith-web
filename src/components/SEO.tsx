@@ -12,6 +12,7 @@ interface SEOProps {
   author?: string;
   modifiedTime?: string;
   noIndex?: boolean;
+  noFollow?: boolean;
 }
 
 const SEO: React.FC<SEOProps> = ({
@@ -25,12 +26,17 @@ const SEO: React.FC<SEOProps> = ({
   author,
   modifiedTime,
   noIndex,
+  noFollow,
 }) => {
   const siteTitle = title ? `${title} | OtakuTV` : 'OtakuTV - Watch Anime Online | Stream HD Anime Episodes & Movies';
   const siteDescription = description || 'Watch thousands of anime series and movies in HD quality. Stream the latest episodes and enjoy the best anime streaming experience on OtakuTV.';
   const siteKeywords = keywords || 'anime, watch anime, anime streaming, anime online, otaku, HD anime';
 
   const canonicalUrl = url.startsWith('http') ? url : `https://otakutv.in${url}`;
+  const robotsContent = [
+    noIndex ? 'noindex' : 'index',
+    noFollow ? 'nofollow' : 'follow',
+  ].join(', ');
 
   return (
     <Helmet>
@@ -39,7 +45,7 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="description" content={siteDescription} />
       <meta name="keywords" content={siteKeywords} />
       <link rel="canonical" href={canonicalUrl} />
-      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+      <meta name="robots" content={robotsContent} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:title" content={siteTitle} />
@@ -95,7 +101,7 @@ export const WebSiteSchema = () => (
         "url": "https://otakutv.in",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "https://otakutv.in/search?q={search_term_string}",
+          "target": "https://otakutv.in/search?title={search_term_string}",
           "query-input": "required name=search_term_string"
         }
       })}

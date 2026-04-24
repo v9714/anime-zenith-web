@@ -103,6 +103,7 @@ export default function Episodes() {
         title="Latest Anime Episodes - Watch New Releases Daily"
         description="Watch the latest anime episodes released today. New episodes added daily from popular and trending anime series. Stream in HD quality."
         keywords="latest anime episodes, new anime episodes, anime releases, watch latest anime, new episodes today"
+        url="/episodes"
       />
       <BreadcrumbSchema
         items={[

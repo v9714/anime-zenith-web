@@ -102,6 +102,9 @@ export default function ResetPassword() {
             <SEO
                 title="Reset Password"
                 description="Reset your password to regain access to your account"
+                noIndex={true}
+                noFollow={true}
+                url="/reset-password"
             />
             <div className="min-h-screen flex items-center justify-center bg-background p-4">
                 <Card className="w-full max-w-md">

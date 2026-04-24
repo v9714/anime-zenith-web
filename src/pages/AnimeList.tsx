@@ -118,6 +118,11 @@ export default function AnimeList() {
   const pageDescription = selectedGenre
     ? `Discover the best ${selectedGenre.name} anime series and movies. Browse our extensive collection of ${selectedGenre.name} anime, sorted by popularity and rating.`
     : "Browse our complete collection of anime series and movies. Filter by genre, sort by popularity, rating, or title. Discover your next favorite anime.";
+  const canonicalParams = new URLSearchParams();
+  if (genre) canonicalParams.set("genre", genre);
+  if (sort && sort !== "top") canonicalParams.set("sort", sort);
+  if (page > 1) canonicalParams.set("page", page.toString());
+  const canonicalUrl = `/anime${canonicalParams.toString() ? `?${canonicalParams.toString()}` : ""}`;
 
   return (
     <Layout>
@@ -125,6 +130,7 @@ export default function AnimeList() {
         title={pageTitle}
         description={pageDescription}
         keywords={`anime list, browse anime, ${selectedGenre?.name || 'all'} anime, anime series, anime movies, anime by genre`}
+        url={canonicalUrl}
       />
       <BreadcrumbSchema
         items={[

@@ -130,6 +130,12 @@ const MangaList = () => {
     };
 
     const hasActiveFilters = searchTerm || statusFilter !== "all" || sortBy !== "latest" || genreFilter !== "all";
+    const canonicalParams = new URLSearchParams();
+    if (genreFilter !== "all") canonicalParams.set("genre", genreFilter);
+    if (statusFilter !== "all") canonicalParams.set("status", statusFilter);
+    if (sortBy !== "latest") canonicalParams.set("sort", sortBy);
+    if (currentPage > 1) canonicalParams.set("page", currentPage.toString());
+    const canonicalUrl = `/manga/browse${canonicalParams.toString() ? `?${canonicalParams.toString()}` : ""}`;
 
     return (
         <Layout>
@@ -140,6 +146,7 @@ const MangaList = () => {
                 }
                 description={`Discover and read thousands of manga titles for free. ${genreFilter !== "all" ? `Browse ${genreFilter} manga. ` : ''}Filter by genre, status, and more.`}
                 keywords={`browse manga, manga list, read manga, ${genreFilter !== "all" ? genreFilter + ' manga, ' : ''}manga online, free manga`}
+                url={canonicalUrl}
             />
             <BreadcrumbSchema
                 items={[

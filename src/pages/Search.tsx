@@ -84,7 +84,8 @@ export default function Search() {
         title={pageTitle}
         description={pageDescription}
         keywords={`search anime, find anime, ${query}, anime search`}
-        noIndex={!query}
+        noIndex={true}
+        url={query ? `/search?title=${encodeURIComponent(query)}${page > 1 ? `&page=${page}` : ''}` : '/search'}
       />
       {query && (
         <BreadcrumbSchema

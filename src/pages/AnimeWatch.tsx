@@ -421,6 +421,7 @@ export default function AnimeWatch() {
         keywords={`watch ${anime.title}, ${anime.title} episode ${currentEpisode?.episodeNumber || episodeNumber}, ${anime.title} online, stream anime`}
         image={animeImage}
         type="video.movie"
+        noIndex={true}
       />
       <BreadcrumbSchema
         items={[
