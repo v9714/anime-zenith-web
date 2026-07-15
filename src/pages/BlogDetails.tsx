@@ -43,7 +43,8 @@ import {
   getBlogLikeStatus, 
   toggleBlogBookmark, 
   getBlogBookmarkStatus,
-  incrementBlogViews
+  incrementBlogViews,
+  getFitFromUrl
 } from "@/services/blogService";
 import { getAnimeById } from "@/services/api";
 import { mangaService } from "@/services/mangaService";
@@ -503,7 +504,7 @@ ${getReadableContent(blog.content || "")}`;
                 <img
                   src={resolveImageUrl(blog.coverImage)}
                   alt={blog.title}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-${getFitFromUrl(blog.coverImage)}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 

@@ -254,23 +254,93 @@ All colors MUST be HSL.
 /* Row wrapper for side-by-side layout */
 .editor-row {
   display: flex;
-  gap: 1.25rem;
   margin: 2rem 0;
   width: 100%;
+  align-items: flex-start;
 }
 
-.editor-row img {
+/* Clear default dark background overlays when columns block node is selected */
+.editor-row.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary));
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Column configurations */
+.editor-col {
+  min-width: 0;
+  border: 1px dashed hsl(var(--border) / 0.8);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.editor-col:hover {
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.editor-col:focus-within {
+  border-style: solid;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.15);
+}
+
+/* Layout Ratios */
+.editor-row.layout-50-50 > .editor-col {
   flex: 1;
-  width: 50%;
-  aspect-ratio: 16/9;
-  object-fit: cover;
+}
+
+.editor-row.layout-33-67 > .editor-col:nth-child(1) {
+  flex: 1;
+}
+.editor-row.layout-33-67 > .editor-col:nth-child(2) {
+  flex: 2;
+}
+
+.editor-row.layout-67-33 > .editor-col:nth-child(1) {
+  flex: 2;
+}
+.editor-row.layout-67-33 > .editor-col:nth-child(2) {
+  flex: 1;
+}
+
+/* 3-Column Layout Ratios */
+.editor-row.layout-33-33-33 > .editor-col {
+  flex: 1;
+}
+
+.editor-row.layout-25-50-25 > .editor-col:nth-child(1) {
+  flex: 1;
+}
+.editor-row.layout-25-50-25 > .editor-col:nth-child(2) {
+  flex: 2;
+}
+.editor-row.layout-25-50-25 > .editor-col:nth-child(3) {
+  flex: 1;
+}
+
+.editor-row.layout-20-60-20 > .editor-col:nth-child(1) {
+  flex: 1;
+}
+.editor-row.layout-20-60-20 > .editor-col:nth-child(2) {
+  flex: 3;
+}
+.editor-row.layout-20-60-20 > .editor-col:nth-child(3) {
+  flex: 1;
+}
+
+/* Image fallback legacy styles inside columns */
+.editor-row img {
   border-radius: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.editor-row img:hover {
-  transform: scale(1.02);
+/* Reader View overrides (no border/padding/hover inside published prose article posts) */
+.prose .editor-col {
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 
 /* Clear floats to avoid article breakage */
@@ -356,9 +426,9 @@ All colors MUST be HSL.
 
 .blog-image-controls {
   position: absolute;
-  left: 50%;
+  left: 0;
   top: -2.5rem;
-  z-index: 5;
+  z-index: 50;
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
@@ -367,7 +437,7 @@ All colors MUST be HSL.
   background: hsl(var(--popover));
   color: hsl(var(--popover-foreground));
   box-shadow: 0 10px 24px hsl(var(--foreground) / 0.18);
-  transform: translateX(-50%);
+  width: max-content;
 }
 
 .blog-image-control {

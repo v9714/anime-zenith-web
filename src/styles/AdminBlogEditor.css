@@ -198,6 +198,10 @@
   width: 100%;
 }
 
+.blog-image-node.is-selected {
+  z-index: 50;
+}
+
 .blog-image-node.is-selected .blog-image-frame img {
   box-shadow: 0 0 0 3px #3b82f6;
   border-radius: 6px;
@@ -214,12 +218,12 @@
   position: absolute;
   top: -2.5rem;
   left: 0;
-  right: 0;
   background: linear-gradient(to right, #1e293b, #334155);
   padding: 0.5rem;
   border-radius: 0.5rem;
-  z-index: 30;
+  z-index: 50;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: max-content;
 }
 
 .blog-image-control {

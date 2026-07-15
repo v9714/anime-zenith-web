@@ -44,6 +44,7 @@ import {
   X,
   WrapText,
   FileText,
+  Columns,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -56,13 +57,15 @@ import {
   uploadInlineImage,
   resolveImageUrl,
   getBlogGenres,
+  getFitFromUrl,
 } from "@/services/blogService";
 import { CONTENT_API_URL } from "@/utils/constants";
 import { searchAnime } from "@/services/api";
 import { mangaService } from "@/services/mangaService";
 
 // TipTap Editor
-import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
+import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer, Node, Extension } from "@tiptap/react";
+import { TextSelection } from "prosemirror-state";
 import StarterKit from "@tiptap/starter-kit";
 import ImageExtension from "@tiptap/extension-image";
 import LinkExtension from "@tiptap/extension-link";
@@ -212,7 +215,7 @@ const ResizableImageView = ({ node, selected, updateAttributes, deleteNode }: an
     >
       <div className="blog-image-frame relative group">
         {selected && (
-          <div className="blog-image-controls absolute -top-10 left-0 right-0 flex gap-1 p-1 bg-slate-900 rounded-t-md shadow-lg z-20" contentEditable={false}>
+          <div className="blog-image-controls absolute -top-10 left-0 flex gap-1 p-1 bg-slate-900 rounded-t-md shadow-lg z-50 w-max" contentEditable={false}>
             <button
               type="button"
               title="Move image"
@@ -336,7 +339,7 @@ const ResizableImageView = ({ node, selected, updateAttributes, deleteNode }: an
         <div className="blog-image-caption-edit mt-2" contentEditable={false}>
           <input
             type="text"
-            className="w-full px-2 py-1 text-sm border border-slate-200 rounded bg-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full px-2 py-1 text-sm border border-slate-200 rounded bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 font-sans"
             placeholder="Add a caption (optional)"
             value={node.attrs.caption || ""}
             onChange={(e) => updateAttributes({ caption: e.target.value })}
@@ -351,6 +354,143 @@ const ResizableImageView = ({ node, selected, updateAttributes, deleteNode }: an
     </NodeViewWrapper>
   );
 };
+
+const ColumnsExtension = Node.create({
+  name: "columns",
+  group: "block",
+  content: "column+", // allow 2, 3 or more columns dynamically
+  defining: true,
+
+  addAttributes() {
+    return {
+      layout: {
+        default: "50-50",
+        parseHTML: (element) => element.getAttribute("data-layout") || "50-50",
+        renderHTML: (attributes) => ({
+          "data-layout": attributes.layout,
+          class: `editor-row layout-${attributes.layout}`,
+        }),
+      },
+      gap: {
+        default: "1.5rem",
+        parseHTML: (element) => element.getAttribute("data-gap") || "1.5rem",
+        renderHTML: (attributes) => ({
+          "data-gap": attributes.gap,
+          style: `gap: ${attributes.gap}`,
+        }),
+      },
+    };
+  },
+
+  parseHTML() {
+    return [{ tag: 'div[data-type="columns"]' }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    // Spread HTMLAttributes to output class and style (gap) properties to the DOM
+    return ["div", { "data-type": "columns", ...HTMLAttributes }, 0];
+  },
+});
+
+const ColumnExtension = Node.create({
+  name: "column",
+  content: "block+", // can contain paragraphs, headings, lists, images
+  defining: true,
+  isolating: true, // prevents backspace/selection from leaking outside or deleting the column
+  selectable: false, // column itself cannot be selected as a node block
+
+  addAttributes() {
+    return {
+      width: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("data-width") || "",
+        renderHTML: (attributes) => {
+          if (!attributes.width) return {};
+          return {
+            "data-width": attributes.width,
+            style: `flex: 0 0 ${attributes.width}; max-width: ${attributes.width}; width: ${attributes.width}`,
+          };
+        },
+      },
+    };
+  },
+
+  parseHTML() {
+    return [{ tag: 'div[data-type="column"]' }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["div", { "data-type": "column", ...HTMLAttributes, class: `editor-col ${HTMLAttributes.class || ""}`.trim() }, 0];
+  },
+});
+
+const ColumnSelectAllExtension = Extension.create({
+  name: "columnSelectAll",
+
+  addKeyboardShortcuts() {
+    return {
+      "Mod-a": ({ editor }) => {
+        const { state, dispatch } = editor.view;
+        const { selection } = state;
+
+        let columnRange: { from: number; to: number } | null = null;
+        state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          if (node.type.name === "column") {
+            columnRange = { from: pos + 1, to: pos + node.nodeSize - 1 };
+            return false;
+          }
+        });
+
+        if (columnRange) {
+          const newSelection = TextSelection.create(state.doc, columnRange.from, columnRange.to);
+          dispatch(state.tr.setSelection(newSelection));
+          return true; // Handled
+        }
+
+        return false; // Let standard Select All execute
+      },
+
+      Backspace: ({ editor }) => {
+        const { state, dispatch } = editor.view;
+        const { selection } = state;
+
+        let columnNodePos = -1;
+        let columnNode: any = null;
+        state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          if (node.type.name === "column") {
+            columnNodePos = pos;
+            columnNode = node;
+            return false;
+          }
+        });
+
+        if (columnNodePos !== -1 && columnNode) {
+          const colStart = columnNodePos + 1;
+          const colEnd = columnNodePos + columnNode.nodeSize - 1;
+
+          // If selection spans the entire contents of the column (e.g. after Ctrl+A)
+          if (selection.from === colStart && selection.to === colEnd) {
+            const emptyParagraph = state.schema.nodes.paragraph.createAndFill();
+            if (emptyParagraph) {
+              const tr = state.tr.replaceWith(colStart, colEnd, emptyParagraph);
+              const TextSelectionConstructor = state.schema.cached.types.textSelection || selection.constructor;
+              const newSelection = TextSelectionConstructor.create(tr.doc, colStart + 1);
+              dispatch(tr.setSelection(newSelection));
+              return true; // Handled!
+            }
+          }
+
+          // If selection is empty (just cursor) and at the very beginning of the column
+          if (selection.empty && selection.from === colStart + 1) {
+            return true; // Do nothing, prevent merging with previous column/block!
+          }
+        }
+
+        return false;
+      },
+    };
+  },
+});
 
 const BlogImageExtension = ImageExtension.extend({
   addAttributes() {
@@ -413,6 +553,9 @@ const AdminBlogEditor = () => {
   const [summary, setSummary] = useState("");
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [coverImageFit, setCoverImageFit] = useState<"cover" | "contain" | "fill">("cover");
+  const [coverSource, setCoverSource] = useState<"upload" | "url">("upload");
+  const [coverImageUrlInput, setCoverImageUrlInput] = useState("");
   const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">("DRAFT");
   const [isCommentOn, setIsCommentOn] = useState(true);
 
@@ -435,8 +578,59 @@ const AdminBlogEditor = () => {
   // Editor UX state
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+  const [showImageInput, setShowImageInput] = useState(false);
+  const [imageTab, setImageTab] = useState<"upload" | "url">("upload");
+  const [inputImageUrl, setInputImageUrl] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+  const getActiveColumnWidths = (): string[] => {
+    if (!editor) return [];
+    const { state } = editor;
+    const { selection } = state;
+    const widths: string[] = [];
+
+    state.doc.nodesBetween(selection.from, selection.to, (node) => {
+      if (node.type.name === "columns") {
+        node.forEach((child) => {
+          if (child.type.name === "column") {
+            widths.push(child.attrs.width || "");
+          }
+        });
+      }
+    });
+    return widths;
+  };
+
+  const updateColumnWidths = (widths: string[]) => {
+    if (!editor) return;
+    const { state, dispatch } = editor.view;
+    const { selection } = state;
+    let columnsPos = -1;
+    let columnsNode: any = null;
+
+    state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+      if (node.type.name === "columns") {
+        columnsPos = pos;
+        columnsNode = node;
+      }
+    });
+
+    if (columnsNode && columnsPos !== -1) {
+      let tr = state.tr;
+      let colIndex = 0;
+      columnsNode.forEach((child, offset) => {
+        if (child.type.name === "column" && colIndex < widths.length) {
+          const childPos = columnsPos + 1 + offset;
+          tr = tr.setNodeMarkup(childPos, undefined, {
+            ...child.attrs,
+            width: widths[colIndex],
+          });
+          colIndex++;
+        }
+      });
+      dispatch(tr);
+    }
+  };
 
   // Ref for image upload handler
   const imageUploadHandlerRef = useRef<(file: File) => void>(() => {});
@@ -465,6 +659,9 @@ const AdminBlogEditor = () => {
       Placeholder.configure({
         placeholder: "Start writing your amazing article...",
       }),
+      ColumnsExtension,
+      ColumnExtension,
+      ColumnSelectAllExtension,
     ],
     content: "",
     editorProps: {
@@ -592,7 +789,15 @@ const AdminBlogEditor = () => {
           setRelatedAnimeId(blog.animeId || null);
           setRelatedMangaId(blog.mangaId || null);
           if (blog.coverImage) {
+            const fit = getFitFromUrl(blog.coverImage);
+            setCoverImageFit(fit);
             setCoverImageUrl(resolveImageUrl(blog.coverImage));
+            if (blog.coverImage.startsWith("http")) {
+              setCoverSource("url");
+              setCoverImageUrlInput(blog.coverImage.split('#')[0]);
+            } else {
+              setCoverSource("upload");
+            }
           }
           if (blog.content) {
             editor.commands.setContent(blog.content);
@@ -614,7 +819,21 @@ const AdminBlogEditor = () => {
       const file = e.target.files[0];
       setCoverImageFile(file);
       setCoverImageUrl(URL.createObjectURL(file));
+      setCoverSource("upload");
     }
+  };
+
+  const handleCoverUrlChange = (url: string) => {
+    const trimmed = url.trim();
+    setCoverImageUrlInput(trimmed);
+    setCoverImageUrl(trimmed);
+    setCoverImageFile(null);
+  };
+
+  const handleRemoveCoverUrl = () => {
+    setCoverImageUrlInput("");
+    setCoverImageUrl("");
+    setCoverImageFile(null);
   };
 
   // Shared image upload+insert logic
@@ -653,14 +872,45 @@ const AdminBlogEditor = () => {
 
   imageUploadHandlerRef.current = handleImageFile;
 
-  // Toolbar: Insert image
+  // Toolbar: Insert image toggle
   const handleInsertImage = () => {
+    setShowImageInput(!showImageInput);
+    setShowLinkInput(false); // Close link input if open
+  };
+
+  const applyImageUrl = () => {
+    if (!editor) return;
+    const url = inputImageUrl.trim();
+    if (!url) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "image",
+        attrs: {
+          src: url,
+          alt: "Inserted image",
+          align: "center",
+          width: "70%",
+        },
+      })
+      .run();
+    setInputImageUrl("");
+    setShowImageInput(false);
+    toast.success("Image inserted successfully");
+  };
+
+  const handleChooseLocalFile = () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = "image/*";
     fileInput.onchange = async (e: any) => {
       if (e.target.files && e.target.files[0]) {
-        handleImageFile(e.target.files[0]);
+        await handleImageFile(e.target.files[0]);
+        setShowImageInput(false);
       }
     };
     fileInput.click();
@@ -718,13 +968,15 @@ const AdminBlogEditor = () => {
       formData.append("summary", summary.trim());
       formData.append("status", saveStatus);
       formData.append("isCommentOn", String(isCommentOn));
+      formData.append("coverImageFit", coverImageFit);
 
       if (coverImageFile) {
         formData.append("coverImage", coverImageFile);
       } else if (coverImageUrl && !coverImageUrl.startsWith("blob:")) {
-        const relativePath = coverImageUrl.startsWith(CONTENT_API_URL)
-          ? coverImageUrl.replace(CONTENT_API_URL, "")
-          : coverImageUrl;
+        const urlBase = coverImageUrl.split('#')[0];
+        const relativePath = urlBase.startsWith(CONTENT_API_URL)
+          ? urlBase.replace(CONTENT_API_URL, "")
+          : urlBase;
         formData.append("coverImageUrl", relativePath);
       }
 
@@ -915,29 +1167,81 @@ const AdminBlogEditor = () => {
                     </div>
 
                     {/* Cover Image */}
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-foreground/80">Cover Image</Label>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <Label className="font-semibold text-foreground/80">Cover Image</Label>
+                        <div className="flex bg-muted rounded-md p-0.5 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => setCoverSource("upload")}
+                            className={`px-2 py-1 rounded-sm transition ${
+                              coverSource === "upload"
+                                ? "bg-background text-foreground shadow-sm font-medium"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            Upload File
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCoverSource("url")}
+                            className={`px-2 py-1 rounded-sm transition ${
+                              coverSource === "url"
+                                ? "bg-background text-foreground shadow-sm font-medium"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            Image URL
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* URL Input field if selected */}
+                      {coverSource === "url" && (
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Enter cover image URL (e.g. https://...)"
+                            value={coverImageUrlInput}
+                            onChange={(e) => handleCoverUrlChange(e.target.value)}
+                            className="bg-background border-border text-xs focus:ring-primary/50"
+                          />
+                        </div>
+                      )}
+
+                      {/* Cover Image Preview */}
                       {coverImageUrl ? (
                         <div className="relative group rounded-lg overflow-hidden border border-border aspect-video">
                           <img
                             src={coverImageUrl}
                             alt="Cover preview"
-                            className="w-full h-full object-cover"
+                            className={`w-full h-full object-${coverImageFit}`}
                           />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <label className="cursor-pointer bg-primary text-white text-xs px-3 py-1.5 rounded-md hover:bg-primary/90 flex items-center gap-1.5 font-medium">
-                              <Upload className="h-3 w-3" />
-                              Change
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleCoverChange}
-                                className="hidden"
-                              />
-                            </label>
+                            {coverSource === "upload" ? (
+                              <label className="cursor-pointer bg-primary text-white text-xs px-3 py-1.5 rounded-md hover:bg-primary/90 flex items-center gap-1.5 font-medium">
+                                <Upload className="h-3 w-3" />
+                                Change File
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleCoverChange}
+                                  className="hidden"
+                                />
+                              </label>
+                            ) : (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={handleRemoveCoverUrl}
+                                className="text-xs"
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Clear URL
+                              </Button>
+                            )}
                           </div>
                         </div>
-                      ) : (
+                      ) : coverSource === "upload" ? (
                         <label className="border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors aspect-video">
                           <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
                           <span className="text-xs font-medium text-muted-foreground">Select Cover Image</span>
@@ -948,6 +1252,32 @@ const AdminBlogEditor = () => {
                             className="hidden"
                           />
                         </label>
+                      ) : (
+                        <div className="border border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center aspect-video bg-muted/10">
+                          <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
+                          <span className="text-xs text-muted-foreground/50">Enter a valid URL above to preview cover</span>
+                        </div>
+                      )}
+
+                      {/* Object Fit Settings */}
+                      {coverImageUrl && (
+                        <div className="space-y-1.5 pt-1">
+                          <Label className="text-xs font-semibold text-foreground/75">Cover Image Fit</Label>
+                          <div className="flex gap-1.5">
+                            {(["cover", "contain", "fill"] as const).map((fit) => (
+                              <Button
+                                key={fit}
+                                type="button"
+                                variant={coverImageFit === fit ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCoverImageFit(fit)}
+                                className="flex-1 text-[11px] capitalize h-7 py-0"
+                              >
+                                {fit}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
 
@@ -1282,7 +1612,7 @@ const AdminBlogEditor = () => {
                           </Button>
                         </div>
 
-                        {/* Image & Undo/Redo */}
+                        {/* Image, Columns & Undo/Redo */}
                         <div className="flex gap-0.5 border-r border-border pr-1 pl-1">
                           <Button
                             size="sm"
@@ -1294,9 +1624,63 @@ const AdminBlogEditor = () => {
                             <ImageIcon className="h-4 w-4 mr-1" />
                             Image
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              editor.chain().focus().insertContent({
+                                type: "columns",
+                                attrs: { layout: "50-50" },
+                                content: [
+                                  {
+                                    type: "column",
+                                    content: [{ type: "paragraph", content: [{ type: "text", text: "Left column contents..." }] }]
+                                  },
+                                  {
+                                    type: "column",
+                                    content: [{ type: "paragraph", content: [{ type: "text", text: "Right column contents..." }] }]
+                                  }
+                                ]
+                              }).run();
+                            }}
+                            title="Insert 2 Columns Layout"
+                            className="hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <Columns className="h-4 w-4 mr-1" />
+                            2 Cols
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              editor.chain().focus().insertContent({
+                                type: "columns",
+                                attrs: { layout: "33-33-33" },
+                                content: [
+                                  {
+                                    type: "column",
+                                    content: [{ type: "paragraph", content: [{ type: "text", text: "Left column..." }] }]
+                                  },
+                                  {
+                                    type: "column",
+                                    content: [{ type: "paragraph", content: [{ type: "text", text: "Center column..." }] }]
+                                  },
+                                  {
+                                    type: "column",
+                                    content: [{ type: "paragraph", content: [{ type: "text", text: "Right column..." }] }]
+                                  }
+                                ]
+                              }).run();
+                            }}
+                            title="Insert 3 Columns Layout (Left, Center, Right)"
+                            className="hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <Columns className="h-4 w-4 mr-1 text-primary animate-pulse" />
+                            3 Cols
+                          </Button>
                         </div>
 
-                        <div className="flex gap-0.5 pl-1">
+                        <div className="flex gap-0.5 border-r border-border pr-1 pl-1">
                           <Button
                             size="sm"
                             variant="ghost"
@@ -1318,6 +1702,102 @@ const AdminBlogEditor = () => {
                             <Redo2 className="h-4 w-4" />
                           </Button>
                         </div>
+
+                        {editor.isActive("columns") && (
+                          <div className="flex flex-wrap gap-2 items-center bg-primary/10 border border-primary/20 rounded px-2.5 py-1 text-xs">
+                            <span className="text-[10px] text-primary uppercase font-bold tracking-wider">Presets:</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const attrs = editor.getAttributes("columns");
+                                let colCount = 2;
+                                editor.state.doc.nodesBetween(editor.state.selection.from, editor.state.selection.to, (node) => {
+                                  if (node.type.name === "columns") {
+                                    colCount = node.childCount;
+                                  }
+                                });
+
+                                let nextLayout = "50-50";
+                                if (colCount === 3) {
+                                  const currentLayout = attrs.layout || "33-33-33";
+                                  nextLayout = currentLayout === "33-33-33" ? "25-50-25" : currentLayout === "25-50-25" ? "20-60-20" : "33-33-33";
+                                } else {
+                                  const currentLayout = attrs.layout || "50-50";
+                                  nextLayout = currentLayout === "50-50" ? "33-67" : currentLayout === "33-67" ? "67-33" : "50-50";
+                                }
+
+                                // Clear custom column widths so preset layout flex classes apply cleanly
+                                const emptyWidths = Array(colCount).fill("");
+                                updateColumnWidths(emptyWidths);
+
+                                editor.chain().focus().updateAttributes("columns", { layout: nextLayout }).run();
+                              }}
+                              title="Cycle preset layout ratios"
+                              className="text-xs px-2 h-7 hover:bg-primary/20 text-foreground font-semibold"
+                            >
+                              {editor.getAttributes("columns").layout || (
+                                (() => {
+                                  let colCount = 2;
+                                  editor.state.doc.nodesBetween(editor.state.selection.from, editor.state.selection.to, (node) => {
+                                    if (node.type.name === "columns") {
+                                      colCount = node.childCount;
+                                    }
+                                  });
+                                  return colCount === 3 ? "33-33-33" : "50-50";
+                                })()
+                              )}
+                            </Button>
+
+                            <span className="text-[10px] text-primary uppercase font-bold tracking-wider ml-1">Col Widths (%):</span>
+                            {(() => {
+                              const widths = getActiveColumnWidths();
+                              const colCount = widths.length;
+                              return (
+                                <div className="flex gap-1 items-center">
+                                  {widths.map((w, idx) => {
+                                    const val = w.replace("%", "") || (colCount === 3 ? "33.3" : "50");
+                                    return (
+                                      <input
+                                        key={idx}
+                                        type="number"
+                                        min="10"
+                                        max="90"
+                                        value={Math.round(parseFloat(val))}
+                                        onChange={(e) => {
+                                          const newVal = e.target.value;
+                                          const newWidths = [...widths];
+                                          newWidths[idx] = newVal ? `${newVal}%` : "";
+                                          updateColumnWidths(newWidths);
+                                        }}
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                        onKeyUp={(e) => e.stopPropagation()}
+                                        onKeyPress={(e) => e.stopPropagation()}
+                                        className="w-12 h-7 bg-background/50 border border-border rounded text-center text-foreground focus:outline-none focus:ring-1 focus:ring-primary text-xs font-semibold"
+                                        title={`Column ${idx + 1} Width`}
+                                      />
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+
+                            <span className="text-[10px] text-primary uppercase font-bold tracking-wider ml-1">Gap:</span>
+                            <input
+                              type="text"
+                              value={editor.getAttributes("columns").gap || "1.5rem"}
+                              onChange={(e) => {
+                                editor.commands.updateAttributes("columns", { gap: e.target.value });
+                              }}
+                              onKeyDown={(e) => e.stopPropagation()}
+                              onKeyUp={(e) => e.stopPropagation()}
+                              onKeyPress={(e) => e.stopPropagation()}
+                              className="w-16 h-7 bg-background/50 border border-border rounded text-center text-foreground focus:outline-none focus:ring-1 focus:ring-primary text-xs font-semibold"
+                              placeholder="1.5rem"
+                              title="Columns Gap spacing"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* Link Input Popover */}
@@ -1348,6 +1828,98 @@ const AdminBlogEditor = () => {
                                 Cancel
                               </Button>
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Image Input Popover */}
+                      {showImageInput && (
+                        <div className="absolute left-0 right-0 mx-auto max-w-sm bg-popover border border-border rounded-lg shadow-xl p-4 z-50 top-24 text-popover-foreground">
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center border-b pb-2">
+                              <span className="text-sm font-semibold text-foreground">Insert Image</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowImageInput(false)}
+                                className="h-6 w-6 p-0 hover:bg-muted"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+
+                            {/* Tab Selectors */}
+                            <div className="flex bg-muted rounded-md p-0.5 text-xs">
+                              <button
+                                type="button"
+                                onClick={() => setImageTab("upload")}
+                                className={`flex-1 py-1.5 rounded-sm transition ${
+                                  imageTab === "upload"
+                                    ? "bg-background text-foreground shadow-sm font-medium"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                Upload file
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setImageTab("url")}
+                                className={`flex-1 py-1.5 rounded-sm transition ${
+                                  imageTab === "url"
+                                    ? "bg-background text-foreground shadow-sm font-medium"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                Image URL
+                              </button>
+                            </div>
+
+                            {/* Tab Content */}
+                            {imageTab === "upload" ? (
+                              <div className="space-y-2">
+                                <p className="text-xs text-muted-foreground">Upload an image file from your device.</p>
+                                <Button
+                                  type="button"
+                                  onClick={handleChooseLocalFile}
+                                  className="w-full bg-primary hover:bg-primary/95 text-white"
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Choose Image File
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <p className="text-xs text-muted-foreground">Enter the web link/URL of the image.</p>
+                                <input
+                                  type="text"
+                                  placeholder="https://example.com/image.png"
+                                  value={inputImageUrl}
+                                  onChange={(e) => setInputImageUrl(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") applyImageUrl();
+                                    if (e.key === "Escape") setShowImageInput(false);
+                                  }}
+                                  className="w-full px-3 py-2 bg-background border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={applyImageUrl}
+                                    className="flex-1 bg-primary hover:bg-primary/95 text-white font-medium"
+                                  >
+                                    Insert Image
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setShowImageInput(false)}
+                                    className="hover:bg-muted"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

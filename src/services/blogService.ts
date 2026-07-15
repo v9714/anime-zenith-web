@@ -104,6 +104,14 @@ export const resolveImageUrl = (path: string | null): string => {
   return `${CONTENT_API_URL}${path}`;
 };
 
+// Get Fit type from cover image url/path
+export const getFitFromUrl = (path: string | null): "cover" | "contain" | "fill" => {
+  if (!path) return "cover";
+  if (path.includes("fit=fill")) return "fill";
+  if (path.includes("fit=contain")) return "contain";
+  return "cover";
+};
+
 // Blog Interactions
 export const toggleBlogLike = async (blogId: number): Promise<any> => {
   const response = await interactionApi.post("/api/interactions/blog/like", { blogId });

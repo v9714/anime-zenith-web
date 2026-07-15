@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Eye, Calendar, User, BookOpen, Clock, Loader2, ArrowRight } from "lucide-react";
-import { getBlogs, BlogPost, resolveImageUrl } from "@/services/blogService";
+import { getBlogs, BlogPost, resolveImageUrl, getFitFromUrl } from "@/services/blogService";
 import { genreService, Genre } from "@/services/genreService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -189,7 +189,7 @@ export default function BlogList() {
                     <img
                       src={resolveImageUrl(blog.coverImage)}
                       alt={blog.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className={`w-full h-full object-${getFitFromUrl(blog.coverImage)} group-hover:scale-105 transition-transform duration-500`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>

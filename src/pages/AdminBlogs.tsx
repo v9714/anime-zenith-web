@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getAdminBlogs, deleteBlog, BlogPost, resolveImageUrl } from "@/services/blogService";
+import { getAdminBlogs, deleteBlog, BlogPost, resolveImageUrl, getFitFromUrl } from "@/services/blogService";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -274,7 +274,7 @@ const AdminBlogs = () => {
                                 <img
                                   src={resolveImageUrl(blog.coverImage)}
                                   alt={blog.title}
-                                  className="h-12 w-20 rounded-md object-cover shadow-sm border"
+                                  className={`h-12 w-20 rounded-md object-${getFitFromUrl(blog.coverImage)} shadow-sm border`}
                                 />
                                 <div className="min-w-0 flex-1">
                                   <p className="font-semibold text-foreground truncate max-w-[280px]">{blog.title}</p>
