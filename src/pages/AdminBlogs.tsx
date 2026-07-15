@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { AdminRoute } from "@/components/layout/AdminRoute";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Search, Edit, Trash2, Eye, FileText, CheckCircle2 } from "lucide-react";
+import { PlusCircle, Search, Edit, Trash2, Eye, FileText, CheckCircle2, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ import {
 import { getAdminBlogs, deleteBlog, BlogPost, resolveImageUrl, getFitFromUrl } from "@/services/blogService";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { BlogPagination } from "@/components/admin/BlogPagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const AdminBlogs = () => {
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ const AdminBlogs = () => {
   const [deleteBlogId, setDeleteBlogId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const fetchBlogs = async () => {
     try {
@@ -170,38 +172,48 @@ const AdminBlogs = () => {
             </Button>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-lg border">
-            <div className="relative w-full sm:max-w-xs">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="pl-9 bg-background"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              {["ALL", "PUBLISHED", "DRAFT"].map((status) => (
-                <Button
-                  key={status}
-                  variant={statusFilter === status ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    setStatusFilter(status);
+          {/* Filters & Search */}
+          <Card>
+            <CardHeader className="py-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filters & Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pb-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search articles..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="pl-9 bg-background"
+                  />
+                </div>
+                
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) => {
+                    setStatusFilter(value);
                     setCurrentPage(1);
                   }}
-                  className="text-xs"
                 >
-                  {status}
-                </Button>
-              ))}
-            </div>
-          </div>
+                  <SelectTrigger className="w-full sm:w-[180px] bg-background">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">All Status</SelectItem>
+                    <SelectItem value="PUBLISHED">Published</SelectItem>
+                    <SelectItem value="DRAFT">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -268,7 +280,18 @@ const AdminBlogs = () => {
                       {blogs
                         .filter(blog => statusFilter === "ALL" || blog.status === statusFilter)
                         .map((blog) => (
-                          <TableRow key={blog.id}>
+                          <TableRow 
+                            key={blog.id}
+                            className="cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={(e) => {
+                              // Prevent navigation if clicking action buttons/icons
+                              const target = e.target as HTMLElement;
+                              if (target.closest('button') || target.closest('a')) {
+                                return;
+                              }
+                              window.open(`/blogs/${blog.slug}`, "_blank");
+                            }}
+                          >
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <img
@@ -342,28 +365,12 @@ const AdminBlogs = () => {
               )}
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-end space-x-2 pt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
+              {!loading && blogs.length > 0 && (
+                <BlogPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               )}
             </CardContent>
           </Card>
