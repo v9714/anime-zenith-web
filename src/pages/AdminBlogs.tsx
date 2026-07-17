@@ -65,86 +65,6 @@ const AdminBlogs = () => {
 
   const itemsPerPage = 5;
 
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
-      // Fetch both drafts and published blogs (admin API on the backend filters this, but public getBlogs takes search query)
-      // Note: backend getBlogPosts only returns status: 'PUBLISHED'.
-      // Wait, is there an admin endpoint to get all blogs including drafts?
-      // Let's check blog.controller.js for getBlogPosts.
-      // Ah! In blog.controller.js, getBlogPosts has:
-      // const where = { isDeleted: false, status: 'PUBLISHED' };
-      // Wait, does the backend controller filter by PUBLISHED always?
-      // Yes: `where.status = 'PUBLISHED'`.
-      // Wait! Is there an admin blog list route? Let's check admin.blog.routes.js:
-      // router.post('/', ...); router.put('/:id', ...); router.delete('/:id', ...);
-      // Ah, there is NO GET list route for admin in admin.blog.routes.js!
-      // Wait! In blog.controller.js:
-      // getBlogPosts handles GET /api/blogs.
-      // If we are admin, how do we see drafts?
-      // In getBlogPosts, we can make it so that if a request is authenticated as admin, it can optionally view all (including drafts) or we can just fetch from /api/blogs.
-      // Wait, let's look at getBlogPosts in blog.controller.js:
-      // Lines 51-54:
-      // const where = { isDeleted: false, status: 'PUBLISHED', };
-      // It is hardcoded to status: 'PUBLISHED'!
-      // Wait, this means if we save as draft, the public list route won't return it.
-      // Can we edit getBlogPosts in backend to allow admins to see drafts, or does it not matter for now?
-      // Let's check if we can update the backend controller `getBlogPosts` to check if the user is admin (e.g. from token) and allow fetching drafts if `isAdmin=true` or query parameter `adminView=true`.
-      // Yes! In `getBlogPosts` in `/home/kartiksinh/projects/otakutv/otakutv_backend/packages/content-service/src/controllers/blog.controller.js`, there's no auth middleware registered on `router.get('/', getBlogPosts)`.
-      // But we can check if a JWT is present or we can register an admin get endpoint, or we can just support `admin=true` if we pass verifyJWT middleware or optional JWT verification.
-      // Wait, let's see how they do it in other controllers, or if we can make a simple edit to `getBlogPosts` to support optional status query parameter if user is authenticated.
-      // Actually, wait! Let's check if there is an admin endpoint or if we should add one.
-      // Let's check `/home/kartiksinh/projects/otakutv/otakutv_backend/packages/content-service/src/controllers/blog.controller.js`.
-      // It has `getBlogPosts` (lines 43-130).
-      // Let's inspect `getBlogPosts` parameters. It accepts `status` if we update it.
-      // Wait, we can modify `getBlogPosts` in `blog.controller.js` to allow query filter `status` if the request is an admin request. But wait, `router.get('/', getBlogPosts)` doesn't have `verifyJWT` or `requireAdmin` in `blog.routes.js`.
-      // What if we register `router.get('/', getBlogPosts)` in `admin.blog.routes.js` as well?
-      // Or we can just modify `getBlogPosts` in `blog.controller.js` to:
-      // ```javascript
-      // const status = req.query.status || 'PUBLISHED';
-      // // but only admins should be able to see DRAFT status. Let's do that!
-      // ```
-      // Let's look at `verifyJWT` and user roles.
-      // Wait, is there a simple way? If the user is logged in as admin, they can pass token in authorization header, and if we decode it, we can allow viewing drafts.
-      // Let's check if we can modify `getBlogPosts` in `blog.controller.js` to allow admins to view all blogs by checking `req.user?.isAdmin` (or checking token).
-      // Let's see: `verifyJWT` is imported from `shared` and attaches `req.user`. If `verifyJWT` is not on the route, `req.user` will be undefined.
-      // If we register `router.get('/admin-list', getBlogPosts)` in `admin.blog.routes.js`, then that route will have `verifyJWT` and `requireAdmin` active, and `req.user` will be defined!
-      // In `getBlogPosts` we can write:
-      // ```javascript
-      // const where = { isDeleted: false };
-      // if (!req.user || !req.user.isAdmin) {
-      //   where.status = 'PUBLISHED';
-      // } else if (req.query.status) {
-      //   where.status = req.query.status;
-      // }
-      // ```
-      // This is a extremely clean, simple, and elegant solution!
-      // Let's check if `admin.blog.routes.js` can have:
-      // `router.get('/', getBlogPosts);`
-      // Wait, in `admin.blog.routes.js`, `router.use(verifyJWT)` and `router.use(requireAdmin)` are applied.
-      // So if we define `router.get('/', getBlogPosts)` in `admin.blog.routes.js`, the URL path for admin blogs will be:
-      // `GET /api/admin/blogs` -> which is protected and maps to `getBlogPosts`!
-      // And inside `getBlogPosts` we check:
-      // ```javascript
-      //   const where = {
-      //     isDeleted: false,
-      //   };
-      //   
-      //   // If called via admin route (req.user is defined), allow status filter, otherwise default to PUBLISHED
-      //   if (req.user && req.user.isAdmin) {
-      //     if (req.query.status) {
-      //       where.status = req.query.status;
-      //     }
-      //   } else {
-      //     where.status = 'PUBLISHED';
-      //   }
-      // ```
-      // This is absolutely perfect! Let's do this change first, or let's write `AdminBlogs.tsx` assuming we get all blogs.
-      // Let's implement `AdminBlogs.tsx` first.
-    } catch (e) {
-      // ignore
-    }
-  };
 
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
@@ -199,6 +119,8 @@ const AdminBlogs = () => {
     }
   };
 
+  const [bulkSuccess, setBulkSuccess] = useState<{ count: number; note: string } | null>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -223,10 +145,14 @@ const AdminBlogs = () => {
     try {
       setUploadingBulk(true);
       const res = await uploadBulkBlogsFile(selectedFile);
-      toast.success(res.message || "Successfully imported blogs!");
-      setBulkOpen(false);
+      const data = res.data;
+      setBulkSuccess({
+        count: data?.importedCount ?? 0,
+        note: data?.note ?? 'All blogs saved as DRAFT.'
+      });
       setSelectedFile(null);
       setRefreshTrigger(prev => prev + 1);
+      toast.success(res.message || `Successfully imported blogs as DRAFT!`);
     } catch (err: any) {
       if (err.response && err.response.status === 422) {
         const errorData = err.response.data?.data;
@@ -413,9 +339,7 @@ const AdminBlogs = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {blogs
-                        .filter(blog => statusFilter === "ALL" || blog.status === statusFilter)
-                        .map((blog) => (
+                      {blogs.map((blog) => (
                           <TableRow 
                             key={blog.id}
                             className={
@@ -556,11 +480,11 @@ const AdminBlogs = () => {
             if (!uploadingBulk) {
               setBulkOpen(open);
               if (!open) {
-                // Clear state on close
                 setSelectedFile(null);
                 setBulkErrorsCount(null);
                 setErrorFileBase64(null);
                 setBulkErrorSummary(null);
+                setBulkSuccess(null);
               }
             }
           }}>
@@ -576,7 +500,30 @@ const AdminBlogs = () => {
               </DialogHeader>
 
               <div className="space-y-4 my-2">
-                {bulkErrorsCount === null ? (
+                {bulkSuccess ? (
+                  /* ✅ Success State */
+                  <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-5 space-y-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <CheckCircle2 className="h-12 w-12 text-green-500" />
+                      <p className="text-lg font-bold text-green-500">Import Successful!</p>
+                    </div>
+                    <div className="rounded-md bg-green-500/10 border border-green-500/20 p-3 space-y-1">
+                      <p className="text-2xl font-bold text-green-400">{bulkSuccess.count}</p>
+                      <p className="text-sm text-muted-foreground">blog post{bulkSuccess.count !== 1 ? 's' : ''} imported</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {bulkSuccess.note}
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={() => { setBulkOpen(false); setBulkSuccess(null); }}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Done — Go Review Drafts
+                    </Button>
+                  </div>
+                ) : bulkErrorsCount === null ? (
                   <>
                     {/* Step 1: Download Template */}
                     <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-3">
@@ -587,7 +534,7 @@ const AdminBlogs = () => {
                         <div className="flex-1 space-y-1">
                           <p className="text-sm font-semibold">Download Excel Template</p>
                           <p className="text-xs text-muted-foreground">
-                            Get the latest spreadsheet format with dynamic Status validations and database Genres dropdowns.
+                          Get the pre-filled Excel template with 4 simple columns: Title, Summary, Content, and Cover Image URL. All uploaded blogs will be saved as <strong>DRAFT</strong> automatically.
                           </p>
                         </div>
                       </div>
@@ -648,8 +595,8 @@ const AdminBlogs = () => {
                       <div className="flex items-start gap-3">
                         <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                         <div className="flex-1 space-y-1">
-                          <p className="text-sm font-semibold text-red-500">Import Failed ({bulkErrorsCount} errors)</p>
-                          <p className="text-xs text-muted-foreground leading-normal">
+                          <p className="text-base font-semibold text-red-500">Import Failed ({bulkErrorsCount} errors)</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
                             {bulkErrorSummary} Database changes were completely rolled back. Download the error log to see row-specific fixes.
                           </p>
                         </div>
@@ -703,9 +650,9 @@ const AdminBlogs = () => {
                         setBulkErrorSummary(null);
                         setSelectedFile(null);
                       }}
-                      className="w-full text-xs font-semibold text-muted-foreground hover:text-foreground"
+                      className="w-full text-sm font-semibold text-muted-foreground hover:text-white hover:bg-muted/50 transition-colors"
                     >
-                      <RefreshCw className="h-3.5 w-3.5 mr-2" />
+                      <RefreshCw className="h-4 w-4 mr-2" />
                       Reset / Download Clean Template
                     </Button>
                   </>
@@ -722,8 +669,10 @@ const AdminBlogs = () => {
                     setBulkErrorsCount(null);
                     setErrorFileBase64(null);
                     setBulkErrorSummary(null);
+                    setBulkSuccess(null);
                   }}
                   disabled={uploadingBulk}
+                  className="text-muted-foreground hover:text-white hover:bg-muted/50 transition-colors"
                 >
                   Cancel
                 </Button>
