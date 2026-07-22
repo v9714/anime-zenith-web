@@ -144,7 +144,7 @@ const MangaDetailsPage = () => {
         ? manga.description.slice(0, 160).replace(/\s+/g, ' ').trim() + (manga.description.length > 160 ? '...' : '')
         : `Read ${manga.title} manga online for free. High quality manga reading experience on OtakuTV.`;
 
-    const genreNames = manga.genres?.map(mg => mg.genre.name) || [];
+    const genreNames = manga.genres?.map((mg: any) => typeof mg === 'string' ? mg : (mg?.genre?.name || mg?.name || '')).filter(Boolean) || [];
     const coverImageUrl = getImageUrl(manga.coverImage);
     const pageUrl = `https://otakutv.in/manga/${manga.id}`;
 
@@ -323,15 +323,19 @@ const MangaDetailsPage = () => {
                         {/* Genres */}
                         {manga.genres && manga.genres.length > 0 && (
                             <div className="flex flex-wrap gap-3 mb-6 justify-center lg:justify-start">
-                                {manga.genres.map((mg) => (
-                                    <Badge
-                                        key={mg.genre.id}
-                                        variant="outline"
-                                        className="border-2 border-manga-neon-purple/40 text-manga-neon-purple hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/60 transition-colors px-4 py-2 text-sm font-semibold"
-                                    >
-                                        {mg.genre.name}
-                                    </Badge>
-                                ))}
+                                {manga.genres.map((mg: any, index: number) => {
+                                    const genreName = typeof mg === 'string' ? mg : (mg?.genre?.name || mg?.name || '');
+                                    if (!genreName) return null;
+                                    return (
+                                        <Badge
+                                            key={mg?.genre?.id || mg?.id || index}
+                                            variant="outline"
+                                            className="border-2 border-manga-neon-purple/40 text-manga-neon-purple hover:bg-manga-neon-purple/20 hover:border-manga-neon-purple/60 transition-colors px-4 py-2 text-sm font-semibold"
+                                        >
+                                            {genreName}
+                                        </Badge>
+                                    );
+                                })}
                             </div>
                         )}
 

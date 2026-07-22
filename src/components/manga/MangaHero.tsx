@@ -164,15 +164,19 @@ export function MangaHero({ manga, autoPlay = true, interval = 6000 }: MangaHero
                         {/* Genres */}
                         {current.genres && current.genres.length > 0 && (
                             <div className="flex flex-wrap gap-2 animate-fade-in">
-                                {current.genres.slice(0, 4).map((mg) => (
-                                    <Badge
-                                        key={mg.genre.id}
-                                        variant="secondary"
-                                        className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border-none text-white"
-                                    >
-                                        {mg.genre.name}
-                                    </Badge>
-                                ))}
+                                {current.genres.slice(0, 4).map((mg: any, idx: number) => {
+                                    const genreName = typeof mg === 'string' ? mg : (mg?.genre?.name || mg?.name || '');
+                                    if (!genreName) return null;
+                                    return (
+                                        <Badge
+                                            key={mg?.genre?.id || mg?.id || idx}
+                                            variant="secondary"
+                                            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border-none text-white"
+                                        >
+                                            {genreName}
+                                        </Badge>
+                                    );
+                                })}
                             </div>
                         )}
 

@@ -64,11 +64,15 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
 
             {manga.genres && manga.genres.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                    {manga.genres.map((mg) => (
-                        <span key={mg.genre.id} className="text-[10px] px-2 py-0.5 rounded-full bg-manga-neon-purple/10 border border-manga-neon-purple/20 text-manga-neon-purple/90 font-medium leading-none">
-                            {mg.genre.name}
-                        </span>
-                    ))}
+                    {manga.genres.map((mg: any, idx: number) => {
+                        const genreName = typeof mg === 'string' ? mg : (mg?.genre?.name || mg?.name || '');
+                        if (!genreName) return null;
+                        return (
+                            <span key={mg?.genre?.id || mg?.id || idx} className="text-[10px] px-2 py-0.5 rounded-full bg-manga-neon-purple/10 border border-manga-neon-purple/20 text-manga-neon-purple/90 font-medium leading-none">
+                                {genreName}
+                            </span>
+                        );
+                    })}
                 </div>
             )}
 
@@ -256,14 +260,18 @@ export function MangaCard({ manga, variant = 'default', showStatus = true, class
                         {/* Genre pills — up to 2 visible, rest as +N */}
                         {manga.genres && manga.genres.length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                                {manga.genres.slice(0, 2).map((mg) => (
-                                    <span
-                                        key={mg.genre.id}
-                                        className="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-full bg-manga-neon-purple/10 border border-manga-neon-purple/20 text-manga-neon-purple/80 font-medium leading-none"
-                                    >
-                                        {mg.genre.name}
-                                    </span>
-                                ))}
+                                {manga.genres.slice(0, 2).map((mg: any, idx: number) => {
+                                    const genreName = typeof mg === 'string' ? mg : (mg?.genre?.name || mg?.name || '');
+                                    if (!genreName) return null;
+                                    return (
+                                        <span
+                                            key={mg?.genre?.id || mg?.id || idx}
+                                            className="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-full bg-manga-neon-purple/10 border border-manga-neon-purple/20 text-manga-neon-purple/80 font-medium leading-none"
+                                        >
+                                            {genreName}
+                                        </span>
+                                    );
+                                })}
                                 {manga.genres.length > 2 && (
                                     <span className="text-[8px] md:text-[9px] px-1.5 py-0.5 rounded-full bg-manga-glass/50 border border-manga-neon-purple/10 text-muted-foreground leading-none">
                                         +{manga.genres.length - 2}
