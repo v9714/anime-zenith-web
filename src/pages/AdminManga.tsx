@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { MANGA_API_URL } from "@/utils/constants";
 import { MangaPagination } from "@/components/admin/MangaPagination";
+import { getImageUrl } from "@/utils/commanFunction";
 
 const AdminManga = () => {
     const [manga, setManga] = useState<Manga[]>([]);
@@ -387,7 +388,7 @@ const AdminManga = () => {
                             <Card key={m.id} className="bg-[#1a1a20] border-none overflow-hidden group hover:ring-2 hover:ring-purple-500/50 transition-all duration-300">
                                 <div className="aspect-[3/4] relative">
                                     <img
-                                        src={`${MANGA_API_URL}${m.coverImage?.startsWith('/') ? '' : '/'}${m.coverImage?.replace(/\\/g, '/')}`}
+                                        src={getImageUrl(m.coverImage || undefined, MANGA_API_URL) || "/placeholder-manga.jpg"}
                                         alt={m.title}
                                         className={`w-full h-full object-cover transition-all ${m.isDeleted ? 'grayscale blur-[2px] opacity-50' : 'grayscale-[0.3] group-hover:grayscale-0'}`}
                                     />

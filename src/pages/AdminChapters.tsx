@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Upload, Trash2, ArrowLeft, FileText, Loader2, Plus } from "lucide-react";
+import { Upload, Trash2, ArrowLeft, FileText, Loader2, Plus, Eye, Edit2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { EditChapterDialog } from "@/components/admin/EditChapterDialog";
 
 const AdminChapters = () => {
     const { mangaId } = useParams();
@@ -16,6 +17,10 @@ const AdminChapters = () => {
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    
+    // Edit state
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [editingChapter, setEditingChapter] = useState<Chapter | null>(null);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -189,12 +194,35 @@ const AdminChapters = () => {
                                     <td className="px-6 py-4 font-medium">{chap.title || "---"}</td>
                                     <td className="px-6 py-4 text-sm text-muted-foreground">{chap.views}</td>
                                     <td className="px-6 py-4 text-sm text-muted-foreground">{new Date(chap.createdAt).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                        <Link to={`/read/${mangaId}/chapter/${chap.id}`} target="_blank">
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="text-blue-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-full h-9 w-9"
+                                                title="View Chapter"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </Button>
+                                        </Link>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="text-green-400 hover:text-green-500 hover:bg-green-500/10 rounded-full h-9 w-9"
+                                            onClick={() => {
+                                                setEditingChapter(chap);
+                                                setIsEditDialogOpen(true);
+                                            }}
+                                            title="Edit Chapter"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </Button>
                                         <Button
                                             size="icon"
                                             variant="ghost"
                                             className="text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-full h-9 w-9"
                                             onClick={() => handleDelete(chap.id)}
+                                            title="Delete Chapter"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
@@ -212,6 +240,14 @@ const AdminChapters = () => {
                     </table>
                 </div>
             </div>
+
+            <EditChapterDialog 
+                mangaId={parseInt(mangaId || "0")}
+                chapter={editingChapter}
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                onSuccess={fetchData}
+            />
         </div>
     );
 };

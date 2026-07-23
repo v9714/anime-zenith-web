@@ -64,6 +64,18 @@ export const adminMangaService = {
         return response.data;
     },
 
+    updateChapter: async (chapterId: number, formData: FormData): Promise<ApiResponse<Chapter>> => {
+        const response = await mangaApi.patch<ApiResponse<Chapter>>(`/api/admin/manga/chapter/${chapterId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+
+    getChapterPages: async (chapterId: number): Promise<ApiResponse<{ pages: string[], type: string }>> => {
+        const response = await mangaApi.get<ApiResponse<{ pages: string[], type: string }>>(`/api/admin/manga/chapter/${chapterId}/pages`);
+        return response.data;
+    },
+
     deleteChapter: async (id: number): Promise<ApiResponse<null>> => {
         const response = await mangaApi.delete<ApiResponse<null>>(`/api/admin/manga/chapter/${id}`);
         return response.data;
